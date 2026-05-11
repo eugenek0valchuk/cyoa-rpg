@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
@@ -12,6 +12,7 @@ export default function GamePage() {
   const updateStats = useCharacterStore((state) => state.updateStats)
   const addToInventory = useCharacterStore((state) => state.addToInventory)
 
+  const [isLoading, setIsLoading] = useState(false)
   const { currentScene, setCurrentScene, pushHistory, resetGame } =
     useGameStore()
 
@@ -28,8 +29,8 @@ export default function GamePage() {
     }
   }, [character, currentScene, setCurrentScene, pushHistory])
 
-  const handleChoice = (choiceId: string) => {
-    if (!currentScene || !character) return
+  const handleChoice = async (choiceId: string) => {
+    if (!currentScene || !character || isLoading) return
 
     const choice = currentScene.options.find((opt) => opt.id === choiceId)
     if (!choice) return
@@ -43,40 +44,41 @@ export default function GamePage() {
       updateStats(choice.effects)
     }
 
-    let nextSceneId: string | null = null
-    switch (choiceId) {
-      case 'woods':
-        nextSceneId = 'woods'
-        break
-      case 'keep':
-        nextSceneId = 'keep'
-        break
-      case 'merchant':
-        nextSceneId = 'start'
-        break
-      case 'drink':
-        nextSceneId = 'start'
-        break
-      case 'leave':
-        nextSceneId = 'start'
-        break
-      case 'fight':
-        nextSceneId = 'keep'
-        break
-      case 'flee':
-        nextSceneId = 'start'
-        break
-      default:
-        nextSceneId = 'start'
+    setIsLoading(true)
+
+    const fetchScene = async (attempt = 1): Promise<any> => {
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            currentScene,
+            choice,
+            character,
+          }),
+        })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const data = await response.json()
+        if (!data.scene) throw new Error('No scene in response')
+        return data.scene
+      } catch (error) {
+        if (attempt < 3) {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          return fetchScene(attempt + 1)
+        }
+        throw error
+      }
     }
 
-    if (nextSceneId && scenes[nextSceneId]) {
-      setCurrentScene(scenes[nextSceneId])
-      pushHistory(nextSceneId)
-    } else {
-      resetGame()
-      setCurrentScene(scenes.start)
-      pushHistory('start')
+    try {
+      const newScene = await fetchScene()
+      setCurrentScene(newScene)
+      pushHistory(newScene.id)
+    } catch (error) {
+      console.error('Failed to generate scene after retries:', error)
+      alert('Failed to generate next scene. Using fallback. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -129,7 +131,7 @@ export default function GamePage() {
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                disabled={!isAvailable}
+                disabled={!isAvailable || isLoading}
                 className={`w-full text-left p-4 rounded-lg border transition ${
                   isAvailable
                     ? 'bg-gray-800 border-gray-700 hover:border-blue-500 hover:bg-gray-700'
@@ -146,7 +148,16 @@ export default function GamePage() {
             )
           })}
         </div>
-
+        {isLoading && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-xl text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <p className="text-white">
+                The storyteller weaves the next chapter...
+              </p>
+            </div>
+          </div>
+        )}
         <div className="mt-8 text-center">
           <button
             onClick={handleReset}
