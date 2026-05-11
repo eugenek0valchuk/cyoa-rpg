@@ -4,148 +4,197 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCharacterStore } from '@/lib/store/characterStore'
 
+const origins = [
+  {
+    value: 'hollow',
+    title: 'THE HOLLOW',
+    subtitle: 'Returned from the abyss without a soul.',
+    description:
+      'No prayers answered when the abyss took him. What returned wore the armor still, but beneath the iron remained only hunger, silence, and the fading memory of a forgotten name.',
+    image: '/origins/hollow.png',
+    inventory: ['Rust Blade', 'Broken Sigil'],
+    stats: { strength: 7, agility: 4, intelligence: 4 },
+  },
+  {
+    value: 'heretic',
+    title: 'THE HERETIC',
+    subtitle: 'Spoke with something beneath the cathedral.',
+    description:
+      'Within the buried cathedral he heard the voice beneath stone. It offered revelation in ash and blood. Since that night, sacred flame recoils from his presence.',
+    image: '/origins/heretic.png',
+    inventory: ['Black Scripture', 'Wax Seal'],
+    stats: { strength: 3, agility: 4, intelligence: 8 },
+  },
+  {
+    value: 'witness',
+    title: 'THE WITNESS',
+    subtitle: 'Saw the end and survived the memory.',
+    description:
+      'He stood before the final procession and survived the sight. The mind endured, though something behind the eyes was forever stripped away forever.',
+    image: '/origins/witness.png',
+    inventory: ['Silver Knife', 'Shattered Rosary'],
+    stats: { strength: 4, agility: 8, intelligence: 3 },
+  },
+]
+
 export default function EditorPage() {
   const router = useRouter()
-  const setCharacter = useCharacterStore((state) => state.setCharacter)
+  const setCharacter = useCharacterStore((s) => s.setCharacter)
 
   const [name, setName] = useState('')
-  const [characterClass, setCharacterClass] = useState<
-    'warrior' | 'mage' | 'rogue'
-  >('warrior')
-  const [stats, setStats] = useState({
-    strength: 5,
-    agility: 5,
-    intelligence: 5,
-  })
+  const [index, setIndex] = useState(0)
 
-  const totalPoints = stats.strength + stats.agility + stats.intelligence
-  const remainingPoints = 15 - totalPoints
-
-  const adjustStat = (stat: keyof typeof stats, delta: number) => {
-    const newValue = stats[stat] + delta
-    if (newValue < 1 || newValue > 10) return
-    if (remainingPoints - delta < 0) return
-    setStats((prev) => ({ ...prev, [stat]: newValue }))
-  }
+  const selected = origins[index]
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    if (remainingPoints !== 0) return
 
     setCharacter({
       name: name.trim(),
-      class: characterClass,
-      stats,
-      inventory:
-        characterClass === 'warrior'
-          ? ['Iron Sword']
-          : characterClass === 'mage'
-            ? ['Spellbook']
-            : ['Dagger'],
+      class: selected.value as any,
+      stats: selected.stats,
+      inventory: selected.inventory,
     })
+
     router.push('/game')
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center">
-          Create Your Hero
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+    <main className="relative min-h-screen overflow-hidden bg-black px-6 text-[#e7e2dc]">
+      <img
+        src="/main-bg.png"
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+
+      <div className="absolute inset-0 bg-black/55" />
+
+      <div className="absolute inset-0 shadow-[inset_0_0_220px_rgba(0,0,0,0.95)]" />
+
+      <section className="relative z-10 mx-auto max-w-[1250px] pt-28 pb-16">
+        <div className="mb-16 text-center">
+          <div className="text-[11px] uppercase tracking-[0.6em] text-[#7a6d63]">
+            CHOOSE YOUR ORIGIN
+          </div>
+          <h1 className="font-cinzel mt-6 text-6xl uppercase tracking-[0.16em] text-[#e6ddd4]">
+            DESCENT
+          </h1>
+          <div className="mx-auto mt-6 h-px w-48 bg-gradient-to-r from-transparent via-[#8e1f1f] to-transparent" />
+        </div>
+
+        <div className="mt-10 flex items-center justify-center gap-6">
+          <button
+            type="button"
+            onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+            className="p-0 bg-transparent border-0"
+          >
+            <img
+              src="/ui/gothic-arrow-left.png"
+              alt="prev"
+              className="h-[100px] w-[100px] object-contain transition duration-300 hover:drop-shadow-[0_0_10px_rgba(142,31,31,0.8)]"
             />
-          </div>
-
-          {/* Class */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Class</label>
-            <div className="flex gap-4">
-              {[
-                {
-                  value: 'warrior',
-                  label: 'Warrior',
-                  desc: 'Strong melee fighter',
-                },
-                { value: 'mage', label: 'Mage', desc: 'Powerful spells' },
-                { value: 'rogue', label: 'Rogue', desc: 'Stealth and agility' },
-              ].map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setCharacterClass(c.value as any)}
-                  className={`flex-1 p-4 rounded-lg border-2 transition ${
-                    characterClass === c.value
-                      ? 'border-blue-500 bg-blue-500/20'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-500'
-                  }`}
-                >
-                  <div className="font-bold">{c.label}</div>
-                  <div className="text-sm text-gray-400">{c.desc}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Stats (осталось очков: {remainingPoints})
-            </label>
-            <div className="space-y-3">
-              {[
-                { key: 'strength', label: 'Strength' },
-                { key: 'agility', label: 'Agility' },
-                { key: 'intelligence', label: 'Intelligence' },
-              ].map((stat) => (
-                <div key={stat.key} className="flex items-center gap-4">
-                  <span className="w-24">{stat.label}</span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      adjustStat(stat.key as keyof typeof stats, -1)
-                    }
-                    className="w-8 h-8 rounded bg-gray-700 hover:bg-gray-600"
-                    disabled={stats[stat.key as keyof typeof stats] <= 1}
-                  >
-                    -
-                  </button>
-                  <span className="w-8 text-center">
-                    {stats[stat.key as keyof typeof stats]}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      adjustStat(stat.key as keyof typeof stats, 1)
-                    }
-                    className="w-8 h-8 rounded bg-gray-700 hover:bg-gray-600"
-                    disabled={remainingPoints === 0}
-                  >
-                    +
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+          </button>
 
           <button
-            type="submit"
-            disabled={!name.trim() || remainingPoints !== 0}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+            onClick={() => setIndex((i) => Math.min(i + 1, origins.length - 1))}
+            className="p-0 bg-transparent border-0"
           >
-            Start Adventure
+            <img
+              src="/ui/gothic-arrow-right.png"
+              alt="next"
+              className="h-[100px] w-[100px] object-contain transition duration-300 hover:drop-shadow-[0_0_10px_rgba(142,31,31,0.8)]"
+            />
           </button>
+        </div>
+
+        <div className="relative mx-auto mt-10 max-w-[620px] overflow-hidden">
+          <div
+            className="flex transition-transform duration-700 ease-out"
+            style={{
+              transform: `translateX(-${index * 100}%)`,
+            }}
+          >
+            {origins.map((o) => {
+              const active = selected.value === o.value
+
+              return (
+                <div key={o.value} className="min-w-full shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIndex(origins.indexOf(o))}
+                    className="relative w-full overflow-hidden border border-[#2b2320] bg-[#0b0b0b] text-left transition-all duration-500 rounded-sm"
+                  >
+                    <div className="relative h-[540px] overflow-hidden">
+                      <img
+                        src={o.image}
+                        alt={o.title}
+                        className={`h-full w-full object-cover object-top transition duration-700`}
+                      />
+                    </div>
+
+                    <div className="p-6">
+                      <div className="text-[10px] uppercase tracking-[0.5em] text-[#7a6d63]">
+                        ORIGIN
+                      </div>
+
+                      <h2 className="font-cinzel mt-3 text-3xl uppercase tracking-[0.14em]">
+                        {o.title}
+                      </h2>
+
+                      <p className="mt-2 text-[13px] text-[#9d8d82]">
+                        {o.subtitle}
+                      </p>
+
+                      <div className="mt-6 grid grid-cols-3 gap-3 text-[12px] text-[#d8c9be]">
+                        <div className="border border-[#2b2320] px-2 py-1 text-center">
+                          STR {o.stats.strength}
+                        </div>
+                        <div className="border border-[#2b2320] px-2 py-1 text-center">
+                          AGI {o.stats.agility}
+                        </div>
+                        <div className="border border-[#2b2320] px-2 py-1 text-center">
+                          INT {o.stats.intelligence}
+                        </div>
+                      </div>
+
+                      <div className="mt-5 space-y-1 text-[12px] text-[#8e1f1f]">
+                        {o.inventory.map((item) => (
+                          <div key={item}>• {item}</div>
+                        ))}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mx-auto mt-24 max-w-[620px]">
+          <div className="border border-[#2f2622] bg-[linear-gradient(to_bottom,#120c0c,#080505)] p-10 text-center">
+            <div className="text-[11px] uppercase tracking-[0.5em] text-[#7a6d63]">
+              VESSEL NAME
+            </div>
+
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter name..."
+              className="mt-6 w-full border-b border-[#4a3a32] bg-transparent py-5 text-center font-cinzel text-4xl uppercase tracking-[0.14em] outline-none placeholder:text-[#5e544c] focus:border-[#8e1f1f]"
+            />
+
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              className="mt-12 w-full border border-[#5c1f1f] bg-[#160909] px-8 py-6 font-cinzel text-xl uppercase tracking-[0.2em] text-[#d46060] transition hover:bg-[#220d0d] hover:text-[#ff7b7b] disabled:opacity-40"
+            >
+              Begin Descent
+            </button>
+          </div>
         </form>
-      </div>
+      </section>
     </main>
   )
 }

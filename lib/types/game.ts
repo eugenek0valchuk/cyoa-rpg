@@ -24,3 +24,9 @@ export type Scene = {
   description: string
   options: Choice[]
 }
+
+export type RawGeneratedScene = {
+  title?: string
+  description?: string
+  options?: Array<{ id?: string; text?: string; effects?: Partial<Stats> }>
+}
