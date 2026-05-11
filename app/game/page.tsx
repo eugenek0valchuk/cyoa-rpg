@@ -1,12 +1,7 @@
-import Link from 'next/link'
-
-export default function HomePage() {
+export default function GamePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">AI Choose Your Adventure</h1>
-      <Link href="/editor" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Start Game
-      </Link>
+    <main className="min-h-screen bg-gray-900 text-white p-8">
+      <h1 className="text-3xl font-bold">Game will be here soon</h1>
     </main>
   )
 }
