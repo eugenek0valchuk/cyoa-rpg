@@ -1,10 +1,16 @@
 import { getCorruptionPrompt, getCorruptionStage } from '@/lib/game/corruption'
 
+import { GENERAL_RULES } from './prompts/generalRules'
+import { ANTI_REPETITION_RULES } from './prompts/antiRepetitionRules'
+import { ARTIFACT_RULES } from './prompts/artifactRules'
+
+import { Character, Choice, Scene, SceneHistoryEntry } from '../types/game'
+
 interface BuildScenePromptParams {
-  currentScene: any
-  choice: any
-  character: any
-  sceneHistory: any[]
+  currentScene: Scene
+  choice: Choice
+  character: Character
+  sceneHistory: SceneHistoryEntry[]
 }
 
 export function buildScenePrompt({
@@ -20,7 +26,7 @@ ARTIFACTS CURRENTLY CARRIED:
 
 ${character.inventory
   .map(
-    (artifact: any) => `
+    (artifact) => `
 - ${artifact.name}
 
 ${artifact.description}
@@ -40,12 +46,12 @@ Corruption: ${artifact.effects?.corruption ?? 0}
 PREVIOUS SCENES:
 
 ${sceneHistory
-  .slice(-3)
+  .slice(-6)
   .map(
-    (scene: any) => `
+    (scene) => `
 - ${scene.title}
 
-${scene.description}
+${scene.description.slice(0, 180)}
 `,
   )
   .join('\n')}
@@ -55,25 +61,29 @@ ${scene.description}
   const corruptionPrompt = getCorruptionPrompt(character.corruption)
 
   return `
-You are the narrator and game master of a dark gothic horror RPG called DESCENT.
+You are the narrator of a dark gothic horror RPG called DESCENT.
 
-The tone is:
+You describe:
+- scenes
+- atmosphere
+- entities
+- discoveries
+- choices
+
+You do NOT control permanent progression.
+You do NOT invent new mechanics.
+
+The narration must feel:
+- ancient
+- cursed
 - oppressive
-- cosmic horror
-- religious decay
-- cursed cathedrals
-- abyssal entities
-- psychological terror
-- forbidden relics
-- dying kingdoms
-- blood rituals
-- whispers beneath stone
+- poetic
+- psychologically disturbing
 
-Never write humor.
-Never write modern language.
-Never write generic fantasy.
-
-The narration must feel ancient, poetic, cursed, and oppressive.
+Narration must always be written in second person.
+Never refer to "the player".
+Never explain emotions directly.
+Imply fear through atmosphere and sensory detail.
 
 ${corruptionPrompt}
 
@@ -100,7 +110,8 @@ Corruption: ${character.corruption}
 
 WORLD STATE:
 
-Corruption Stage: ${getCorruptionStage(character.corruption)}
+Corruption Stage:
+${getCorruptionStage(character.corruption)}
 
 Known Flags:
 ${character.flags.length > 0 ? character.flags.join(', ') : 'none'}
@@ -108,7 +119,7 @@ ${character.flags.length > 0 ? character.flags.join(', ') : 'none'}
 Artifacts Carried:
 ${
   character.inventory.length > 0
-    ? character.inventory.map((a: any) => a.name).join(', ')
+    ? character.inventory.map((a) => a.name).join(', ')
     : 'none'
 }
 
@@ -119,99 +130,61 @@ ${historyContext}
 AVAILABLE ARTIFACTS:
 
 - ashen_faceless_mask
-A burned iron mask recovered from beneath the ash crypt.
-
 - inverted_rosary
-A rosary with reversed prayers carved into bone.
-
 - black_veil_fragment
-A fragment of cloth taken from a faceless saint.
-
 - bell_of_the_below
-A small black bell that rings without touch.
 
-IMPORTANT RULES ABOUT ARTIFACTS:
+${GENERAL_RULES}
 
-- NEVER give an artifact the player already owns
-- NEVER repeat the same artifact twice
-- ONLY use artifact ids from the list above
-- addArtifact must always be a string id
-- addFlag must always be a string
-- NEVER use booleans for addFlag
-- Artifacts should be extremely rare
-- Most scenes should NOT reward artifacts
-- Artifacts should only appear during major discoveries, rituals, crypts, forbidden encounters, or abyssal events
+${ANTI_REPETITION_RULES}
 
-GENERAL RULES:
-- Artifacts must influence the world and narration
-- Corruption should slowly distort reality
-- High corruption may unlock forbidden events
-- Low sanity may introduce whispers, visions, hallucinations
-- Scenes must continue naturally from previous events
-- Choices should feel dangerous and meaningful
-- Avoid repetition
-- Keep descriptions immersive
-- Add subtle lore implications
-- Sometimes imply unseen entities watching the player
+${ARTIFACT_RULES}
 
-ANTI-REPETITION RULES:
+RULES FOR OPTIONS:
 
-- NEVER repeat exact phrases from previous scenes
-- NEVER repeat scene titles
-- NEVER loop the same visual descriptions
-- Every new scene must introduce:
-  - a new event
-  - a new discovery
-  - a new entity
-  - a new environmental detail
-  - or a new horror escalation
-- The narrative must always move forward
-- Avoid repeating:
-  - "shadows writhe"
-  - "the air thickens"
-  - "their fingers intertwined"
-  - "oppressive silence"
-- Do not rewrite previous scenes with minor wording changes
-- Introduce progression and consequences
-- Characters and entities should react to previous player actions
+- Generate between 2 and 4 options only
+- Every option must feel distinct
+- Avoid obvious good/bad choices
+- At least one option should feel risky
+- Avoid duplicate outcomes
+- Avoid filler choices
 
 IMPORTANT:
-You may generate hidden or conditional choices using:
 
-"requirements": {
-  "minCorruption": 40
-}
+Effects should be minimal and conservative.
 
-or:
+Most effects should range between:
+-5 and +5
 
-"requirements": {
-  "maxSanity": 30
-}
+Option ids must:
+- use snake_case only
+- contain no spaces
+- be short
+- be unique
 
-or:
-
-"requirements": {
-  "requiredArtifact": "ashen_faceless_mask"
-}
-
-or:
-
-"requirements": {
-  "requiredFlag": "met_the_procession"
-}
+Scene titles must:
+- be short
+- be unique
+- avoid generic horror words
+- avoid repeating previous naming patterns
 
 Generate the next scene in STRICT JSON format:
 
 {
   "title": "short dark title",
-  "description": "3-6 atmospheric sentences",
+
+  "description": "2-4 concise atmospheric sentences",
+
   "options": [
     {
       "id": "option_id",
+
       "text": "Choice text",
+
       "requirements": {
         "minCorruption": 40
       },
+
       "effects": {
         "sanity": -5
       }

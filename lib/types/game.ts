@@ -1,3 +1,5 @@
+import { WorldState } from './world'
+
 export type Origin = 'hollow' | 'heretic' | 'witness'
 
 export interface CharacterStats {
@@ -10,10 +12,14 @@ export type ArtifactRarity = 'common' | 'rare' | 'forbidden' | 'mythic'
 export interface ArtifactEffect {
   sanity?: number
   corruption?: number
-
   strength?: number
   agility?: number
   intelligence?: number
+}
+
+export interface GameState {
+  character: Character
+  world?: WorldState
 }
 
 export interface Artifact {
@@ -41,24 +47,18 @@ export interface ChoiceRequirements {
   strength?: number
   agility?: number
   intelligence?: number
-
   sanityBelow?: number
   corruptionAbove?: number
-
   hasItem?: string
-
   minCorruption?: number
   maxSanity?: number
-
   requiredFlag?: string
   requiredArtifact?: string
 }
 
 export interface Choice {
   id: string
-
   text: string
-
   effects?: {
     sanity?: number
     corruption?: number

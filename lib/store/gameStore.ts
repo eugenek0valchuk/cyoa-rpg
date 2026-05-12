@@ -37,7 +37,7 @@ export const useGameStore = create<GameStore>((set) => ({
 
   pushSceneHistory: (scene) =>
     set((state) => ({
-      sceneHistory: [...state.sceneHistory.slice(-7), scene],
+      sceneHistory: [...state.sceneHistory, scene].slice(-12),
     })),
 
   resetGame: () =>

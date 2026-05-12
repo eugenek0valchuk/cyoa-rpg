@@ -20,6 +20,7 @@ import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
 
 import type { Artifact } from '@/lib/types/game'
+import { clampStat } from '@/lib/game/clampStat'
 
 export default function GamePage() {
   const router = useRouter()
@@ -86,24 +87,20 @@ export default function GamePage() {
       const updatedCharacter = {
         ...character,
 
-        sanity: character.sanity + (choice.effects?.sanity ?? 0),
+        sanity: clampStat(character.sanity + (choice.effects?.sanity ?? 0)),
 
-        corruption: character.corruption + (choice.effects?.corruption ?? 0),
+        corruption: clampStat(
+          character.corruption + (choice.effects?.corruption ?? 0),
+        ),
 
         flags: choice.effects?.addFlag
-          ? [...character.flags, choice.effects.addFlag]
+          ? Array.from(new Set([...character.flags, choice.effects.addFlag]))
           : character.flags,
 
         inventory: [...character.inventory],
       }
 
       try {
-        pushSceneHistory({
-          id: currentScene.id,
-          title: currentScene.title,
-          description: currentScene.description,
-        })
-
         if (choice.effects?.sanity) {
           updateSanity(choice.effects.sanity)
         }
@@ -116,22 +113,31 @@ export default function GamePage() {
           const artifact = artifacts[choice.effects.addArtifact]
 
           if (artifact) {
-            addArtifact(artifact)
+            const alreadyOwned = character.inventory.some(
+              (item) => item.id === artifact.id,
+            )
 
-            updatedCharacter.inventory.push(artifact)
+            if (!alreadyOwned) {
+              addArtifact(artifact)
 
-            setRevealedArtifact(artifact)
+              updatedCharacter.inventory = [
+                ...updatedCharacter.inventory,
+                artifact,
+              ]
 
-            requestAnimationFrame(() => {
-              setShowArtifactReveal(true)
-            })
+              setRevealedArtifact(artifact)
 
-            if (artifact.effects?.sanity) {
-              updateSanity(artifact.effects.sanity)
-            }
+              requestAnimationFrame(() => {
+                setShowArtifactReveal(true)
+              })
 
-            if (artifact.effects?.corruption) {
-              updateCorruption(artifact.effects.corruption)
+              if (artifact.effects?.sanity) {
+                updateSanity(artifact.effects.sanity)
+              }
+
+              if (artifact.effects?.corruption) {
+                updateCorruption(artifact.effects.corruption)
+              }
             }
           }
         }
@@ -145,7 +151,7 @@ export default function GamePage() {
             artifactResolveRef.current = resolve
           })
         } else {
-          await new Promise((resolve) => setTimeout(resolve, 1200))
+          await new Promise((resolve) => setTimeout(resolve, 250))
         }
 
         const localScene = scenes[choice.id]
@@ -153,9 +159,15 @@ export default function GamePage() {
         if (localScene) {
           setCurrentScene(localScene)
 
+          pushSceneHistory({
+            id: currentScene.id,
+            title: currentScene.title,
+            description: currentScene.description,
+          })
+
           pushHistory(localScene.id)
 
-          await new Promise((resolve) => setTimeout(resolve, 900))
+          await new Promise((resolve) => setTimeout(resolve, 350))
 
           setShowChoices(true)
 
@@ -173,11 +185,19 @@ export default function GamePage() {
           throw new Error('Failed to generate scene')
         }
 
+        generatedScene.id ??= crypto.randomUUID()
+
         setCurrentScene(generatedScene)
+
+        pushSceneHistory({
+          id: currentScene.id,
+          title: currentScene.title,
+          description: currentScene.description,
+        })
 
         pushHistory(generatedScene.id)
 
-        await new Promise((resolve) => setTimeout(resolve, 900))
+        await new Promise((resolve) => setTimeout(resolve, 350))
 
         setShowChoices(true)
       } catch (error) {

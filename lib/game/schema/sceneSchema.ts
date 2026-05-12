@@ -1,0 +1,50 @@
+import { z } from 'zod'
+
+export const SceneSchema = z.object({
+  id: z
+    .string()
+    .max(40)
+    .regex(/^[a-z0-9_]+$/),
+
+  title: z.string().max(80),
+
+  description: z.string().max(1200),
+
+  options: z
+    .array(
+      z.object({
+        id: z
+          .string()
+          .max(40)
+          .regex(/^[a-z0-9_]+$/),
+
+        text: z.string().max(120),
+
+        requirements: z
+          .object({
+            minCorruption: z.number().optional(),
+
+            maxSanity: z.number().optional(),
+
+            requiredArtifact: z.string().max(40).optional(),
+
+            requiredFlag: z.string().max(60).optional(),
+          })
+          .nullish(),
+
+        effects: z
+          .object({
+            sanity: z.number().min(-10).max(10).optional(),
+
+            corruption: z.number().min(-10).max(10).optional(),
+
+            addFlag: z.string().max(60).optional(),
+
+            addArtifact: z.string().max(40).optional(),
+          })
+          .nullish(),
+      }),
+    )
+    .min(2)
+    .max(4),
+})

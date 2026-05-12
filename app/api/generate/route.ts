@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+import { parseScene } from '@/lib/game/parseScene'
 import { buildScenePrompt } from '@/lib/game/promptBuilder'
 import { validateScene } from '@/lib/game/validateScene'
 
@@ -8,7 +9,7 @@ async function fetchWithRetry(
   options: RequestInit,
   retries = 2,
   delay = 1000,
-): Promise<any> {
+) {
   for (let i = 0; i <= retries; i++) {
     try {
       const response = await fetch(url, options)
@@ -19,15 +20,7 @@ async function fetchWithRetry(
 
       const data = await response.json()
 
-      let parsed
-
-      try {
-        parsed = JSON.parse(data.response)
-      } catch (_e) {
-        throw new Error('Invalid JSON from model')
-      }
-
-      return parsed
+      return parseScene(data.response)
     } catch (error) {
       if (i === retries) {
         throw error
@@ -40,6 +33,8 @@ async function fetchWithRetry(
 
 function getFallbackScene(choiceText: string) {
   return {
+    id: 'fallback_scene',
+
     title: 'The Path Below',
 
     description:
@@ -102,8 +97,9 @@ export async function POST(request: Request) {
             format: 'json',
 
             options: {
-              temperature: 0.9,
-              top_p: 0.95,
+              temperature: 0.7,
+              top_p: 0.9,
+              repeat_penalty: 1.15,
             },
           }),
         },

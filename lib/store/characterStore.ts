@@ -1,26 +1,20 @@
 import { create } from 'zustand'
 
 import type { Artifact, Character } from '@/lib/types/game'
+import { clampStat } from '../game/clampStat'
 
 interface CharacterStore {
   character: Character | null
-
   setCharacter: (character: Character) => void
-
   updateSanity: (amount: number) => void
-
   updateCorruption: (amount: number) => void
-
   addArtifact: (artifact: Artifact) => void
-
   addFlag: (flag: string) => void
-
   resetCharacter: () => void
 }
 
 export const useCharacterStore = create<CharacterStore>((set) => ({
   character: null,
-
   setCharacter: (character) =>
     set({
       character,
@@ -36,7 +30,7 @@ export const useCharacterStore = create<CharacterStore>((set) => ({
         character: {
           ...state.character,
 
-          sanity: Math.max(0, Math.min(100, state.character.sanity + amount)),
+          sanity: clampStat(state.character.sanity + amount),
         },
       }
     }),
@@ -51,10 +45,7 @@ export const useCharacterStore = create<CharacterStore>((set) => ({
         character: {
           ...state.character,
 
-          corruption: Math.max(
-            0,
-            Math.min(100, state.character.corruption + amount),
-          ),
+          corruption: clampStat(state.character.corruption + amount),
         },
       }
     }),
