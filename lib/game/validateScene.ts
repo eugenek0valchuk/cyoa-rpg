@@ -4,19 +4,13 @@ const MAX_OPTIONS = 4
 const MIN_OPTIONS = 2
 
 function normalizeText(value: unknown, fallback: string) {
-  if (typeof value !== 'string') {
-    return fallback
-  }
-
+  if (typeof value !== 'string') return fallback
   const cleaned = value.trim()
-
   return cleaned.length > 0 ? cleaned : fallback
 }
 
 function normalizeRequirements(requirements: any) {
-  if (!requirements || typeof requirements !== 'object') {
-    return undefined
-  }
+  if (!requirements || typeof requirements !== 'object') return {}
 
   const normalized: Record<string, any> = {}
 
@@ -54,7 +48,7 @@ function normalizeRequirements(requirements: any) {
     normalized.requiredArtifact = requirements.requiredArtifact
   }
 
-  return Object.keys(normalized).length > 0 ? normalized : undefined
+  return normalized
 }
 
 function normalizeEffects(effects: any, ownedArtifacts: Set<string>) {
@@ -96,34 +90,26 @@ function createFallbackOptions() {
   return [
     {
       id: 'continue_forward',
-
       text: 'Continue deeper into the abyss',
-
-      effects: {
-        sanity: -3,
-      },
+      effects: { sanity: -3 },
+      requirements: {},
     },
-
     {
       id: 'observe',
-
       text: 'Remain still and listen to the dark',
-
       effects: {},
+      requirements: {},
     },
   ]
 }
 
 export function validateScene(rawScene: any, ownedArtifacts: Set<string>) {
   const title = normalizeText(rawScene?.title, 'Unknown Depths').slice(0, 80)
-
   const description = normalizeText(
     rawScene?.description,
     'The darkness shifts around you.',
   ).slice(0, 2200)
-
   const rawOptions = Array.isArray(rawScene?.options) ? rawScene.options : []
-
   const usedIds = new Set<string>()
 
   const normalizedOptions = rawOptions
@@ -132,38 +118,29 @@ export function validateScene(rawScene: any, ownedArtifacts: Set<string>) {
       let id = normalizeText(option?.id, `option_${index}`)
         .toLowerCase()
         .replace(/[^a-z0-9_]/g, '_')
-
-      if (usedIds.has(id)) {
-        id = `${id}_${index}`
-      }
-
+      if (usedIds.has(id)) id = `${id}_${index}`
       usedIds.add(id)
 
       return {
         id,
-
         text: normalizeText(option?.text, `Choice ${index + 1}`).slice(0, 120),
-
         requirements: normalizeRequirements(option?.requirements),
-
         effects: normalizeEffects(option?.effects || {}, ownedArtifacts),
       }
     })
     .filter((option: any) => option.text.length > 0)
 
+  const fallbackOptions = createFallbackOptions()
   while (normalizedOptions.length < MIN_OPTIONS) {
-    const fallback = createFallbackOptions()[normalizedOptions.length]
-
+    const fallback =
+      fallbackOptions[normalizedOptions.length % fallbackOptions.length]
     normalizedOptions.push(fallback)
   }
 
   return {
     id: `scene_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-
     title,
-
     description,
-
     options: normalizedOptions,
   }
 }

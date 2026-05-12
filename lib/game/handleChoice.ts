@@ -11,6 +11,12 @@ import type {
   Scene,
   SceneMemory,
 } from '../types/game'
+import {
+  logArtifact,
+  logChoice,
+  logEnding,
+  logSceneTransition,
+} from './debugLog'
 
 interface HandleChoiceParams {
   currentScene: Scene
@@ -69,6 +75,12 @@ export async function handleGameChoice({
     artifacts,
   })
 
+  logChoice({
+    scene: currentScene,
+    choice,
+    character,
+  })
+
   const ending = resolveEnding(
     updatedCharacter.sanity,
     updatedCharacter.corruption,
@@ -82,6 +94,8 @@ export async function handleGameChoice({
         description: ending.description,
       }),
     )
+
+    logEnding(ending.title)
 
     return
   }
@@ -101,6 +115,8 @@ export async function handleGameChoice({
   if (revealedArtifact) {
     addArtifact(revealedArtifact)
 
+    logArtifact(revealedArtifact.name)
+
     await revealArtifact(revealedArtifact)
   }
 
@@ -113,6 +129,12 @@ export async function handleGameChoice({
   })
 
   setCurrentScene(nextScene)
+
+  logSceneTransition({
+    previousScene: currentScene,
+    nextScene,
+    history: sceneHistory,
+  })
 
   commitSceneTransition({
     currentScene,

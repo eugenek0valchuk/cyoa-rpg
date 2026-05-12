@@ -1,14 +1,26 @@
 import { Choice } from '../types/game'
+import { createSceneId } from './createSceneId'
 import { SceneSchema } from './schema/sceneSchema'
 
 export function parseScene(raw: string) {
   try {
     const parsed = JSON.parse(raw)
 
+    parsed.id ??= createSceneId()
+
+    parsed.id = String(parsed.id)
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g, '_')
+
     parsed.description = parsed.description?.replace(/\n{3,}/g, '\n\n')?.trim()
 
     parsed.options = parsed.options?.map((option: Choice) => ({
       ...option,
+
+      id: String(option.id)
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, '_'),
+
       text: option.text?.trim(),
     }))
 
@@ -31,9 +43,9 @@ export function parseScene(raw: string) {
         },
 
         {
-          id: 'listen',
+          id: 'submit',
 
-          text: 'Listen to the distant whisper',
+          text: 'Let the abyss consume you',
         },
       ],
     }
