@@ -5,16 +5,20 @@ import type { Character, Choice } from '@/lib/types/game'
 
 interface ChoiceListProps {
   options: Choice[]
-
   character: Character
-
   onSelect: (choiceId: string) => void
-
   isLoading: boolean
 }
 
-export function ChoiceList({ options, character, onSelect, isLoading }: ChoiceListProps) {
-  const availableOptions = options.filter((option) => isChoiceAvailable(option, character))
+export function ChoiceList({
+  options,
+  character,
+  onSelect,
+  isLoading,
+}: ChoiceListProps) {
+  const availableOptions = options.filter((option) =>
+    isChoiceAvailable(option, character),
+  )
 
   return (
     <div className="mt-8 space-y-4">
