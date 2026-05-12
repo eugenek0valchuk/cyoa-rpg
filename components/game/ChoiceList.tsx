@@ -1,13 +1,20 @@
-import { ChevronRight } from 'lucide-react'
+'use client'
+
+import { motion } from 'framer-motion'
 
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
+import { isChoiceVisible } from '@/lib/game/choiceVisibility'
+
 import type { Character, Choice } from '@/lib/types/game'
 
 interface ChoiceListProps {
   options: Choice[]
+
   character: Character
-  onSelect: (choiceId: string) => void
-  isLoading: boolean
+
+  onSelect: (id: string) => void
+
+  isLoading?: boolean
 }
 
 export function ChoiceList({
@@ -16,58 +23,87 @@ export function ChoiceList({
   onSelect,
   isLoading,
 }: ChoiceListProps) {
-  const availableOptions = options.filter((option) =>
-    isChoiceAvailable(option, character),
+  const visibleOptions = options.filter((option) =>
+    isChoiceVisible(option, character),
   )
 
   return (
-    <div className="mt-8 space-y-4">
-      {availableOptions.map((option) => (
-        <button
-          key={option.id}
-          onClick={() => onSelect(option.id)}
-          disabled={isLoading}
-          className="
+    <div className="space-y-4">
+      {visibleOptions.map((option, index) => {
+        const available = isChoiceAvailable(option, character)
+
+        return (
+          <motion.button
+            key={option.id}
+            type="button"
+            disabled={!available || isLoading}
+            onClick={() => onSelect(option.id)}
+            initial={{
+              opacity: 0,
+              y: 14,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
+            transition={{
+              duration: 0.35,
+              delay: index * 0.06,
+            }}
+            className={`
               group
               relative
               w-full
               overflow-hidden
-
               border
-              border-[#2b2320]
-
-              bg-[linear-gradient(to_bottom,#120c0c,#0b0808)]
-
+              bg-[#0c0909]/90
               px-6
-              py-6
-
+              py-5
               text-left
-
               transition-all
-              duration-500
+              duration-300
 
-              hover:border-[#4a2323]
-              hover:bg-[linear-gradient(to_bottom,#181010,#0d0909)]
-              hover:shadow-[0_0_30px_rgba(80,20,20,0.25)]
-            "
-        >
-          <div className="absolute inset-y-0 left-0 w-[2px] bg-[#8e1f1f] opacity-40 transition-all duration-500 group-hover:w-[4px] group-hover:opacity-100" />
+              ${
+                available
+                  ? `
+                    border-[#241919]
+                    hover:border-[#5c1f1f]
+                    hover:bg-[#140d0d]
+                  `
+                  : `
+                    cursor-not-allowed
+                    border-[#181212]
+                    opacity-40
+                  `
+              }
+            `}
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,20,20,0.08),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-          <div className="flex items-center justify-between gap-6">
-            <div>
-              <div className="mb-2 text-[10px] uppercase tracking-[0.35em] text-[#75685f]">
-                Decision
+            <div className="relative flex items-start justify-between gap-6">
+              <div>
+                <div className="font-cinzel text-[15px] uppercase tracking-[0.12em] text-[#e7ded7]">
+                  {option.text}
+                </div>
+
+                {option.requirements?.minCorruption && (
+                  <div className="mt-3 text-[10px] uppercase tracking-[0.28em] text-[#8b5e5e]">
+                    Requires corruption {option.requirements.minCorruption}
+                  </div>
+                )}
+
+                {option.requirements?.maxSanity && (
+                  <div className="mt-3 text-[10px] uppercase tracking-[0.28em] text-[#8b5e5e]">
+                    Requires sanity below {option.requirements.maxSanity}
+                  </div>
+                )}
               </div>
 
-              <div className="text-[16px] leading-8 text-[#ddd2c7] transition-colors duration-300 group-hover:text-[#f2e7dd]">
-                {option.text}
-              </div>
+              <div className="mt-1 h-px w-16 bg-gradient-to-r from-[#5c1f1f] to-transparent opacity-60 transition-all duration-300 group-hover:w-24 group-hover:opacity-100" />
             </div>
-
-            <ChevronRight className="h-5 w-5 shrink-0 text-[#6d5a52] transition-all duration-500 group-hover:translate-x-1 group-hover:text-[#b44d4d]" />
-          </div>
-        </button>
-      ))}
+          </motion.button>
+        )
+      })}
     </div>
   )
 }

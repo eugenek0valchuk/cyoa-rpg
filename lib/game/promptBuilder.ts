@@ -1,15 +1,17 @@
-import type { Character, Choice, Scene } from '@/lib/types/game'
+import { getCorruptionPrompt, getCorruptionStage } from '@/lib/game/corruption'
 
 interface BuildScenePromptParams {
-  currentScene: Scene
-  choice: Choice
-  character: Character
+  currentScene: any
+  choice: any
+  character: any
+  sceneHistory: any[]
 }
 
 export function buildScenePrompt({
   currentScene,
   choice,
   character,
+  sceneHistory,
 }: BuildScenePromptParams) {
   const artifactContext =
     character.inventory?.length > 0
@@ -18,7 +20,7 @@ ARTIFACTS CURRENTLY CARRIED:
 
 ${character.inventory
   .map(
-    (artifact) => `
+    (artifact: any) => `
 - ${artifact.name}
 
 ${artifact.description}
@@ -31,6 +33,26 @@ Corruption: ${artifact.effects?.corruption ?? 0}
   .join('\n')}
 `
       : 'The player carries no artifacts.'
+
+  const historyContext =
+    sceneHistory?.length > 0
+      ? `
+PREVIOUS SCENES:
+
+${sceneHistory
+  .slice(-3)
+  .map(
+    (scene: any) => `
+- ${scene.title}
+
+${scene.description}
+`,
+  )
+  .join('\n')}
+`
+      : ''
+
+  const corruptionPrompt = getCorruptionPrompt(character.corruption)
 
   return `
 You are the narrator and game master of a dark gothic horror RPG called DESCENT.
@@ -53,6 +75,8 @@ Never write generic fantasy.
 
 The narration must feel ancient, poetic, cursed, and oppressive.
 
+${corruptionPrompt}
+
 CURRENT SCENE:
 "${currentScene.title}"
 
@@ -74,7 +98,23 @@ MENTAL STATE:
 Sanity: ${character.sanity}
 Corruption: ${character.corruption}
 
+WORLD STATE:
+
+Corruption Stage: ${getCorruptionStage(character.corruption)}
+
+Known Flags:
+${character.flags.length > 0 ? character.flags.join(', ') : 'none'}
+
+Artifacts Carried:
+${
+  character.inventory.length > 0
+    ? character.inventory.map((a: any) => a.name).join(', ')
+    : 'none'
+}
+
 ${artifactContext}
+
+${historyContext}
 
 AVAILABLE ARTIFACTS:
 
@@ -114,6 +154,52 @@ GENERAL RULES:
 - Add subtle lore implications
 - Sometimes imply unseen entities watching the player
 
+ANTI-REPETITION RULES:
+
+- NEVER repeat exact phrases from previous scenes
+- NEVER repeat scene titles
+- NEVER loop the same visual descriptions
+- Every new scene must introduce:
+  - a new event
+  - a new discovery
+  - a new entity
+  - a new environmental detail
+  - or a new horror escalation
+- The narrative must always move forward
+- Avoid repeating:
+  - "shadows writhe"
+  - "the air thickens"
+  - "their fingers intertwined"
+  - "oppressive silence"
+- Do not rewrite previous scenes with minor wording changes
+- Introduce progression and consequences
+- Characters and entities should react to previous player actions
+
+IMPORTANT:
+You may generate hidden or conditional choices using:
+
+"requirements": {
+  "minCorruption": 40
+}
+
+or:
+
+"requirements": {
+  "maxSanity": 30
+}
+
+or:
+
+"requirements": {
+  "requiredArtifact": "ashen_faceless_mask"
+}
+
+or:
+
+"requirements": {
+  "requiredFlag": "met_the_procession"
+}
+
 Generate the next scene in STRICT JSON format:
 
 {
@@ -123,6 +209,9 @@ Generate the next scene in STRICT JSON format:
     {
       "id": "option_id",
       "text": "Choice text",
+      "requirements": {
+        "minCorruption": 40
+      },
       "effects": {
         "sanity": -5
       }

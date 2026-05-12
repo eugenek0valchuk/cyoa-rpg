@@ -1,112 +1,77 @@
-export type CorruptionStage =
-  | 'pure'
-  | 'disturbed'
-  | 'tainted'
-  | 'fallen'
-  | 'abyssal'
-
-export function getCorruptionStage(corruption: number): CorruptionStage {
-  if (corruption >= 90) {
-    return 'abyssal'
+export function getCorruptionStage(corruption: number): string {
+  if (corruption >= 75) {
+    return 'ABYSSAL'
   }
 
-  if (corruption >= 70) {
-    return 'fallen'
-  }
-
-  if (corruption >= 45) {
-    return 'tainted'
+  if (corruption >= 50) {
+    return 'POSSESSED'
   }
 
   if (corruption >= 25) {
-    return 'disturbed'
+    return 'WHISPERS'
   }
 
-  return 'pure'
+  return 'NORMAL'
 }
 
-export function getCorruptionEffects(corruption: number) {
+export function getCorruptionPrompt(corruption: number): string {
   const stage = getCorruptionStage(corruption)
 
   switch (stage) {
-    case 'pure':
-      return {
-        stage,
+    case 'WHISPERS':
+      return `
+CORRUPTION STATE: WHISPERS
 
-        narration:
-          'Reality still obeys familiar laws. The silence feels natural.',
+Reality begins to distort subtly.
 
-        extraPrompt: `
-The world still appears mostly normal.
-Horror should remain subtle and atmospheric.
-Do not introduce impossible reality distortions yet.
-`,
-      }
+The player may:
+- hear whispers beneath stone
+- see movement in darkness
+- notice impossible sounds
+- feel watched by unseen entities
 
-    case 'disturbed':
-      return {
-        stage,
+Descriptions should feel psychologically oppressive.
+`
 
-        narration:
-          'Shadows linger too long. Whispers seem to answer your breathing.',
+    case 'POSSESSED':
+      return `
+CORRUPTION STATE: POSSESSED
 
-        extraPrompt: `
-Introduce subtle psychological horror.
-Small hallucinations are allowed.
-The player may notice movement in darkness.
-Religious imagery may feel wrong or decayed.
-`,
-      }
+Reality is unstable.
 
-    case 'tainted':
-      return {
-        stage,
+The player may:
+- hallucinate architecture shifting
+- hear dead voices
+- experience missing time
+- feel entities moving beneath skin
+- witness impossible religious imagery
 
-        narration: 'The cathedral no longer feels built by human hands.',
+The world should feel hostile, surreal, and cursed.
+`
 
-        extraPrompt: `
-Reality becomes unstable.
-Architecture may shift.
-Whispers may directly address the player.
-The abyss should feel alive.
-`,
-      }
+    case 'ABYSSAL':
+      return `
+CORRUPTION STATE: ABYSSAL
 
-    case 'fallen':
-      return {
-        stage,
+Reality has almost collapsed entirely.
 
-        narration: 'The world bends beneath unseen abyssal influence.',
+The player may:
+- see abyssal entities directly
+- experience fractured time
+- witness impossible geometry
+- merge with forbidden forces
+- lose distinction between dream and reality
 
-        extraPrompt: `
-Heavy cosmic horror.
-Reality distortion is common.
-Impossible geometry may appear.
-The player may lose certainty of what is real.
-`,
-      }
-
-    case 'abyssal':
-      return {
-        stage,
-
-        narration: 'The abyss recognizes the player as one of its own.',
-
-        extraPrompt: `
-Full descent into cosmic horror.
-Reality is broken.
-The world should feel dreamlike, cursed, and hostile.
-Ancient entities may directly acknowledge the player.
-`,
-      }
+Descriptions should become cosmic, apocalyptic, and horrifying.
+`
 
     default:
-      return {
-        stage: 'pure',
+      return `
+CORRUPTION STATE: NORMAL
 
-        narration: '',
+Reality remains mostly stable.
 
-        extraPrompt: '',
-      }
+Horror should remain subtle, atmospheric, and grounded.
+`
   }
 }

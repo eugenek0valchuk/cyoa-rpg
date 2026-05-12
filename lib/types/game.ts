@@ -37,27 +37,37 @@ export interface Character {
   flags: string[]
 }
 
+export interface ChoiceRequirements {
+  strength?: number
+  agility?: number
+  intelligence?: number
+
+  sanityBelow?: number
+  corruptionAbove?: number
+
+  hasItem?: string
+
+  minCorruption?: number
+  maxSanity?: number
+
+  requiredFlag?: string
+  requiredArtifact?: string
+}
+
 export interface Choice {
   id: string
+
   text: string
-  requirements?: {
-    strength?: number
-    agility?: number
-    intelligence?: number
-    sanityBelow?: number
-    corruptionAbove?: number
-    hasItem?: string
-  }
 
   effects?: {
     sanity?: number
     corruption?: number
-    addArtifact?: string
-    removeItem?: string
     addFlag?: string
+    addArtifact?: string
   }
-}
 
+  requirements?: ChoiceRequirements
+}
 export interface SceneMemory {
   id: string
   title: string

@@ -29,24 +29,31 @@ export function isChoiceAvailable(
   }
 
   if (
-    requirements.sanityBelow !== undefined &&
-    character.sanity >= requirements.sanityBelow
+    requirements.maxSanity !== undefined &&
+    character.sanity > requirements.maxSanity
   ) {
     return false
   }
 
   if (
-    requirements.corruptionAbove !== undefined &&
-    character.corruption <= requirements.corruptionAbove
+    requirements.minCorruption !== undefined &&
+    character.corruption < requirements.minCorruption
   ) {
     return false
   }
 
   if (
-    requirements.hasItem &&
+    requirements.requiredArtifact &&
     !character.inventory.some(
-      (artifact) => artifact.id === requirements.hasItem,
+      (artifact) => artifact.id === requirements.requiredArtifact,
     )
+  ) {
+    return false
+  }
+
+  if (
+    requirements.requiredFlag &&
+    !character.flags.includes(requirements.requiredFlag)
   ) {
     return false
   }
