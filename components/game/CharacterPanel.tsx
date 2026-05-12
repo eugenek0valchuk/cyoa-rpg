@@ -26,17 +26,23 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
       <div className="relative z-10 p-8">
         <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.5em] text-[#7a6d63]">VESSEL</div>
+            <div className="text-[10px] uppercase tracking-[0.5em] text-[#7a6d63]">
+              VESSEL
+            </div>
 
             <h2 className="font-cinzel mt-3 text-4xl uppercase tracking-[0.14em] text-[#efe5dc]">
               {character.name}
             </h2>
 
             <div className="mt-6 inline-flex items-center gap-3 border border-[#3b2a2a] bg-[#140d0d]/90 px-4 py-3 text-[#d8c9be]">
-              <div className="text-[#8e1f1f]">{originIcons[character.origin]}</div>
+              <div className="text-[#8e1f1f]">
+                {originIcons[character.origin]}
+              </div>
 
               <div>
-                <div className="text-[9px] uppercase tracking-[0.35em] text-[#6f6259]">ORIGIN</div>
+                <div className="text-[9px] uppercase tracking-[0.35em] text-[#6f6259]">
+                  ORIGIN
+                </div>
 
                 <div className="font-cinzel mt-1 text-sm uppercase tracking-[0.12em]">
                   {originTitles[character.origin]}
@@ -47,7 +53,9 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
           <div className="grid grid-cols-3 gap-3">
             <div className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center">
-              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">Strength</div>
+              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
+                Strength
+              </div>
 
               <div className="mt-3 font-cinzel text-3xl text-[#d46060]">
                 {character.stats.strength}
@@ -55,7 +63,9 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             </div>
 
             <div className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center">
-              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">Agility</div>
+              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
+                Agility
+              </div>
 
               <div className="mt-3 font-cinzel text-3xl text-[#b4c27d]">
                 {character.stats.agility}
@@ -76,10 +86,14 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
-            <div className="text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">SANITY</div>
+            <div className="text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">
+              SANITY
+            </div>
 
             <div className="mt-3 flex items-end gap-2">
-              <span className="font-cinzel text-4xl text-[#efe5dc]">{character.sanity}</span>
+              <span className="font-cinzel text-4xl text-[#efe5dc]">
+                {character.sanity}
+              </span>
 
               <span className="mb-1 text-sm text-[#7a6d63]">/100</span>
             </div>
@@ -95,10 +109,14 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           </div>
 
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
-            <div className="text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">CORRUPTION</div>
+            <div className="text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">
+              CORRUPTION
+            </div>
 
             <div className="mt-3 flex items-end gap-2">
-              <span className="font-cinzel text-4xl text-[#b94b4b]">{character.corruption}</span>
+              <span className="font-cinzel text-4xl text-[#b94b4b]">
+                {character.corruption}
+              </span>
 
               <span className="mb-1 text-sm text-[#7a6d63]">/100</span>
             </div>
@@ -121,7 +139,9 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
             <div className="mt-4 space-y-2 text-[13px] text-[#cbbdb1]">
               {character.inventory.length > 0 ? (
-                character.inventory.map((item) => <div key={item}>• {item}</div>)
+                character.inventory.map((item) => (
+                  <div key={item.id}>• {item.name}</div>
+                ))
               ) : (
                 <div className="text-[#6f6259]">Empty</div>
               )}

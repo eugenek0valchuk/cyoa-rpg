@@ -49,9 +49,121 @@ A hooded figure waits beside a corpse-cart lit by pale fire.
         },
 
         effects: {
-          addItem: 'Lantern Sigil',
-
           sanity: -2,
+        },
+      },
+    ],
+  },
+
+  merchant: {
+    id: 'merchant',
+
+    title: 'The Corpse Cart',
+
+    description: `
+The hooded merchant does not breathe.
+
+Rotting cloth hangs from his frame while dozens of iron charms sway beneath the cart.
+
+Among bones, funeral candles, and stitched relics rests a blackened iron mask wrapped in chains.
+
+"You already wore it once," the figure whispers.
+    `.trim(),
+
+    options: [
+      {
+        id: 'take_mask',
+
+        text: 'Take the Ashen Faceless Mask',
+
+        effects: {
+          addArtifact: 'ashen_faceless_mask',
+
+          corruption: 4,
+
+          addFlag: 'claimed_mask',
+        },
+      },
+
+      {
+        id: 'leave_cart',
+
+        text: 'Leave the corpse-cart behind',
+
+        effects: {
+          sanity: -2,
+        },
+      },
+    ],
+  },
+
+  take_mask: {
+    id: 'take_mask',
+
+    title: 'The Mask Accepts You',
+
+    description: `
+The iron mask is freezing to the touch.
+
+As your fingers close around it, every candle surrounding the cart dies instantly.
+
+Far beneath the earth, ancient bells begin ringing once more.
+
+The hooded merchant lowers his head as if mourning something already lost.
+    `.trim(),
+
+    options: [
+      {
+        id: 'mouth',
+
+        text: 'Descend toward the Mouth',
+
+        effects: {
+          corruption: 2,
+        },
+      },
+
+      {
+        id: 'monastery',
+
+        text: 'Carry the mask into the monastery',
+
+        effects: {
+          sanity: -5,
+        },
+      },
+    ],
+  },
+
+  leave_cart: {
+    id: 'leave_cart',
+
+    title: 'The Road Continues',
+
+    description: `
+You step away from the corpse-cart.
+
+Behind you, the pale fire extinguishes itself.
+
+For a brief moment, you hear iron chains dragging somewhere beneath the road.
+    `.trim(),
+
+    options: [
+      {
+        id: 'mouth',
+
+        text: 'Descend toward the Mouth',
+
+        effects: {},
+      },
+
+      {
+        id: 'monastery',
+
+        text: 'Enter the Monastery of Hollow Saints',
+
+        effects: {
+          corruption: 1,
         },
       },
     ],

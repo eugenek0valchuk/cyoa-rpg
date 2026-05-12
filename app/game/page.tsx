@@ -3,27 +3,32 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ArtifactReveal } from '@/components/game/ArtifactReveal'
 import { CharacterPanel } from '@/components/game/CharacterPanel'
 import { ChoiceList } from '@/components/game/ChoiceList'
 import { SceneChronicle } from '@/components/game/SceneChronicle'
 
 import { useSceneGenerator } from '@/hooks/useSceneGenerator'
 
+import { artifacts } from '@/lib/game/artifacts'
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { scenes } from '@/lib/game/scenes'
 
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
 
+import type { Artifact } from '@/lib/types/game'
+
 export default function GamePage() {
   const router = useRouter()
 
   const character = useCharacterStore((s) => s.character)
+
   const updateSanity = useCharacterStore((s) => s.updateSanity)
   const updateCorruption = useCharacterStore((s) => s.updateCorruption)
-  const addToInventory = useCharacterStore((s) => s.addToInventory)
+  const addArtifact = useCharacterStore((s) => s.addArtifact)
   const addFlag = useCharacterStore((s) => s.addFlag)
   const resetCharacter = useCharacterStore((s) => s.resetCharacter)
 
@@ -37,6 +42,14 @@ export default function GamePage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [showChoices, setShowChoices] = useState(true)
+
+  const [revealedArtifact, setRevealedArtifact] = useState<Artifact | null>(
+    null,
+  )
+
+  const [showArtifactReveal, setShowArtifactReveal] = useState(false)
+
+  const artifactResolveRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     if (!character) {
@@ -69,6 +82,20 @@ export default function GamePage() {
       setIsLoading(true)
       setShowChoices(false)
 
+      const updatedCharacter = {
+        ...character,
+
+        sanity: character.sanity + (choice.effects?.sanity ?? 0),
+
+        corruption: character.corruption + (choice.effects?.corruption ?? 0),
+
+        flags: choice.effects?.addFlag
+          ? [...character.flags, choice.effects.addFlag]
+          : character.flags,
+
+        inventory: [...character.inventory],
+      }
+
       try {
         pushSceneHistory({
           id: currentScene.id,
@@ -84,20 +111,47 @@ export default function GamePage() {
           updateCorruption(choice.effects.corruption)
         }
 
-        if (choice.effects?.addItem) {
-          addToInventory(choice.effects.addItem)
+        if (choice.effects?.addArtifact) {
+          const artifact = artifacts[choice.effects.addArtifact]
+
+          if (artifact) {
+            addArtifact(artifact)
+
+            updatedCharacter.inventory.push(artifact)
+
+            setRevealedArtifact(artifact)
+
+            requestAnimationFrame(() => {
+              setShowArtifactReveal(true)
+            })
+
+            if (artifact.effects?.sanity) {
+              updateSanity(artifact.effects.sanity)
+            }
+
+            if (artifact.effects?.corruption) {
+              updateCorruption(artifact.effects.corruption)
+            }
+          }
         }
 
         if (choice.effects?.addFlag) {
           addFlag(choice.effects.addFlag)
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 1200))
+        if (choice.effects?.addArtifact) {
+          await new Promise<void>((resolve) => {
+            artifactResolveRef.current = resolve
+          })
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+        }
 
         const localScene = scenes[choice.id]
 
         if (localScene) {
           setCurrentScene(localScene)
+
           pushHistory(localScene.id)
 
           await new Promise((resolve) => setTimeout(resolve, 900))
@@ -110,7 +164,7 @@ export default function GamePage() {
         const generatedScene = await generateScene(
           currentScene,
           choice,
-          character,
+          updatedCharacter,
         )
 
         if (!generatedScene) {
@@ -118,6 +172,7 @@ export default function GamePage() {
         }
 
         setCurrentScene(generatedScene)
+
         pushHistory(generatedScene.id)
 
         await new Promise((resolve) => setTimeout(resolve, 900))
@@ -135,7 +190,7 @@ export default function GamePage() {
       isLoading,
       updateSanity,
       updateCorruption,
-      addToInventory,
+      addArtifact,
       addFlag,
       setCurrentScene,
       pushHistory,
@@ -147,6 +202,7 @@ export default function GamePage() {
   const handleReset = useCallback(() => {
     resetCharacter()
     resetGame()
+
     router.push('/editor')
   }, [resetCharacter, resetGame, router])
 
@@ -161,7 +217,7 @@ export default function GamePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black px-4 text-[#e7ded7]">
+    <main className="relative isolate min-h-screen overflow-hidden bg-black px-4 text-[#e7ded7]">
       <img
         src="/main-bg.png"
         alt=""
@@ -196,19 +252,15 @@ export default function GamePage() {
               bg-[#0f0a0a]/80
               px-4
               py-2
-
               text-[9px]
               uppercase
               tracking-[0.32em]
               text-[#6f6259]
-
               transition-all
               duration-300
-
               hover:border-[#4a2323]
               hover:bg-[#161010]
               hover:text-[#d7c8bc]
-
               disabled:pointer-events-none
               disabled:opacity-40
             "
@@ -223,13 +275,14 @@ export default function GamePage() {
 
         <div className="h-6" />
 
-        <motion.div
-          animate={{
-            opacity: isLoading ? 0.45 : 1,
-          }}
-          transition={{
-            duration: 0.35,
-          }}
+        <div
+          className={
+            showArtifactReveal
+              ? ''
+              : isLoading
+                ? 'opacity-50 transition-opacity duration-300'
+                : 'transition-opacity duration-300'
+          }
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -237,17 +290,17 @@ export default function GamePage() {
               initial={{
                 opacity: 0,
                 y: 20,
-                filter: 'blur(6px)',
+                scale: 0.98,
               }}
               animate={{
                 opacity: 1,
                 y: 0,
-                filter: 'blur(0px)',
+                scale: 1,
               }}
               exit={{
                 opacity: 0,
                 y: -10,
-                filter: 'blur(8px)',
+                scale: 0.98,
               }}
               transition={{
                 duration: 0.7,
@@ -268,17 +321,17 @@ export default function GamePage() {
                   initial={{
                     opacity: 0,
                     y: 14,
-                    filter: 'blur(6px)',
+                    scale: 0.98,
                   }}
                   animate={{
                     opacity: 1,
                     y: 0,
-                    filter: 'blur(0px)',
+                    scale: 1,
                   }}
                   exit={{
                     opacity: 0,
                     y: 12,
-                    filter: 'blur(5px)',
+                    scale: 0.98,
                   }}
                   transition={{
                     duration: 0.45,
@@ -295,8 +348,21 @@ export default function GamePage() {
               )}
             </AnimatePresence>
           </div>
-        </motion.div>
+        </div>
       </section>
+
+      <ArtifactReveal
+        artifact={revealedArtifact}
+        open={showArtifactReveal}
+        onClose={() => {
+          setShowArtifactReveal(false)
+
+          if (artifactResolveRef.current) {
+            artifactResolveRef.current()
+            artifactResolveRef.current = null
+          }
+        }}
+      />
     </main>
   )
 }
