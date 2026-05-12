@@ -1,32 +1,71 @@
-export type Stats = {
+export type Origin = 'hollow' | 'heretic' | 'witness'
+
+export interface CharacterStats {
   strength: number
   agility: number
   intelligence: number
 }
 
-export type Character = {
+export interface Character {
   name: string
-  class: 'warrior' | 'mage' | 'rogue'
-  stats: Stats
+
+  origin: Origin
+
+  stats: CharacterStats
+
   inventory: string[]
+
+  sanity: number
+
+  corruption: number
+
+  flags: string[]
 }
 
-export type Choice = {
+export interface Choice {
   id: string
+
   text: string
-  effects?: Partial<Stats>
-  requires?: (char: Character) => boolean
+
+  requirements?: {
+    strength?: number
+    agility?: number
+    intelligence?: number
+
+    sanityBelow?: number
+
+    corruptionAbove?: number
+
+    hasItem?: string
+  }
+
+  effects?: {
+    sanity?: number
+
+    corruption?: number
+
+    addItem?: string
+
+    removeItem?: string
+
+    addFlag?: string
+  }
 }
 
-export type Scene = {
+export interface Scene {
   id: string
+
   title: string
+
   description: string
+
   options: Choice[]
 }
 
-export type RawGeneratedScene = {
-  title?: string
-  description?: string
-  options?: Array<{ id?: string; text?: string; effects?: Partial<Stats> }>
+export type SceneHistoryEntry = {
+  id: string
+
+  title: string
+
+  description: string
 }

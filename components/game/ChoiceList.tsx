@@ -1,12 +1,16 @@
-// components/game/ChoiceList.tsx
 import { Character, Choice } from '@/lib/types/game'
+
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
+
 import { ChevronRight, Lock } from 'lucide-react'
 
 interface ChoiceListProps {
   options: Choice[]
+
   character: Character
+
   onSelect: (choiceId: string) => void
+
   isLoading: boolean
 }
 
@@ -17,37 +21,63 @@ export function ChoiceList({
   isLoading,
 }: ChoiceListProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {options.map((option) => {
         const available = isChoiceAvailable(option, character)
+
         return (
           <button
             key={option.id}
             onClick={() => onSelect(option.id)}
             disabled={!available || isLoading}
             className={`
-              group w-full text-left p-4 rounded-xl border transition-all duration-200
+              group
+              relative
+              w-full
+              overflow-hidden
+              border
+              px-6
+              py-5
+              text-left
+              transition-all
+              duration-300
+
               ${
                 available
-                  ? 'bg-gray-800/50 border-gray-700 hover:border-blue-500 hover:bg-gray-800 hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]'
-                  : 'bg-gray-900/50 border-gray-800 text-gray-500 cursor-not-allowed opacity-70'
+                  ? `
+                    border-[#2b2320]
+                    bg-[#110c0c]/95
+                    hover:border-[#5c1f1f]
+                    hover:bg-[#161010]
+                  `
+                  : `
+                    border-[#211919]
+                    bg-[#0a0707]/90
+                    opacity-50
+                    cursor-not-allowed
+                  `
               }
             `}
           >
-            <div className="flex items-center justify-between">
-              <span className="font-medium">{option.text}</span>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(142,31,31,0.08),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+            <div className="relative z-10 flex items-center justify-between gap-5">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.35em] text-[#75685f]">
+                  Decision
+                </div>
+
+                <div className="mt-3 text-[15px] leading-7 text-[#d7c8bc]">
+                  {option.text}
+                </div>
+              </div>
+
               {available ? (
-                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+                <ChevronRight className="h-5 w-5 shrink-0 text-[#8e1f1f] transition-transform duration-300 group-hover:translate-x-1" />
               ) : (
-                <Lock className="w-4 h-4 text-gray-600" />
+                <Lock className="h-4 w-4 shrink-0 text-[#5a4d47]" />
               )}
             </div>
-            {!available && (
-              <div className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                <Lock className="w-3 h-3" />
-                <span>Requires intelligence ≥5</span>
-              </div>
-            )}
           </button>
         )
       })}

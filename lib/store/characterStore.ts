@@ -1,38 +1,196 @@
 import { create } from 'zustand'
+
 import { persist } from 'zustand/middleware'
-import { Character, Stats } from '../types/game'
+
+import { Character, CharacterStats } from '../types/game'
 
 interface CharacterStore {
   character: Character | null
+
   setCharacter: (char: Character) => void
-  updateStats: (stats: Partial<Stats>) => void
+
+  updateStats: (stats: Partial<CharacterStats>) => void
+
+  updateSanity: (amount: number) => void
+
+  updateCorruption: (amount: number) => void
+
   addToInventory: (item: string) => void
+
+  removeFromInventory: (item: string) => void
+
+  addFlag: (flag: string) => void
+
+  resetCharacter: () => void
 }
 
 export const useCharacterStore = create<CharacterStore>()(
   persist(
     (set) => ({
       character: null,
-      setCharacter: (char) => set({ character: char }),
+
+      setCharacter: (char) =>
+        set({
+          character: char,
+        }),
+
       updateStats: (stats) =>
-        set((state) => ({
-          character: state.character
-            ? {
-                ...state.character,
-                stats: { ...state.character.stats, ...stats },
-              }
-            : null,
-        })),
+        set((state) => {
+          if (!state.character) {
+            return {
+              character: null,
+            }
+          }
+
+          return {
+            character: {
+              ...state.character,
+
+              stats: {
+                strength:
+                  state.character.stats.strength + (stats.strength ?? 0),
+
+                agility: state.character.stats.agility + (stats.agility ?? 0),
+
+                intelligence:
+                  state.character.stats.intelligence +
+                  (stats.intelligence ?? 0),
+              },
+            },
+          }
+        }),
+
+      updateSanity: (amount) =>
+        set((state) => {
+          if (!state.character) {
+            return {
+              character: null,
+            }
+          }
+
+          return {
+            character: {
+              ...state.character,
+
+              sanity: Math.max(
+                0,
+                Math.min(100, state.character.sanity + amount),
+              ),
+            },
+          }
+        }),
+
+      updateCorruption: (amount) =>
+        set((state) => {
+          if (!state.character) {
+            return {
+              character: null,
+            }
+          }
+
+          return {
+            character: {
+              ...state.character,
+
+              corruption: Math.max(
+                0,
+                Math.min(100, state.character.corruption + amount),
+              ),
+            },
+          }
+        }),
+
       addToInventory: (item) =>
-        set((state) => ({
-          character: state.character
+        set((state) => {
+          if (!state.character) {
+            return {
+              character: null,
+            }
+          }
+
+          return {
+            character: {
+              ...state.character,
+
+              inventory: [...state.character.inventory, item],
+            },
+          }
+        }),
+
+      removeFromInventory: (item) =>
+        set((state) => {
+          if (!state.character) {
+            return {
+              character: null,
+            }
+          }
+
+          return {
+            character: {
+              ...state.character,
+
+              inventory: state.character.inventory.filter(
+                (inventoryItem) => inventoryItem !== item,
+              ),
+            },
+          }
+        }),
+
+      addFlag: (flag) =>
+        set((state) => {
+          if (!state.character) {
+            return {
+              character: null,
+            }
+          }
+
+          if (state.character.flags.includes(flag)) {
+            return {
+              character: state.character,
+            }
+          }
+
+          return {
+            character: {
+              ...state.character,
+
+              flags: [...state.character.flags, flag],
+            },
+          }
+        }),
+
+      resetCharacter: () =>
+        set({
+          character: null,
+        }),
+    }),
+
+    {
+      name: 'descent-character-storage',
+
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as {
+          character?: Character
+        }
+
+        return {
+          ...currentState,
+
+          ...persisted,
+
+          character: persisted?.character
             ? {
-                ...state.character,
-                inventory: [...state.character.inventory, item],
+                ...persisted.character,
+
+                sanity: persisted.character.sanity ?? 100,
+
+                corruption: persisted.character.corruption ?? 0,
+
+                flags: persisted.character.flags ?? [],
               }
             : null,
-        })),
-    }),
-    { name: 'character-storage' },
+        }
+      },
+    },
   ),
 )

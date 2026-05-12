@@ -1,27 +1,37 @@
-// components/game/LoadingOverlay.tsx
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Flame } from 'lucide-react'
 
 interface LoadingOverlayProps {
   show: boolean
+
   message?: string
 }
 
 export function LoadingOverlay({
   show,
-  message = 'The storyteller weaves the next chapter...',
+  message = 'The abyss answers...',
 }: LoadingOverlayProps) {
-  if (!show) return null
+  if (!show) {
+    return null
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300">
-      <div className="bg-gray-800/90 border border-gray-700 p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Sparkles className="w-16 h-16 text-blue-500 animate-ping opacity-20" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md">
+      <div className="relative overflow-hidden border border-[#2b2320] bg-[#0b0808]/95 px-10 py-10 text-center shadow-[0_0_80px_rgba(0,0,0,0.7)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(142,31,31,0.14),transparent_70%)]" />
+
+        <div className="relative z-10">
+          <Flame className="mx-auto mb-5 h-10 w-10 text-[#8e1f1f] opacity-80" />
+
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#d8c7bc]" />
+
+          <div className="mt-8 text-[11px] uppercase tracking-[0.45em] text-[#75685f]">
+            DESCENT CONTINUES
           </div>
-          <Loader2 className="w-12 h-12 text-blue-400 animate-spin mx-auto mb-4 relative z-10" />
+
+          <p className="mt-5 max-w-sm text-[15px] leading-8 text-[#d7c8bc]">
+            {message}
+          </p>
         </div>
-        <p className="text-white text-lg font-medium">{message}</p>
-        <p className="text-gray-400 text-sm mt-2">Generating your destiny...</p>
       </div>
     </div>
   )
