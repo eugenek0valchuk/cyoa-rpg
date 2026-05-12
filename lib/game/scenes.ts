@@ -1,4 +1,4 @@
-import { Scene } from '../types/game'
+import type { Scene } from '../types/game'
 
 export const scenes: Record<string, Scene> = {
   start: {

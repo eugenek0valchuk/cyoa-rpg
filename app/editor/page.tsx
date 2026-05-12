@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 import { useCharacterStore } from '@/lib/store/characterStore'
-import { Origin } from '@/lib/types/game'
+import type { Origin } from '@/lib/types/game'
 
 type OriginCard = {
   value: Origin
@@ -83,14 +83,10 @@ const origins = [
 
 export default function EditorPage() {
   const router = useRouter()
-
   const setCharacter = useCharacterStore((s) => s.setCharacter)
-
   const [name, setName] = useState('')
   const [index, setIndex] = useState(0)
-
   const selected = origins[index]!
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -113,17 +109,12 @@ export default function EditorPage() {
 
       flags: [],
     })
-
     router.push('/game')
   }
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black px-6 text-[#e7e2dc]">
-      <img
-        src="/main-bg.png"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      <img src="/main-bg.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
 
       <div className="absolute inset-0 bg-black/55" />
 
@@ -199,9 +190,7 @@ export default function EditorPage() {
                       {origin.title}
                     </h2>
 
-                    <p className="mt-2 text-[13px] text-[#9d8d82]">
-                      {origin.subtitle}
-                    </p>
+                    <p className="mt-2 text-[13px] text-[#9d8d82]">{origin.subtitle}</p>
 
                     <div className="mt-6 grid grid-cols-3 gap-3 text-[12px] text-[#d8c9be]">
                       <div className="border border-[#2b2320] px-2 py-1 text-center">
@@ -231,9 +220,7 @@ export default function EditorPage() {
 
         <form onSubmit={handleSubmit} className="mx-auto mt-24 max-w-[620px]">
           <div className="border border-[#2f2622] bg-[linear-gradient(to_bottom,#120c0c,#080505)] p-10 text-center">
-            <div className="text-[11px] uppercase tracking-[0.5em] text-[#7a6d63]">
-              VESSEL NAME
-            </div>
+            <div className="text-[11px] uppercase tracking-[0.5em] text-[#7a6d63]">VESSEL NAME</div>
 
             <input
               value={name}

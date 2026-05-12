@@ -3,12 +3,7 @@ import Link from 'next/link'
 export default function HomePage() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black text-zinc-100">
-      {/* Background image */}
-      <img
-        src="/main-bg.png"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      <img src="/main-bg.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60" />
@@ -79,9 +74,7 @@ export default function HomePage() {
               what the dead forgot.
             </p>
 
-            <div className="mt-8 text-[10px] uppercase tracking-[0.4em] text-[#4c433d]">
-              v0.1
-            </div>
+            <div className="mt-8 text-[10px] uppercase tracking-[0.4em] text-[#4c433d]">v0.1</div>
           </div>
         </div>
       </section>

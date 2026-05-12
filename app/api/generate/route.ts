@@ -14,7 +14,7 @@ async function fetchWithRetry(
       let parsed
       try {
         parsed = JSON.parse(data.response)
-      } catch (e) {
+      } catch (_e) {
         throw new Error('Invalid JSON from model')
       }
       return parsed
@@ -25,7 +25,7 @@ async function fetchWithRetry(
   }
 }
 
-function getFallbackScene(choiceText: string, character: any) {
+function getFallbackScene(choiceText: string, _character: any) {
   return {
     id: `fallback_${Date.now()}`,
     title: 'Unexpected Turn',
@@ -48,7 +48,6 @@ function getFallbackScene(choiceText: string, character: any) {
 export async function POST(request: Request) {
   try {
     const { currentScene, choice, character } = await request.json()
-
     const prompt = `
 You are a game master. Current scene: "${currentScene.title}" - ${currentScene.description}
 Player chose: "${choice.text}"
@@ -104,7 +103,6 @@ Effects can be +1/-1 on strength, agility, intelligence. Return ONLY valid JSON.
       text: opt.text || `Option ${idx + 1}`,
       effects: opt.effects || {},
     }))
-
     const newScene = {
       id: `scene_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       title,

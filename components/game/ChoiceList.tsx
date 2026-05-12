@@ -1,8 +1,7 @@
-import { Character, Choice } from '@/lib/types/game'
+import { ChevronRight } from 'lucide-react'
 
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
-
-import { ChevronRight } from 'lucide-react'
+import type { Character, Choice } from '@/lib/types/game'
 
 interface ChoiceListProps {
   options: Choice[]
@@ -14,15 +13,8 @@ interface ChoiceListProps {
   isLoading: boolean
 }
 
-export function ChoiceList({
-  options,
-  character,
-  onSelect,
-  isLoading,
-}: ChoiceListProps) {
-  const availableOptions = options.filter((option) =>
-    isChoiceAvailable(option, character),
-  )
+export function ChoiceList({ options, character, onSelect, isLoading }: ChoiceListProps) {
+  const availableOptions = options.filter((option) => isChoiceAvailable(option, character))
 
   return (
     <div className="mt-8 space-y-4">

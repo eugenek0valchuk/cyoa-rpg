@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 import { persist } from 'zustand/middleware'
 
-import { Character, CharacterStats } from '../types/game'
+import type { Character, CharacterStats } from '../types/game'
 
 interface CharacterStore {
   character: Character | null
@@ -47,14 +47,11 @@ export const useCharacterStore = create<CharacterStore>()(
               ...state.character,
 
               stats: {
-                strength:
-                  state.character.stats.strength + (stats.strength ?? 0),
+                strength: state.character.stats.strength + (stats.strength ?? 0),
 
                 agility: state.character.stats.agility + (stats.agility ?? 0),
 
-                intelligence:
-                  state.character.stats.intelligence +
-                  (stats.intelligence ?? 0),
+                intelligence: state.character.stats.intelligence + (stats.intelligence ?? 0),
               },
             },
           }
@@ -72,10 +69,7 @@ export const useCharacterStore = create<CharacterStore>()(
             character: {
               ...state.character,
 
-              sanity: Math.max(
-                0,
-                Math.min(100, state.character.sanity + amount),
-              ),
+              sanity: Math.max(0, Math.min(100, state.character.sanity + amount)),
             },
           }
         }),
@@ -92,10 +86,7 @@ export const useCharacterStore = create<CharacterStore>()(
             character: {
               ...state.character,
 
-              corruption: Math.max(
-                0,
-                Math.min(100, state.character.corruption + amount),
-              ),
+              corruption: Math.max(0, Math.min(100, state.character.corruption + amount)),
             },
           }
         }),

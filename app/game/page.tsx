@@ -1,52 +1,31 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-
-import { useRouter } from 'next/navigation'
-
+import { AnimatePresence, motion } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
-
-import { useCharacterStore } from '@/lib/store/characterStore'
-
-import { useGameStore } from '@/lib/store/gameStore'
-
-import { scenes } from '@/lib/game/scenes'
-
-import { isChoiceAvailable } from '@/lib/game/choiceUtils'
-
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 import { CharacterPanel } from '@/components/game/CharacterPanel'
-
-import { SceneChronicle } from '@/components/game/SceneChronicle'
-
 import { ChoiceList } from '@/components/game/ChoiceList'
-
 import { LoadingOverlay } from '@/components/game/LoadingOverlay'
+import { SceneChronicle } from '@/components/game/SceneChronicle'
+import { isChoiceAvailable } from '@/lib/game/choiceUtils'
+import { scenes } from '@/lib/game/scenes'
+import { useCharacterStore } from '@/lib/store/characterStore'
+import { useGameStore } from '@/lib/store/gameStore'
 
 export default function GamePage() {
   const router = useRouter()
-
   const character = useCharacterStore((s) => s.character)
-
   const updateSanity = useCharacterStore((s) => s.updateSanity)
-
   const updateCorruption = useCharacterStore((s) => s.updateCorruption)
-
   const addToInventory = useCharacterStore((s) => s.addToInventory)
-
   const addFlag = useCharacterStore((s) => s.addFlag)
-
   const resetCharacter = useCharacterStore((s) => s.resetCharacter)
-
   const currentScene = useGameStore((s) => s.currentScene)
-
   const setCurrentScene = useGameStore((s) => s.setCurrentScene)
-
   const pushHistory = useGameStore((s) => s.pushHistory)
-
   const pushSceneHistory = useGameStore((s) => s.pushSceneHistory)
-
   const resetGame = useGameStore((s) => s.resetGame)
-
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -54,7 +33,6 @@ export default function GamePage() {
       router.push('/editor')
     }
   }, [character, router])
-
   useEffect(() => {
     if (!currentScene) {
       setCurrentScene(scenes.start)
@@ -79,9 +57,7 @@ export default function GamePage() {
 
       pushSceneHistory({
         id: currentScene.id,
-
         title: currentScene.title,
-
         description: currentScene.description,
       })
 
@@ -104,20 +80,20 @@ export default function GamePage() {
       setIsLoading(true)
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 900))
+        await new Promise((resolve) => setTimeout(resolve, 250))
 
         const nextScene = scenes[choice.id]
 
         if (nextScene) {
           setCurrentScene(nextScene)
-
           pushHistory(nextScene.id)
+          await new Promise((resolve) => setTimeout(resolve, 500))
         }
       } catch (error) {
         console.error(error)
-      } finally {
-        setIsLoading(false)
       }
+
+      setIsLoading(false)
     },
     [
       currentScene,
@@ -132,12 +108,9 @@ export default function GamePage() {
       pushSceneHistory,
     ],
   )
-
   const handleReset = useCallback(() => {
     resetCharacter()
-
     resetGame()
-
     router.push('/editor')
   }, [resetCharacter, resetGame, router])
 
@@ -171,11 +144,37 @@ export default function GamePage() {
 
           <div className="mx-auto mt-6 h-px w-48 bg-gradient-to-r from-transparent via-[#7a2222] to-transparent" />
         </div>
+
         <CharacterPanel character={character} />
 
         <div className="h-6" />
 
-        <SceneChronicle scene={currentScene} />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentScene.id}
+            initial={{
+              opacity: 0,
+              y: 20,
+              filter: 'blur(6px)',
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              filter: 'blur(0px)',
+            }}
+            exit={{
+              opacity: 0,
+              y: -10,
+              filter: 'blur(8px)',
+            }}
+            transition={{
+              duration: 0.7,
+              ease: 'easeOut',
+            }}
+          >
+            <SceneChronicle scene={currentScene} />
+          </motion.div>
+        </AnimatePresence>
 
         <div className="h-8" />
 
@@ -194,27 +193,20 @@ export default function GamePage() {
               inline-flex
               items-center
               gap-3
-
               border
               border-[#2b2320]
-
               bg-[#100b0b]/90
-
               px-5
               py-3
-
               text-[11px]
               uppercase
               tracking-[0.35em]
-
               text-[#75685f]
-
               transition-all
               duration-300
-
               hover:border-[#4a2323]
-              hover:text-[#d0c2b6]
               hover:bg-[#161010]
+              hover:text-[#d0c2b6]
             "
           >
             <RotateCcw className="h-4 w-4 transition-transform duration-500 group-hover:-rotate-180" />

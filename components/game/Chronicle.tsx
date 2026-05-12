@@ -1,4 +1,4 @@
-import { Scene } from '@/lib/types/game'
+import type { Scene } from '@/lib/types/game'
 
 interface ChronicleProps {
   history: {
@@ -17,9 +17,7 @@ export function Chronicle({ history, currentScene }: ChronicleProps) {
 
       <div className="relative z-10">
         <div className="border-b border-[#221917] px-8 py-6">
-          <div className="text-[10px] uppercase tracking-[0.5em] text-[#75685f]">
-            Chronicle
-          </div>
+          <div className="text-[10px] uppercase tracking-[0.5em] text-[#75685f]">Chronicle</div>
 
           <h2 className="font-cinzel mt-4 text-3xl uppercase tracking-[0.14em] text-[#efe5dc]">
             The Long Descent

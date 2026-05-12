@@ -1,6 +1,5 @@
-import { Scene } from '@/lib/types/game'
-
 import { ScrollText } from 'lucide-react'
+import type { Scene } from '@/lib/types/game'
 
 interface SceneChronicleProps {
   scene: Scene
@@ -14,9 +13,7 @@ export function SceneChronicle({ scene }: SceneChronicleProps) {
           <ScrollText className="h-5 w-5 text-[#8e1f1f]" />
 
           <div>
-            <div className="text-[10px] uppercase tracking-[0.35em] text-[#75685f]">
-              Chronicle
-            </div>
+            <div className="text-[10px] uppercase tracking-[0.35em] text-[#75685f]">Chronicle</div>
 
             <h2 className="mt-1 font-cinzel text-2xl uppercase tracking-[0.08em] text-[#ece2d9]">
               {scene.title}

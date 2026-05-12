@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { Scene, SceneHistoryEntry } from '../types/game'
+import type { Scene, SceneHistoryEntry } from '../types/game'
 
 interface GameStore {
   currentScene: Scene | null
