@@ -5,6 +5,7 @@ import { ANTI_REPETITION_RULES } from './prompts/antiRepetitionRules'
 import { ARTIFACT_RULES } from './prompts/artifactRules'
 
 import { Character, Choice, Scene, SceneHistoryEntry } from '../types/game'
+import { lore } from './lore'
 
 interface BuildScenePromptParams {
   currentScene: Scene
@@ -126,6 +127,19 @@ ${
 ${artifactContext}
 
 ${historyContext}
+
+WORLD LORE:
+
+${lore.world}
+
+FACTIONS:
+${lore.factions.join('\n')}
+
+ENTITIES:
+${lore.entities.join('\n')}
+
+REGIONS:
+${lore.regions.join('\n')}
 
 AVAILABLE ARTIFACTS:
 
