@@ -58,6 +58,12 @@ export interface Choice {
   }
 }
 
+export interface SceneMemory {
+  id: string
+  title: string
+  description: string
+}
+
 export interface Scene {
   id: string
   title: string

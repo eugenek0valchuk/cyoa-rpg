@@ -1,19 +1,19 @@
 import { create } from 'zustand'
 
-import type { Scene, SceneHistoryEntry } from '../types/game'
+import type { Scene, SceneMemory } from '@/lib/types/game'
 
 interface GameStore {
   currentScene: Scene | null
 
-  sceneHistory: SceneHistoryEntry[]
-
   history: string[]
+
+  sceneHistory: SceneMemory[]
 
   setCurrentScene: (scene: Scene) => void
 
-  pushSceneHistory: (scene: SceneHistoryEntry) => void
-
   pushHistory: (sceneId: string) => void
+
+  pushSceneHistory: (scene: SceneMemory) => void
 
   resetGame: () => void
 }
@@ -21,31 +21,31 @@ interface GameStore {
 export const useGameStore = create<GameStore>((set) => ({
   currentScene: null,
 
-  sceneHistory: [],
-
   history: [],
+
+  sceneHistory: [],
 
   setCurrentScene: (scene) =>
     set({
       currentScene: scene,
     }),
 
-  pushSceneHistory: (scene) =>
-    set((state) => ({
-      sceneHistory: [...state.sceneHistory, scene],
-    })),
-
   pushHistory: (sceneId) =>
     set((state) => ({
       history: [...state.history, sceneId],
+    })),
+
+  pushSceneHistory: (scene) =>
+    set((state) => ({
+      sceneHistory: [...state.sceneHistory.slice(-7), scene],
     })),
 
   resetGame: () =>
     set({
       currentScene: null,
 
-      sceneHistory: [],
-
       history: [],
+
+      sceneHistory: [],
     }),
 }))

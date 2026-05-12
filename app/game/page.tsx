@@ -36,6 +36,7 @@ export default function GamePage() {
   const setCurrentScene = useGameStore((s) => s.setCurrentScene)
   const pushHistory = useGameStore((s) => s.pushHistory)
   const pushSceneHistory = useGameStore((s) => s.pushSceneHistory)
+  const sceneHistory = useGameStore((s) => s.sceneHistory)
   const resetGame = useGameStore((s) => s.resetGame)
 
   const { generateScene } = useSceneGenerator()
@@ -165,6 +166,7 @@ export default function GamePage() {
           currentScene,
           choice,
           updatedCharacter,
+          sceneHistory,
         )
 
         if (!generatedScene) {
@@ -196,6 +198,7 @@ export default function GamePage() {
       pushHistory,
       pushSceneHistory,
       generateScene,
+      sceneHistory,
     ],
   )
 
