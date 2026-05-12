@@ -2,7 +2,7 @@ import { Character, Choice } from '@/lib/types/game'
 
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 
-import { ChevronRight, Lock } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 interface ChoiceListProps {
   options: Choice[]
@@ -20,67 +20,58 @@ export function ChoiceList({
   onSelect,
   isLoading,
 }: ChoiceListProps) {
-  return (
-    <div className="space-y-4">
-      {options.map((option) => {
-        const available = isChoiceAvailable(option, character)
+  const availableOptions = options.filter((option) =>
+    isChoiceAvailable(option, character),
+  )
 
-        return (
-          <button
-            key={option.id}
-            onClick={() => onSelect(option.id)}
-            disabled={!available || isLoading}
-            className={`
+  return (
+    <div className="mt-8 space-y-4">
+      {availableOptions.map((option) => (
+        <button
+          key={option.id}
+          onClick={() => onSelect(option.id)}
+          disabled={isLoading}
+          className="
               group
               relative
               w-full
               overflow-hidden
+
               border
+              border-[#2b2320]
+
+              bg-[linear-gradient(to_bottom,#120c0c,#0b0808)]
+
               px-6
-              py-5
+              py-6
+
               text-left
+
               transition-all
-              duration-300
+              duration-500
 
-              ${
-                available
-                  ? `
-                    border-[#2b2320]
-                    bg-[#110c0c]/95
-                    hover:border-[#5c1f1f]
-                    hover:bg-[#161010]
-                  `
-                  : `
-                    border-[#211919]
-                    bg-[#0a0707]/90
-                    opacity-50
-                    cursor-not-allowed
-                  `
-              }
-            `}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(142,31,31,0.08),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              hover:border-[#4a2323]
+              hover:bg-[linear-gradient(to_bottom,#181010,#0d0909)]
+              hover:shadow-[0_0_30px_rgba(80,20,20,0.25)]
+            "
+        >
+          <div className="absolute inset-y-0 left-0 w-[2px] bg-[#8e1f1f] opacity-40 transition-all duration-500 group-hover:w-[4px] group-hover:opacity-100" />
 
-            <div className="relative z-10 flex items-center justify-between gap-5">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.35em] text-[#75685f]">
-                  Decision
-                </div>
-
-                <div className="mt-3 text-[15px] leading-7 text-[#d7c8bc]">
-                  {option.text}
-                </div>
+          <div className="flex items-center justify-between gap-6">
+            <div>
+              <div className="mb-2 text-[10px] uppercase tracking-[0.35em] text-[#75685f]">
+                Decision
               </div>
 
-              {available ? (
-                <ChevronRight className="h-5 w-5 shrink-0 text-[#8e1f1f] transition-transform duration-300 group-hover:translate-x-1" />
-              ) : (
-                <Lock className="h-4 w-4 shrink-0 text-[#5a4d47]" />
-              )}
+              <div className="text-[16px] leading-8 text-[#ddd2c7] transition-colors duration-300 group-hover:text-[#f2e7dd]">
+                {option.text}
+              </div>
             </div>
-          </button>
-        )
-      })}
+
+            <ChevronRight className="h-5 w-5 shrink-0 text-[#6d5a52] transition-all duration-500 group-hover:translate-x-1 group-hover:text-[#b44d4d]" />
+          </div>
+        </button>
+      ))}
     </div>
   )
 }

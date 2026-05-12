@@ -16,10 +16,11 @@ import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 
 import { CharacterPanel } from '@/components/game/CharacterPanel'
 
+import { SceneChronicle } from '@/components/game/SceneChronicle'
+
 import { ChoiceList } from '@/components/game/ChoiceList'
 
 import { LoadingOverlay } from '@/components/game/LoadingOverlay'
-import { SceneChronicle } from '@/components/game/SceneChronicle'
 
 export default function GamePage() {
   const router = useRouter()
@@ -151,7 +152,7 @@ export default function GamePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black px-4 py-10 text-[#e7ded7]">
+    <main className="relative min-h-screen overflow-hidden bg-black px-4 text-[#e7ded7]">
       <img
         src="/main-bg.png"
         alt=""
@@ -162,10 +163,21 @@ export default function GamePage() {
 
       <div className="absolute inset-0 shadow-[inset_0_0_220px_rgba(0,0,0,0.95)]" />
 
-      <section className="relative z-10 mx-auto max-w-[920px]">
+      <section className="relative z-10 mx-auto max-w-[920px] pt-[18vh] pb-24">
+        <div className="mb-10 text-center">
+          <div className="text-[10px] uppercase tracking-[0.7em] text-[#6d5e55]">
+            THE CHRONICLE CONTINUES
+          </div>
+
+          <div className="mx-auto mt-6 h-px w-48 bg-gradient-to-r from-transparent via-[#7a2222] to-transparent" />
+        </div>
         <CharacterPanel character={character} />
 
+        <div className="h-6" />
+
         <SceneChronicle scene={currentScene} />
+
+        <div className="h-8" />
 
         <ChoiceList
           options={currentScene.options}
@@ -174,14 +186,40 @@ export default function GamePage() {
           isLoading={isLoading}
         />
 
-        <div className="mt-10 text-center">
+        <div className="mt-14 flex justify-center">
           <button
             onClick={handleReset}
-            className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.25em] text-[#75685f] transition hover:text-[#cbbdb1]"
-          >
-            <RotateCcw className="h-4 w-4" />
+            className="
+              group
+              inline-flex
+              items-center
+              gap-3
 
-            <span>Begin Again</span>
+              border
+              border-[#2b2320]
+
+              bg-[#100b0b]/90
+
+              px-5
+              py-3
+
+              text-[11px]
+              uppercase
+              tracking-[0.35em]
+
+              text-[#75685f]
+
+              transition-all
+              duration-300
+
+              hover:border-[#4a2323]
+              hover:text-[#d0c2b6]
+              hover:bg-[#161010]
+            "
+          >
+            <RotateCcw className="h-4 w-4 transition-transform duration-500 group-hover:-rotate-180" />
+
+            <span>Return To Descent</span>
           </button>
         </div>
       </section>

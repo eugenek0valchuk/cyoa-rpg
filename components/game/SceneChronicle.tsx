@@ -27,7 +27,7 @@ export function SceneChronicle({ scene }: SceneChronicleProps) {
 
       <div className="max-h-[420px] overflow-y-auto px-7 py-7">
         <div className="mx-auto max-w-[720px]">
-          <div className="space-y-6 text-[16px] leading-9 text-[#cfc2b8] whitespace-pre-wrap">
+          <div className="space-y-6 whitespace-pre-wrap text-[16px] leading-9 text-[#cfc2b8]">
             {scene.description}
           </div>
         </div>

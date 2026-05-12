@@ -4,29 +4,25 @@ export const scenes: Record<string, Scene> = {
   start: {
     id: 'start',
 
-    title: 'The Crossroads',
+    title: 'The Pilgrim Road',
 
     description: `
-Rain falls upon the ruined pilgrimage road.
+Ash falls like snow upon the dead road.
 
-Rotting prayer banners sway from dead trees while pale ash drifts slowly across the mud.
+The bells beneath the earth have not rung for nineteen nights, yet the pilgrims still kneel facing the cracks in the ground.
 
-Ahead, the road divides.
+Ahead, the path descends toward the buried district known as the Mouth.
 
-One path disappears into the Whispering Woods — a place abandoned after the bells beneath the earth first rang.
+To the east stands the Monastery of Hollow Saints — abandoned after the Procession.
 
-The other climbs toward Ironhold Keep, where the final knights of the old kingdom sealed themselves behind iron gates.
-
-Between the roads sits a weary merchant beside a broken cart.
-
-His lantern burns with pale blue fire.
+A hooded figure waits beside a corpse-cart lit by pale fire.
     `.trim(),
 
     options: [
       {
-        id: 'woods',
+        id: 'mouth',
 
-        text: 'Walk into the Whispering Woods',
+        text: 'Descend toward the Mouth',
 
         effects: {
           sanity: -5,
@@ -34,9 +30,9 @@ His lantern burns with pale blue fire.
       },
 
       {
-        id: 'keep',
+        id: 'monastery',
 
-        text: 'Travel toward Ironhold Keep',
+        text: 'Enter the Monastery of Hollow Saints',
 
         effects: {
           corruption: 2,
@@ -46,7 +42,7 @@ His lantern burns with pale blue fire.
       {
         id: 'merchant',
 
-        text: 'Speak with the lantern merchant',
+        text: 'Approach the corpse-cart',
 
         requirements: {
           intelligence: 5,
@@ -61,81 +57,59 @@ His lantern burns with pale blue fire.
     ],
   },
 
-  woods: {
-    id: 'woods',
+  mouth: {
+    id: 'mouth',
 
-    title: 'The Whispering Woods',
+    title: 'The Mouth',
 
     description: `
-The forest swallows the road behind you.
+The district beneath the road reeks of wet ash and old blood.
 
-No wind moves between the trees, yet the branches creak softly above like distant voices speaking in prayer.
+Broken bells hang above collapsed archways while blind figures kneel in silence around enormous cracks descending into darkness.
 
-You eventually discover an ancient stone spring hidden beneath roots and moss.
-
-The water reflects no sky.
-
-Only darkness.
+Something breathes below.
     `.trim(),
 
     options: [
       {
-        id: 'drink',
+        id: 'descent',
 
-        text: 'Drink from the black water',
+        text: 'Climb into the abyss',
 
         effects: {
+          corruption: 6,
+
           sanity: -10,
-
-          corruption: 5,
         },
-      },
-
-      {
-        id: 'leave',
-
-        text: 'Step away from the spring',
-
-        effects: {},
       },
     ],
   },
 
-  keep: {
-    id: 'keep',
+  monastery: {
+    id: 'monastery',
 
-    title: 'Ironhold Keep',
+    title: 'Monastery of Hollow Saints',
 
     description: `
-The gates of Ironhold rise from the fog like the jaws of some sleeping beast.
+The monastery doors stand open.
 
-Black iron chains hang from the ruined towers while silent guards watch from above without moving.
+Rows of kneeling corpses remain untouched beneath layers of dust.
 
-At the center of the courtyard waits an old knight wrapped in rusted armor.
+At the altar hangs a massive iron bell covered in black wax.
 
-He lowers his blade toward you.
+You hear movement behind the walls.
     `.trim(),
 
     options: [
       {
-        id: 'fight',
+        id: 'bell',
 
-        text: 'Accept the knight’s challenge',
-
-        effects: {
-          corruption: 3,
-
-          addFlag: 'faced_the_knight',
-        },
-      },
-
-      {
-        id: 'flee',
-
-        text: 'Retreat back into the fog',
+        text: 'Touch the black bell',
 
         effects: {
-          sanity: -3,
+          corruption: 8,
+
+          addFlag: 'heard_the_bell',
         },
       },
     ],
