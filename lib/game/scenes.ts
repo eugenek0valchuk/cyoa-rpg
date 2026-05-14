@@ -226,4 +226,282 @@ You hear movement behind the walls.
       },
     ],
   },
+
+  bell: {
+    id: 'bell',
+
+    title: 'The Black Bell',
+
+    description: `
+Your fingers sink into the wax as if pressing through skin.
+
+The bell does not ring. Instead, every corpse in the monastery begins to whisper in unison — a prayer spoken backwards, syllable by syllable.
+
+Behind the altar, a passage opens into darkness. Stone steps spiral downward into warm, breathing air.
+
+The prayer continues beneath your feet.
+    `.trim(),
+
+    options: [
+      {
+        id: 'catacombs',
+
+        text: 'Descend the spiral steps',
+
+        effects: {
+          corruption: 4,
+
+          sanity: -5,
+        },
+      },
+
+      {
+        id: 'exit_monastery',
+
+        text: 'Flee the monastery',
+
+        effects: {
+          sanity: -2,
+        },
+      },
+    ],
+  },
+
+  catacombs: {
+    id: 'catacombs',
+
+    title: 'Catacombs of the First Choir',
+
+    description: `
+The catacombs hum with a sound older than music.
+
+Hundreds of wax-sealed alcoves line the walls — each containing a figure in burial robes, hands clasped around an unlit candle.
+
+At the center of the chamber, a pit exhales warm air in steady rhythm, as though the earth itself were breathing.
+
+Carved into the floor: a spiral that matches the bell's wax patterns.
+    `.trim(),
+
+    options: [
+      {
+        id: 'light_candle',
+
+        text: "Light a candle from the pit's breath",
+
+        effects: {
+          sanity: 5,
+
+          addArtifact: 'buried_choir_candle',
+        },
+      },
+
+      {
+        id: 'jump_pit',
+
+        text: 'Lower yourself into the breathing pit',
+
+        effects: {
+          corruption: 8,
+
+          sanity: -10,
+        },
+      },
+
+      {
+        id: 'read_writings',
+
+        text: 'Read the inscriptions on the walls',
+
+        requirements: {
+          intelligence: 6,
+        },
+
+        effects: {
+          sanity: -5,
+
+          addFlag: 'read_the_writings',
+        },
+      },
+    ],
+  },
+
+  descent: {
+    id: 'descent',
+
+    title: 'The Warm Dark',
+
+    description: `
+The crack widens into a vertical shaft lined with roots and rusted iron rungs.
+
+Each rung is warm, as though the earth below runs with blood.
+
+Far beneath, you hear the wet sound of something massive shifting in the dark.
+
+The blind figures above do not watch you leave. They simply kneel, waiting for whatever returns in your place.
+    `.trim(),
+
+    options: [
+      {
+        id: 'submerged_crypt',
+
+        text: 'Follow the sound of dripping water',
+
+        effects: {
+          corruption: 3,
+        },
+      },
+
+      {
+        id: 'iron_passage',
+
+        text: 'Crawl through a narrow iron passage',
+
+        requirements: {
+          strength: 5,
+        },
+
+        effects: {
+          sanity: -4,
+        },
+      },
+    ],
+  },
+
+  submerged_crypt: {
+    id: 'submerged_crypt',
+
+    title: 'The Flooded Crypt',
+
+    description: `
+The passage opens into a crypt half-submerged in black water.
+
+Whatever liquid fills this chamber is heavier than water — it clings to your boots and swallows light.
+
+At the far end, a sarcophagus stands open, its lid propped against the wall.
+
+Inside: not a body, but a vertical tunnel descending further.
+
+The water around the sarcophagus is undisturbed, as though nothing has ever approached it.
+    `.trim(),
+
+    options: [
+      {
+        id: 'sarcophagus_tunnel',
+
+        text: 'Climb into the sarcophagus tunnel',
+
+        effects: {
+          corruption: 5,
+
+          sanity: -6,
+        },
+      },
+
+      {
+        id: 'drain_water',
+
+        text: 'Try to drain the chamber',
+
+        requirements: {
+          strength: 7,
+        },
+
+        effects: {
+          sanity: -2,
+        },
+      },
+    ],
+  },
+
+  iron_passage: {
+    id: 'iron_passage',
+
+    title: 'The Iron Gut',
+
+    description: `
+The passage is barely wide enough for your shoulders.
+
+Rust flakes catch on your clothes like red snow.
+
+Ahead, the tunnel splits into three — each identical in shape, each exhaling a different scent: wet stone, dried blood, and cold ash.
+
+The choice is not a choice of paths. It is a question of what you are willing to smell before you arrive.
+    `.trim(),
+
+    options: [
+      {
+        id: 'stone_path',
+
+        text: 'Follow the scent of wet stone',
+
+        effects: {
+          sanity: -2,
+        },
+      },
+
+      {
+        id: 'blood_path',
+
+        text: 'Follow the scent of blood',
+
+        effects: {
+          corruption: 4,
+        },
+      },
+
+      {
+        id: 'ash_path',
+
+        text: 'Follow the scent of cold ash',
+
+        effects: {
+          addFlag: 'ash_path_taken',
+
+          corruption: 2,
+
+          sanity: -3,
+        },
+      },
+    ],
+  },
+
+  exit_monastery: {
+    id: 'exit_monastery',
+
+    title: 'The Outer Courtyard',
+
+    description: `
+You stumble back into the ash-covered road.
+
+The monastery looms behind you, its doorway now sealed with what looks like wax from the inside.
+
+The bell did not ring. But you feel it vibrating in your teeth.
+
+Ahead, the Mouth still waits. The corpse-cart still burns.
+
+The world has not changed. But you have.
+    `.trim(),
+
+    options: [
+      {
+        id: 'mouth',
+
+        text: 'Descend toward the Mouth',
+
+        effects: {
+          sanity: -3,
+        },
+      },
+
+      {
+        id: 'merchant',
+
+        text: 'Return to the corpse-cart',
+
+        effects: {
+          corruption: 1,
+        },
+      },
+    ],
+  },
 }
