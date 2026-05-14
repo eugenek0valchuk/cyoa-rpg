@@ -111,6 +111,7 @@ export function useGameSession() {
         setShowChoices(true)
       } catch (error) {
         console.error('Choice handling failed:', error)
+        setShowChoices(true)
       } finally {
         setIsLoading(false)
       }

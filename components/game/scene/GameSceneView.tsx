@@ -35,15 +35,13 @@ export function GameSceneView({
 
       <div className="h-8" />
 
-      <div className="min-h-[220px]">
-        <SceneChoices
-          scene={scene}
-          character={character}
-          showChoices={showChoices}
-          isLoading={isLoading}
-          onChoice={onChoice}
-        />
-      </div>
+      <SceneChoices
+        scene={scene}
+        character={character}
+        showChoices={showChoices}
+        isLoading={isLoading}
+        onChoice={onChoice}
+      />
     </div>
   )
 }
