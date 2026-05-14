@@ -47,9 +47,6 @@ export interface ChoiceRequirements {
   strength?: number
   agility?: number
   intelligence?: number
-  sanityBelow?: number
-  corruptionAbove?: number
-  hasItem?: string
   minCorruption?: number
   maxSanity?: number
   requiredFlag?: string

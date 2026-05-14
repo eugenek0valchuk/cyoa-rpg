@@ -105,6 +105,27 @@ function canAccessOption(option: Choice, character?: Character): boolean {
   if (!requirements) return true
 
   if (
+    requirements.strength !== undefined &&
+    character.stats.strength < requirements.strength
+  ) {
+    return false
+  }
+
+  if (
+    requirements.agility !== undefined &&
+    character.stats.agility < requirements.agility
+  ) {
+    return false
+  }
+
+  if (
+    requirements.intelligence !== undefined &&
+    character.stats.intelligence < requirements.intelligence
+  ) {
+    return false
+  }
+
+  if (
     requirements.minCorruption !== undefined &&
     character.corruption < requirements.minCorruption
   ) {
@@ -181,7 +202,7 @@ export function validateScene(
 
   while (resultOptions.length < MIN_OPTIONS) {
     const fallback =
-      fallbackOptions[normalizedOptions.length % fallbackOptions.length]
+      fallbackOptions[resultOptions.length % fallbackOptions.length]
     resultOptions.push(fallback)
   }
 

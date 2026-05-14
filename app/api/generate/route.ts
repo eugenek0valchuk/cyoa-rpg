@@ -6,6 +6,7 @@ import { validateScene } from '@/lib/game/validateScene'
 import { buildDirectorState } from '@/lib/game/director'
 import { detectSceneLoop } from '@/lib/game/loopDetection'
 import { fetchWithRetry } from '@/lib/game/fetchWithRetry'
+import { getFallbackScene } from '@/lib/game/fallbackScene'
 import type { Character, Scene, SceneHistoryEntry } from '@/lib/types/game'
 
 interface OllamaResponse {
@@ -17,28 +18,6 @@ interface GenerateRequest {
   choice: { id: string; text: string }
   character: Character
   sceneHistory: SceneHistoryEntry[]
-}
-
-function getFallbackScene(choiceText: string): Scene {
-  return {
-    id: 'fallback_scene',
-    title: 'The Path Below',
-    description:
-      `You chose "${choiceText}". ` +
-      'The silence beneath the cathedral deepens as unseen bells echo through stone.',
-    options: [
-      {
-        id: 'continue_forward',
-        text: 'Descend deeper into the abyss',
-        effects: { sanity: -5 },
-      },
-      {
-        id: 'observe_shadows',
-        text: 'Remain still and observe the darkness',
-        effects: {},
-      },
-    ],
-  }
 }
 
 async function fetchSceneFromOllama(prompt: string): Promise<Scene> {
@@ -104,11 +83,7 @@ export async function POST(request: Request) {
     console.error('API error:', error)
 
     return NextResponse.json({
-      scene: validateScene(
-        getFallbackScene('continue onward'),
-        new Set(),
-        character,
-      ),
+      scene: validateScene(getFallbackScene(choice.text), new Set(), character),
     })
   }
 }

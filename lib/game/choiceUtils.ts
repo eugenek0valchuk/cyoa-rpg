@@ -1,11 +1,15 @@
 import type { Character, Choice } from '@/lib/types/game'
+import { isChoiceVisible } from './choiceVisibility'
 
 export function isChoiceAvailable(
   choice: Choice,
   character: Character,
 ): boolean {
-  const requirements = choice.requirements
+  if (!isChoiceVisible(choice, character)) {
+    return false
+  }
 
+  const requirements = choice.requirements
   if (!requirements) {
     return true
   }
@@ -24,36 +28,6 @@ export function isChoiceAvailable(
   if (
     requirements.intelligence &&
     character.stats.intelligence < requirements.intelligence
-  ) {
-    return false
-  }
-
-  if (
-    requirements.maxSanity !== undefined &&
-    character.sanity > requirements.maxSanity
-  ) {
-    return false
-  }
-
-  if (
-    requirements.minCorruption !== undefined &&
-    character.corruption < requirements.minCorruption
-  ) {
-    return false
-  }
-
-  if (
-    requirements.requiredArtifact &&
-    !character.inventory.some(
-      (artifact) => artifact.id === requirements.requiredArtifact,
-    )
-  ) {
-    return false
-  }
-
-  if (
-    requirements.requiredFlag &&
-    !character.flags.includes(requirements.requiredFlag)
   ) {
     return false
   }
