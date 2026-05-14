@@ -1,5 +1,8 @@
+'use client'
+
 import { Scene } from '@/lib/types/game'
 import { ScrollText } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
 import { ChronicleCard } from '../shared/ChronicleCard'
 
 interface SceneChronicleProps {
@@ -7,6 +10,34 @@ interface SceneChronicleProps {
 }
 
 export function SceneChronicle({ scene }: SceneChronicleProps) {
+  const [displayedText, setDisplayedText] = useState('')
+  const [isTyping, setIsTyping] = useState(true)
+  const indexRef = useRef(0)
+  const text = scene.description
+
+  useEffect(() => {
+    indexRef.current = 0
+    setDisplayedText('')
+    setIsTyping(true)
+
+    const charsPerTick = 3
+    const tick = 8
+
+    const timer = setInterval(() => {
+      const next = indexRef.current + charsPerTick
+      if (next >= text.length) {
+        setDisplayedText(text)
+        setIsTyping(false)
+        clearInterval(timer)
+      } else {
+        setDisplayedText(text.slice(0, next))
+        indexRef.current = next
+      }
+    }, tick)
+
+    return () => clearInterval(timer)
+  }, [text])
+
   return (
     <ChronicleCard
       title={scene.title}
@@ -15,8 +46,12 @@ export function SceneChronicle({ scene }: SceneChronicleProps) {
       contentClassName="max-h-[420px] overflow-y-auto"
     >
       <div className="w-full max-w-[720px]">
-        <div className="space-y-6 whitespace-pre-wrap text-[16px] leading-9 text-[#cfc2b8]">
-          {scene.description}
+        <div className="relative space-y-6 whitespace-pre-wrap text-[16px] leading-9 text-[#cfc2b8]">
+          {displayedText}
+
+          {isTyping && (
+            <span className="inline-block h-4 w-2 animate-pulse bg-[#8e1f1f]" />
+          )}
         </div>
       </div>
     </ChronicleCard>

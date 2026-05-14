@@ -1,3 +1,6 @@
+export * from './ui/StatBar'
+export * from './ui/EffectIcon'
+
 export * from './character/CharacterPanel'
 
 export * from './chronicle/Chronicle'
