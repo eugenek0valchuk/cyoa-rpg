@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 
 import { parseScene } from '@/lib/game/parseScene'
 import { buildScenePrompt } from '@/lib/game/promptBuilder'
 import { validateScene } from '@/lib/game/validateScene'
 import { buildDirectorState } from '@/lib/game/director'
 import { detectSceneLoop } from '@/lib/game/loopDetection'
+import { fetchWithRetry } from '@/lib/game/fetchWithRetry'
 import type { Character, Scene, SceneHistoryEntry } from '@/lib/types/game'
 
 interface OllamaResponse {
@@ -41,27 +42,25 @@ function getFallbackScene(choiceText: string): Scene {
 }
 
 async function fetchSceneFromOllama(prompt: string): Promise<Scene> {
-  const response = await fetch('http://localhost:11434/api/generate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'llama3.2:3b',
-      prompt,
-      stream: false,
-      format: 'json',
-      options: {
-        temperature: 0.7,
-        top_p: 0.9,
-        repeat_penalty: 1.15,
-      },
-    }),
-  })
+  const data = await fetchWithRetry<OllamaResponse>(
+    'http://localhost:11434/api/generate',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama3.2:3b',
+        prompt,
+        stream: false,
+        format: 'json',
+        options: {
+          temperature: 0.7,
+          top_p: 0.9,
+          repeat_penalty: 1.15,
+        },
+      }),
+    },
+  )
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`)
-  }
-
-  const data = (await response.json()) as OllamaResponse
   return parseScene(data.response)
 }
 
