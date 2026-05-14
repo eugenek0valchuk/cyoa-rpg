@@ -2,9 +2,10 @@
 
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
-import { Choice, Character } from '@/lib/types/game'
-import { EffectIcon } from '../ui/EffectIcon'
+import { Character, Choice } from '@/lib/types/game'
 import { motion } from 'framer-motion'
+import { EffectIcon } from '../ui/EffectIcon'
+import { RitualSymbol } from '../ui/RitualSymbol'
 
 interface ChoiceListProps {
   options: Choice[]
@@ -83,26 +84,31 @@ export function ChoiceList({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: index * 0.06 }}
             className={`
-              group relative w-full overflow-hidden border-2 bg-[#0c0909]/95 px-6 py-4 text-left
-              transition-all duration-300
+              group relative w-full border-2 bg-[#0c0909]/95 text-left
+              transition-all duration-500
 
               ${
                 available
                   ? `
-                    border-[#2b2320]
-                    hover:border-[#8e1f1f]
-                    hover:bg-[#140d0d]
-                    hover:shadow-[0_0_40px_rgba(92,31,31,0.2)]
+                    border-[#2b2320] shadow-[inset_0_0_0_1px_rgba(43,35,32,0.3)]
+                    hover:border-[#8e1f1f]/80 hover:bg-[#140d0d]
+                    hover:shadow-[inset_0_0_0_1px_rgba(142,31,31,0.2),_0_0_40px_rgba(92,31,31,0.15)]
                   `
                   : `
-                    cursor-not-allowed border-[#181212] opacity-40
+                    cursor-not-allowed border-[#181212] opacity-40 shadow-[inset_0_0_0_1px_rgba(24,18,18,0.2)]
                   `
               }
             `}
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,20,20,0.08),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="absolute inset-y-2 left-0 w-[3px] bg-gradient-to-b from-transparent via-[#8e1f1f]/60 to-transparent opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:via-[#8e1f1f]" />
 
-            <div className="relative flex items-start justify-between gap-4">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,20,20,0.08),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+            <div className="relative flex items-start gap-5 px-6 py-4">
+              <div className="mt-1 shrink-0 text-[#3b2a2a] transition-colors duration-500 group-hover:text-[#8e1f1f]">
+                <RitualSymbol type="sanity" size={18} />
+              </div>
+
               <div className="min-w-0 flex-1">
                 <div className="font-cinzel text-[18px] uppercase tracking-[0.12em] text-[#e7ded7]">
                   {option.text}
@@ -159,13 +165,6 @@ export function ChoiceList({
                   </div>
                 )}
 
-                {option.effects?.addFlag && (
-                  <div className="inline-flex items-center gap-1 text-[12px] text-[#7da87d]">
-                    <EffectIcon type="addFlag" size={14} />
-                    Flag
-                  </div>
-                )}
-
                 <div className="flex flex-wrap justify-end gap-2">
                   {option.effects?.sanity !== undefined && (
                     <EffectBadge type="sanity" value={option.effects.sanity} />
@@ -177,8 +176,6 @@ export function ChoiceList({
                     />
                   )}
                 </div>
-
-                <div className="mt-1 h-[2px] w-20 bg-gradient-to-r from-[#8e1f1f] to-transparent opacity-60 transition-all duration-300 group-hover:w-28 group-hover:opacity-100" />
               </div>
             </div>
           </motion.button>

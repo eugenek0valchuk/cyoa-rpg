@@ -1,6 +1,6 @@
 'use client'
 
-import { Brain, Droplets, Flag, Gem, Swords, Wind, Zap } from 'lucide-react'
+import { RitualSymbol } from './RitualSymbol'
 
 interface EffectIconProps {
   type:
@@ -14,31 +14,23 @@ interface EffectIconProps {
   size?: number
 }
 
-const ICON_MAP = {
-  sanity: Brain,
-  corruption: Droplets,
-  addFlag: Flag,
-  addArtifact: Gem,
-  strength: Swords,
-  agility: Wind,
-  intelligence: Zap,
+const TYPE_MAP: Record<string, RitualSymbolProps['type']> = {
+  sanity: 'sanity',
+  corruption: 'corruption',
+  addFlag: 'flag',
+  addArtifact: 'artifact',
+  strength: 'strength',
+  agility: 'agility',
+  intelligence: 'intelligence',
 }
 
-const COLOR_MAP = {
-  sanity: '#d8d0c8',
-  corruption: '#d46060',
-  addFlag: '#b4c27d',
-  addArtifact: '#facc15',
-  strength: '#d46060',
-  agility: '#b4c27d',
-  intelligence: '#92a6dd',
-}
+import type { RitualSymbolProps } from './RitualSymbol'
 
 export function EffectIcon({ type, size = 20 }: EffectIconProps) {
-  const Icon = ICON_MAP[type]
-  const color = COLOR_MAP[type]
+  const symbolType = TYPE_MAP[type]
+  if (!symbolType) return null
 
-  return <Icon size={size} style={{ color }} />
+  return <RitualSymbol type={symbolType} size={size} />
 }
 
 export function formatEffectValue(effect: {
@@ -50,5 +42,14 @@ export function formatEffectValue(effect: {
 }
 
 export function getEffectColor(type: string): string {
-  return COLOR_MAP[type as keyof typeof COLOR_MAP] || '#d8cbc0'
+  const colors: Record<string, string> = {
+    sanity: '#d8d0c8',
+    corruption: '#d46060',
+    addFlag: '#b4c27d',
+    addArtifact: '#facc15',
+    strength: '#d46060',
+    agility: '#b4c27d',
+    intelligence: '#92a6dd',
+  }
+  return colors[type] || '#d8cbc0'
 }
