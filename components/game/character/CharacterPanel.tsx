@@ -1,10 +1,11 @@
 'use client'
 
-import { Brain, Package, Swords, Wind, Zap, Droplets } from 'lucide-react'
+import { Package } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { ORIGIN_ICONS, ORIGIN_TITLES } from '../constants/origins'
 import { StatBar } from '../ui/StatBar'
+import { GameIcon } from '../ui/GameIcon'
 
 import type { Character } from '@/lib/types/game'
 
@@ -63,21 +64,21 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 value: character.stats.strength,
                 max: 20,
                 color: '#d46060',
-                icon: <Swords size={14} />,
+                icon: <GameIcon type="strength" size={24} />,
               },
               {
                 label: 'Agility',
                 value: character.stats.agility,
                 max: 20,
                 color: '#b4c27d',
-                icon: <Wind size={14} />,
+                icon: <GameIcon type="agility" size={24} />,
               },
               {
                 label: 'Intelligence',
                 value: character.stats.intelligence,
                 max: 20,
                 color: '#92a6dd',
-                icon: <Zap size={14} />,
+                icon: <GameIcon type="intelligence" size={24} />,
               },
             ].map((stat, i) => (
               <motion.div
@@ -119,7 +120,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             value={character.sanity}
             max={100}
             color="#d8d0c8"
-            icon={<Brain size={14} />}
+            icon={<GameIcon type="sanity" size={24} />}
           />
 
           <StatBar
@@ -128,13 +129,13 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             max={100}
             color="#d46060"
             trackColor="#8e1f1f"
-            icon={<Droplets size={14} />}
+            icon={<GameIcon type="corruption" size={24} />}
             bgColor="#1b1414"
           />
 
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.3em] text-[#7a6d63]">
-              <Package className="h-4 w-4" />
+              <GameIcon type="artifact" size={24} />
               Artifacts
             </div>
 

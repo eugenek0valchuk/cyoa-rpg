@@ -1,6 +1,6 @@
 'use client'
 
-import { RitualSymbol } from './RitualSymbol'
+import { GameIcon } from './GameIcon'
 
 interface EffectIconProps {
   type:
@@ -14,7 +14,7 @@ interface EffectIconProps {
   size?: number
 }
 
-const TYPE_MAP: Record<string, RitualSymbolProps['type']> = {
+const TYPE_MAP: Record<string, GameIconProps['type']> = {
   sanity: 'sanity',
   corruption: 'corruption',
   addFlag: 'flag',
@@ -24,13 +24,13 @@ const TYPE_MAP: Record<string, RitualSymbolProps['type']> = {
   intelligence: 'intelligence',
 }
 
-import type { RitualSymbolProps } from './RitualSymbol'
+import type { GameIconProps } from './GameIcon'
 
-export function EffectIcon({ type, size = 20 }: EffectIconProps) {
-  const symbolType = TYPE_MAP[type]
-  if (!symbolType) return null
+export function EffectIcon({ type, size = 28 }: EffectIconProps) {
+  const iconType = TYPE_MAP[type]
+  if (!iconType) return null
 
-  return <RitualSymbol type={symbolType} size={size} />
+  return <GameIcon type={iconType} size={size} />
 }
 
 export function formatEffectValue(effect: {

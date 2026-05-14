@@ -33,7 +33,7 @@ function RequirementBadge({
           : 'bg-[#2a1a1a]/60 text-[#a87d7d] border border-[#4a2a2a]/40'
       }`}
     >
-      <EffectIcon type={type} size={16} />
+      <EffectIcon type={type} size={22} />
       {value}
     </div>
   )
@@ -48,7 +48,7 @@ function EffectBadge({
 }) {
   return (
     <div className="inline-flex items-center gap-1.5 text-[14px] text-[#75685f]">
-      <EffectIcon type={type} size={16} />
+      <EffectIcon type={type} size={22} />
       <span className={value < 0 ? 'text-[#a87d7d]' : 'text-[#7da87d]'}>
         {value > 0 ? '+' : ''}
         {value}
@@ -148,14 +148,14 @@ export function ChoiceList({
               <div className="flex shrink-0 flex-col items-end gap-2">
                 {option.effects?.addArtifact && (
                   <div className="inline-flex items-center gap-1.5 rounded-sm bg-[#2a2a1a]/60 px-3 py-1 text-[12px] uppercase tracking-[0.2em] text-[#c8b84a] border border-[#4a4a2a]/40">
-                    <EffectIcon type="addArtifact" size={16} />
+                    <EffectIcon type="addArtifact" size={22} />
                     Relic
                   </div>
                 )}
 
                 {option.effects?.addFlag && (
                   <div className="inline-flex items-center gap-1.5 text-[14px] text-[#7da87d]">
-                    <EffectIcon type="addFlag" size={16} />
+                    <EffectIcon type="addFlag" size={22} />
                     Flag
                   </div>
                 )}
