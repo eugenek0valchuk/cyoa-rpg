@@ -75,3 +75,31 @@ Horror should remain subtle, atmospheric, and grounded.
 `
   }
 }
+
+export function getCorruptionGameplayRules(corruption: number) {
+  const stage = getCorruptionStage(corruption)
+  switch (stage) {
+    case 'WHISPERS':
+      return {
+        maxOptions: 4,
+        allowHallucinations: true,
+        forceParanoia: true,
+      }
+    case 'POSSESSED':
+      return {
+        maxOptions: 3,
+        allowRealityBreaks: true,
+        forceBodyHorror: true,
+      }
+    case 'ABYSSAL':
+      return {
+        maxOptions: 2,
+        forceEndingProgression: true,
+        allowImpossibleScenes: true,
+      }
+    default:
+      return {
+        maxOptions: 4,
+      }
+  }
+}

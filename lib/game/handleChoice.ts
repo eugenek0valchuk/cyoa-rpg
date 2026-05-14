@@ -11,12 +11,7 @@ import type {
   Scene,
   SceneMemory,
 } from '../types/game'
-import {
-  logArtifact,
-  logChoice,
-  logEnding,
-  logSceneTransition,
-} from './debugLog'
+import { logChoice, logEnding, logArtifact, logSceneTransition } from '../debug'
 
 interface HandleChoiceParams {
   currentScene: Scene

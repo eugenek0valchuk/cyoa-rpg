@@ -1,4 +1,5 @@
 import { artifacts } from '@/lib/game/artifacts'
+import { Character } from '../types/game'
 
 const MAX_OPTIONS = 4
 const MIN_OPTIONS = 2
@@ -86,6 +87,35 @@ function normalizeEffects(effects: any, ownedArtifacts: Set<string>) {
   return normalized
 }
 
+function canAccessOption(option: any, character?: Character) {
+  if (!character) return true
+
+  const requirements = option.requirements || {}
+
+  if (
+    typeof requirements.minCorruption === 'number' &&
+    character.corruption < requirements.minCorruption
+  ) {
+    return false
+  }
+
+  if (
+    typeof requirements.maxSanity === 'number' &&
+    character.sanity > requirements.maxSanity
+  ) {
+    return false
+  }
+
+  if (
+    typeof requirements.requiredFlag === 'string' &&
+    !character.flags?.includes(requirements.requiredFlag)
+  ) {
+    return false
+  }
+
+  return true
+}
+
 function createFallbackOptions() {
   return [
     {
@@ -103,7 +133,11 @@ function createFallbackOptions() {
   ]
 }
 
-export function validateScene(rawScene: any, ownedArtifacts: Set<string>) {
+export function validateScene(
+  rawScene: any,
+  ownedArtifacts: Set<string>,
+  character?: Character,
+) {
   const title = normalizeText(rawScene?.title, 'Unknown Depths').slice(0, 80)
   const description = normalizeText(
     rawScene?.description,
@@ -130,17 +164,20 @@ export function validateScene(rawScene: any, ownedArtifacts: Set<string>) {
     })
     .filter((option: any) => option.text.length > 0)
 
+  const accessibleOptions = normalizedOptions.filter((option: any) =>
+    canAccessOption(option, character),
+  )
   const fallbackOptions = createFallbackOptions()
-  while (normalizedOptions.length < MIN_OPTIONS) {
+  while (accessibleOptions.length < MIN_OPTIONS) {
     const fallback =
       fallbackOptions[normalizedOptions.length % fallbackOptions.length]
-    normalizedOptions.push(fallback)
+    accessibleOptions.push(fallback)
   }
 
   return {
     id: `scene_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     title,
     description,
-    options: normalizedOptions,
+    options: accessibleOptions,
   }
 }

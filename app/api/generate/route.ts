@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { parseScene } from '@/lib/game/parseScene'
 import { buildScenePrompt } from '@/lib/game/promptBuilder'
 import { validateScene } from '@/lib/game/validateScene'
+import { buildDirectorState } from '@/lib/game/director'
+import { detectSceneLoop } from '@/lib/game/loopDetection'
 
 async function fetchWithRetry(
   url: string,
@@ -64,15 +66,16 @@ function getFallbackScene(choiceText: string) {
 }
 
 export async function POST(request: Request) {
-  try {
-    const { currentScene, choice, character, sceneHistory } =
-      await request.json()
+  const { currentScene, choice, character, sceneHistory } = await request.json()
 
+  try {
+    const directorState = buildDirectorState(character, sceneHistory)
     const prompt = buildScenePrompt({
       currentScene,
       choice,
       character,
       sceneHistory,
+      directorState,
     })
 
     let newSceneData
@@ -119,7 +122,11 @@ export async function POST(request: Request) {
       ),
     )
 
-    const newScene = validateScene(newSceneData, ownedArtifacts)
+    const newScene = validateScene(newSceneData, ownedArtifacts, character)
+    const hasLoop = detectSceneLoop(newScene, sceneHistory)
+    if (hasLoop) {
+      throw new Error('Narrative loop detected')
+    }
 
     return NextResponse.json({
       scene: newScene,
@@ -128,7 +135,11 @@ export async function POST(request: Request) {
     console.error('API error:', error)
 
     return NextResponse.json({
-      scene: validateScene(getFallbackScene('continue onward'), new Set()),
+      scene: validateScene(
+        getFallbackScene('continue onward'),
+        new Set(),
+        character,
+      ),
     })
   }
 }
