@@ -34,7 +34,7 @@ const COLOR_MAP = {
   intelligence: '#92a6dd',
 }
 
-export function EffectIcon({ type, size = 12 }: EffectIconProps) {
+export function EffectIcon({ type, size = 20 }: EffectIconProps) {
   const Icon = ICON_MAP[type]
   const color = COLOR_MAP[type]
 

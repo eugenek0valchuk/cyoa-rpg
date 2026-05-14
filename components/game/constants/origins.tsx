@@ -1,11 +1,9 @@
-import { Eye, Flame, Skull } from 'lucide-react'
+import { Cross, Diamond, Triangle } from 'lucide-react'
 
 export const ORIGIN_ICONS = {
-  hollow: <Skull className="h-4 w-4" />,
-
-  heretic: <Flame className="h-4 w-4" />,
-
-  witness: <Eye className="h-4 w-4" />,
+  hollow: <Cross className="h-5 w-5" />,
+  heretic: <Triangle className="h-5 w-5" />,
+  witness: <Diamond className="h-5 w-5" />,
 }
 
 export const ORIGIN_TITLES = {

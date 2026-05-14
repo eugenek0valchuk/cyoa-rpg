@@ -40,10 +40,13 @@ export function SceneChoices({
       </AnimatePresence>
 
       {isLoading && (
-        <div className="flex items-center justify-center py-16">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#3b2a2a] border-t-[#8e1f1f]" />
-            <div className="text-[11px] uppercase tracking-[0.3em] text-[#6d5d53]">
+        <div className="flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-5">
+            <div className="relative flex items-center justify-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-[3px] border-[#2b1a1a] border-t-[#8e1f1f]" />
+              <div className="absolute h-6 w-6 rounded-full border border-[#4a2a2a]/40" />
+            </div>
+            <div className="text-[14px] uppercase tracking-[0.35em] text-[#6d5d53]">
               The abyss stirs...
             </div>
           </div>

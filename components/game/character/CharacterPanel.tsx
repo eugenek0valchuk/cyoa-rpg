@@ -17,16 +17,16 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
     <motion.section
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden border border-[#2b2320] bg-[linear-gradient(to_bottom,#120c0c,#080505)]"
+      className="relative overflow-hidden border-2 border-[#2b2320] bg-[linear-gradient(to_bottom,#120c0c,#080505)]"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(142,31,31,0.12),transparent_60%)]" />
 
       <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.9)]" />
 
-      <div className="relative z-10 p-8">
-        <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
+      <div className="relative z-10 p-6 md:p-8">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.5em] text-[#7a6d63]">
+            <div className="text-[12px] uppercase tracking-[0.4em] text-[#7a6d63]">
               VESSEL
             </div>
 
@@ -38,14 +38,14 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
-              className="mt-6 inline-flex items-center gap-3 border border-[#3b2a2a] bg-[#140d0d]/90 px-4 py-3 text-[#d8c9be]"
+              className="mt-6 inline-flex items-center gap-4 border-2 border-[#3b2a2a] bg-[#140d0d]/90 px-6 py-4 text-[#d8c9be]"
             >
-              <div className="text-[#8e1f1f]">
+              <div className="text-lg text-[#8e1f1f]">
                 {ORIGIN_ICONS[character.origin]}
               </div>
 
               <div>
-                <div className="text-[9px] uppercase tracking-[0.35em] text-[#6f6259]">
+                <div className="text-[11px] uppercase tracking-[0.3em] text-[#6f6259]">
                   ORIGIN
                 </div>
 
@@ -85,21 +85,21 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i }}
-                className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center"
+                className="min-w-[130px] border-2 border-[#2f2622] bg-[#0c0808]/85 px-6 py-5 text-center"
               >
-                <div className="flex items-center justify-center gap-1.5 text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
+                <div className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-[0.25em] text-[#7a6d63]">
                   <span style={{ color: stat.color }}>{stat.icon}</span>
                   {stat.label}
                 </div>
 
                 <div
-                  className="mt-3 font-cinzel text-3xl"
+                  className="mt-3 font-cinzel text-4xl"
                   style={{ color: stat.color }}
                 >
                   {stat.value}
                 </div>
 
-                <div className="mx-auto mt-3 h-[2px] max-w-[60px] overflow-hidden bg-[#1b1414]">
+                <div className="mx-auto mt-4 h-[3px] max-w-[80px] overflow-hidden bg-[#1b1414]">
                   <motion.div
                     className="h-full"
                     style={{ background: stat.color }}
@@ -113,7 +113,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 lg:grid-cols-3">
           <StatBar
             label="Sanity"
             value={character.sanity}
@@ -133,12 +133,12 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           />
 
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">
-              <Package className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.3em] text-[#7a6d63]">
+              <Package className="h-4 w-4" />
               Artifacts
             </div>
 
-            <div className="mt-5 space-y-2">
+            <div className="mt-4 space-y-2">
               {character.inventory.length === 0 ? (
                 <div className="text-sm text-[#75685f]">Nothing remains.</div>
               ) : (

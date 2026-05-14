@@ -107,7 +107,7 @@ export function ArtifactReveal({
               borderColor: colors.border,
               ['--glow' as string]: colors.glow,
             }}
-            className="relative overflow-hidden border bg-[#090606]"
+            className="relative overflow-hidden border-2 bg-[#090606]"
           >
             <div
               className="absolute inset-0"
@@ -123,34 +123,34 @@ export function ArtifactReveal({
               }}
             />
 
-            <div className="relative px-10 py-12">
+            <div className="relative px-12 py-14">
               <div className="text-center">
-                <div className="text-[10px] uppercase tracking-[0.7em] text-[#7a6d63]">
+                <div className="text-[12px] uppercase tracking-[0.6em] text-[#7a6d63]">
                   RELIC UNEARTHED
                 </div>
 
                 <h2
-                  className="font-cinzel mt-6 text-4xl uppercase tracking-[0.12em]"
+                  className="font-cinzel mt-8 text-5xl uppercase tracking-[0.1em]"
                   style={{ color: colors.accent }}
                 >
                   {artifact.name}
                 </h2>
 
-                <div className="mx-auto mt-6 flex items-center justify-center gap-3">
+                <div className="mx-auto mt-8 flex items-center justify-center gap-4">
                   <div
-                    className="h-px w-16"
+                    className="h-px w-20"
                     style={{
                       background: `linear-gradient(to right, transparent, ${colors.accent})`,
                     }}
                   />
                   <div
-                    className="text-[9px] uppercase tracking-[0.4em]"
+                    className="text-[10px] uppercase tracking-[0.4em]"
                     style={{ color: colors.accent }}
                   >
                     {artifact.rarity}
                   </div>
                   <div
-                    className="h-px w-16"
+                    className="h-px w-20"
                     style={{
                       background: `linear-gradient(to left, transparent, ${colors.accent})`,
                     }}
@@ -158,29 +158,29 @@ export function ArtifactReveal({
                 </div>
               </div>
 
-              <div className="mt-10 border border-[#241919] bg-[#120c0c]/80 p-6">
-                <div className="text-[11px] uppercase tracking-[0.4em] text-[#8e1f1f]">
+              <div className="mt-12 border-2 border-[#241919] bg-[#120c0c]/80 p-8">
+                <div className="text-[12px] uppercase tracking-[0.35em] text-[#8e1f1f]">
                   Chronicle
                 </div>
 
-                <p className="mt-5 whitespace-pre-wrap text-[15px] leading-8 text-[#cdbfb4]">
+                <p className="mt-6 whitespace-pre-wrap text-[17px] leading-9 text-[#cdbfb4]">
                   {artifact.description}
                 </p>
 
                 {artifact.lore && (
-                  <div className="mt-4 border-t border-[#241919] pt-4 text-[13px] italic leading-7 text-[#75685f]">
+                  <div className="mt-6 border-t-2 border-[#241919] pt-5 text-[14px] italic leading-7 text-[#75685f]">
                     {artifact.lore}
                   </div>
                 )}
               </div>
 
               {(artifact.effects?.sanity || artifact.effects?.corruption) && (
-                <div className="mt-6 border border-[#241919] bg-black/40 p-5">
-                  <div className="text-[11px] uppercase tracking-[0.35em] text-[#75685f]">
+                <div className="mt-8 border-2 border-[#241919] bg-black/40 p-6">
+                  <div className="text-[12px] uppercase tracking-[0.3em] text-[#75685f]">
                     Influence
                   </div>
 
-                  <div className="mt-4 space-y-2 text-sm text-[#d8cbc0]">
+                  <div className="mt-4 space-y-3 text-[14px] text-[#d8cbc0]">
                     {artifact.effects?.sanity && (
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-[#d8d0c8]" />
@@ -201,12 +201,12 @@ export function ArtifactReveal({
               )}
 
               {artifact.whisper?.length ? (
-                <div className="mt-6 border border-[#241919] bg-[#0d0909]/80 p-5">
-                  <div className="text-[10px] uppercase tracking-[0.45em] text-[#6f6259]">
+                <div className="mt-8 border-2 border-[#241919] bg-[#0d0909]/80 p-6">
+                  <div className="text-[12px] uppercase tracking-[0.35em] text-[#6f6259]">
                     The Whisper
                   </div>
 
-                  <div className="mt-4 space-y-3 italic text-[#8f7f75]">
+                  <div className="mt-4 space-y-4 italic text-[#8f7f75] text-[15px]">
                     {artifact.whisper.map((line, i) => (
                       <motion.div
                         key={line}

@@ -46,7 +46,7 @@ export function SceneChronicle({ scene }: SceneChronicleProps) {
       contentClassName="max-h-[420px] overflow-y-auto"
     >
       <div className="w-full max-w-[720px]">
-        <div className="relative space-y-6 whitespace-pre-wrap text-[16px] leading-9 text-[#cfc2b8]">
+        <div className="relative space-y-4 whitespace-pre-wrap text-[18px] leading-8 text-[#cfc2b8]">
           {displayedText}
 
           {isTyping && (

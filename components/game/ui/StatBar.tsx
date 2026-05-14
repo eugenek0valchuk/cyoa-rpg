@@ -25,11 +25,11 @@ export function StatBar({
   const pct = Math.max(0, Math.min(100, (value / max) * 100))
 
   return (
-    <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
+    <div className="border-2 border-[#2b2320] bg-[#0a0707]/90 p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {icon && <span className="text-[#7a6d63]">{icon}</span>}
-          <div className="text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">
+          <div className="text-[12px] uppercase tracking-[0.35em] text-[#7a6d63]">
             {label}
           </div>
         </div>

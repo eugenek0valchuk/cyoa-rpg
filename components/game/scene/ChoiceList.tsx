@@ -27,13 +27,13 @@ function RequirementBadge({
 }) {
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] ${
+      className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-[12px] uppercase tracking-[0.2em] ${
         met
-          ? 'bg-[#1a2a1a]/60 text-[#7da87d]'
-          : 'bg-[#2a1a1a]/60 text-[#a87d7d]'
+          ? 'bg-[#1a2a1a]/60 text-[#7da87d] border border-[#2a4a2a]/40'
+          : 'bg-[#2a1a1a]/60 text-[#a87d7d] border border-[#4a2a2a]/40'
       }`}
     >
-      <EffectIcon type={type} size={10} />
+      <EffectIcon type={type} size={16} />
       {value}
     </div>
   )
@@ -47,8 +47,8 @@ function EffectBadge({
   value: number
 }) {
   return (
-    <div className="inline-flex items-center gap-1 text-[10px] text-[#75685f]">
-      <EffectIcon type={type} size={10} />
+    <div className="inline-flex items-center gap-1.5 text-[14px] text-[#75685f]">
+      <EffectIcon type={type} size={16} />
       <span className={value < 0 ? 'text-[#a87d7d]' : 'text-[#7da87d]'}>
         {value > 0 ? '+' : ''}
         {value}
@@ -68,7 +68,7 @@ export function ChoiceList({
   )
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {visibleOptions.map((option, index) => {
         const available = isChoiceAvailable(option, character)
         const req = option.requirements
@@ -83,16 +83,16 @@ export function ChoiceList({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: index * 0.06 }}
             className={`
-              group relative w-full overflow-hidden border bg-[#0c0909]/90 px-6 py-5 text-left
+              group relative w-full overflow-hidden border-2 bg-[#0c0909]/95 px-6 py-4 text-left
               transition-all duration-300
 
               ${
                 available
                   ? `
-                    border-[#241919]
-                    hover:border-[#5c1f1f]
+                    border-[#2b2320]
+                    hover:border-[#8e1f1f]
                     hover:bg-[#140d0d]
-                    hover:shadow-[0_0_30px_rgba(92,31,31,0.15)]
+                    hover:shadow-[0_0_40px_rgba(92,31,31,0.2)]
                   `
                   : `
                     cursor-not-allowed border-[#181212] opacity-40
@@ -102,14 +102,14 @@ export function ChoiceList({
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,20,20,0.08),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-            <div className="relative flex items-start justify-between gap-6">
+            <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="font-cinzel text-[15px] uppercase tracking-[0.12em] text-[#e7ded7]">
+                <div className="font-cinzel text-[18px] uppercase tracking-[0.12em] text-[#e7ded7]">
                   {option.text}
                 </div>
 
                 {(req?.strength || req?.agility || req?.intelligence) && (
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     {req.strength !== undefined && (
                       <RequirementBadge
                         type="strength"
@@ -135,7 +135,7 @@ export function ChoiceList({
                 )}
 
                 {(req?.minCorruption || req?.maxSanity) && (
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.28em] text-[#8b5e5e]">
+                  <div className="mt-2 text-[13px] uppercase tracking-[0.25em] text-[#8b5e5e]">
                     {req.minCorruption && (
                       <span>Corruption {req.minCorruption}+ </span>
                     )}
@@ -146,15 +146,23 @@ export function ChoiceList({
 
               <div className="flex shrink-0 flex-col items-end gap-2">
                 {option.effects?.addArtifact && (
-                  <div className="inline-flex items-center gap-1 rounded bg-[#2a2a1a]/60 px-2 py-0.5 text-[9px] uppercase tracking-[0.2em] text-[#c8b84a]">
-                    <EffectIcon type="addArtifact" size={10} />
+                  <div className="inline-flex items-center gap-1.5 rounded-sm bg-[#2a2a1a]/60 px-3 py-1 text-[12px] uppercase tracking-[0.2em] text-[#c8b84a] border border-[#4a4a2a]/40">
+                    <EffectIcon type="addArtifact" size={16} />
                     Relic
                   </div>
                 )}
 
                 {option.effects?.addFlag && (
-                  <div className="inline-flex items-center gap-1 text-[10px] text-[#7da87d]">
-                    <EffectIcon type="addFlag" size={10} />
+                  <div className="inline-flex items-center gap-1.5 text-[14px] text-[#7da87d]">
+                    <EffectIcon type="addFlag" size={16} />
+                    Flag
+                  </div>
+                )}
+
+                {option.effects?.addFlag && (
+                  <div className="inline-flex items-center gap-1 text-[12px] text-[#7da87d]">
+                    <EffectIcon type="addFlag" size={14} />
+                    Flag
                   </div>
                 )}
 
@@ -170,7 +178,7 @@ export function ChoiceList({
                   )}
                 </div>
 
-                <div className="mt-1 h-px w-16 bg-gradient-to-r from-[#5c1f1f] to-transparent opacity-60 transition-all duration-300 group-hover:w-24 group-hover:opacity-100" />
+                <div className="mt-1 h-[2px] w-20 bg-gradient-to-r from-[#8e1f1f] to-transparent opacity-60 transition-all duration-300 group-hover:w-28 group-hover:opacity-100" />
               </div>
             </div>
           </motion.button>

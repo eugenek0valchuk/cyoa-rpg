@@ -21,24 +21,26 @@ export function ChronicleCard({
   return (
     <section
       className={clsx(
-        'relative overflow-hidden border border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_40px_rgba(0,0,0,0.45)]',
+        'relative overflow-hidden border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]',
         className,
       )}
     >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(142,31,31,0.06),transparent_60%)]" />
+
       {(title || subtitle) && (
-        <div className="border-b border-[#241919] bg-[#120d0d] px-6 py-4">
-          <div className="flex items-center gap-3">
-            {icon}
+        <div className="border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
+          <div className="flex items-center gap-4">
+            {icon && <span className="text-[#8e1f1f]">{icon}</span>}
 
             <div>
               {subtitle && (
-                <div className="text-[10px] uppercase tracking-[0.35em] text-[#75685f]">
+                <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
                   {subtitle}
                 </div>
               )}
 
               {title && (
-                <h2 className="mt-1 font-cinzel text-2xl uppercase tracking-[0.08em] text-[#ece2d9]">
+                <h2 className="mt-1 font-cinzel text-3xl uppercase tracking-[0.08em] text-[#ece2d9]">
                   {title}
                 </h2>
               )}
@@ -47,7 +49,7 @@ export function ChronicleCard({
         </div>
       )}
 
-      <div className={clsx('px-7 py-7', contentClassName)}>{children}</div>
+      <div className={clsx('px-6 py-6', contentClassName)}>{children}</div>
     </section>
   )
 }
