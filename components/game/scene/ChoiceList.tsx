@@ -2,10 +2,9 @@
 
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
-import { Character, Choice } from '@/lib/types/game'
-import { motion } from 'framer-motion'
+import { Choice, Character } from '@/lib/types/game'
 import { EffectIcon } from '../ui/EffectIcon'
-import { RitualSymbol } from '../ui/RitualSymbol'
+import { motion } from 'framer-motion'
 
 interface ChoiceListProps {
   options: Choice[]
@@ -104,11 +103,7 @@ export function ChoiceList({
 
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,20,20,0.08),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-            <div className="relative flex items-start gap-5 px-6 py-4">
-              <div className="mt-1 shrink-0 text-[#3b2a2a] transition-colors duration-500 group-hover:text-[#8e1f1f]">
-                <RitualSymbol type="sanity" size={18} />
-              </div>
-
+            <div className="relative flex items-start justify-between gap-4 px-6 py-4">
               <div className="min-w-0 flex-1">
                 <div className="font-cinzel text-[18px] uppercase tracking-[0.12em] text-[#e7ded7]">
                   {option.text}

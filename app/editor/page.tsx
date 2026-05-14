@@ -123,27 +123,30 @@ export default function EditorPage() {
       <img
         src="/main-bg.png"
         alt=""
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover opacity-50"
       />
 
-      <div className="absolute inset-0 bg-black/55" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
-      <div className="fixed inset-0 -z-10 shadow-[inset_0_0_220px_rgba(0,0,0,0.95)]" />
+      <div className="pointer-events-none fixed inset-0 shadow-[inset_0_0_250px_rgba(0,0,0,0.8),inset_0_0_80px_rgba(80,10,10,0.1)]" />
 
-      <section className="relative z-10 mx-auto max-w-[1250px] pt-16 pb-12">
-        <div className="mb-10 text-center">
-          <div className="text-[11px] uppercase tracking-[0.6em] text-[#7a6d63]">
-            CHOOSE YOUR ORIGIN
+      <section className="relative z-10 mx-auto max-w-[1100px] pt-[6vh] pb-12">
+        <div className="mb-8 border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
+          <div className="border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
+            <div className="flex items-center gap-4">
+              <div>
+                <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
+                  CHOOSE YOUR ORIGIN
+                </div>
+                <h1 className="font-cinzel mt-1 text-3xl uppercase tracking-[0.08em] text-[#ece2d9]">
+                  DESCENT
+                </h1>
+              </div>
+            </div>
           </div>
-
-          <h1 className="font-cinzel mt-4 text-5xl uppercase tracking-[0.16em] text-[#e6ddd4]">
-            DESCENT
-          </h1>
-
-          <div className="mx-auto mt-4 h-px w-48 bg-gradient-to-r from-transparent via-[#8e1f1f] to-transparent" />
         </div>
 
-        <div className="mt-8 flex items-center justify-center gap-4">
+        <div className="mt-6 flex items-center justify-center gap-4">
           <button
             type="button"
             onClick={() => setIndex((i) => Math.max(i - 1, 0))}
@@ -230,27 +233,45 @@ export default function EditorPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="mx-auto mt-12 max-w-[620px]">
-          <div className="border border-[#2f2622] bg-[linear-gradient(to_bottom,#120c0c,#080505)] p-6 text-center">
-            <div className="text-[11px] uppercase tracking-[0.5em] text-[#7a6d63]">
-              VESSEL NAME
+        <form onSubmit={handleSubmit} className="mx-auto mt-8 max-w-[1100px]">
+          <div className="border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
+            <div className="border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
+              <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
+                VESSEL NAME
+              </div>
             </div>
 
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter name..."
-              maxLength={24}
-              className="font-cinzel mt-4 w-full border-b border-[#4a3a32] bg-transparent py-3 text-center text-3xl uppercase tracking-[0.14em] text-[#f1e6dc] outline-none placeholder:text-[#5e544c] focus:border-[#8e1f1f]"
-            />
+            <div className="px-6 py-6">
+              <div className="relative">
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#4a3a32] to-transparent" />
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="enter name..."
+                  maxLength={24}
+                  className="font-cinzel w-full border-0 border-b border-[#4a3a32] bg-transparent py-3 text-2xl uppercase tracking-[0.14em] text-[#f1e6dc] outline-none placeholder:text-[#5e544c] focus:border-[#8e1f1f] transition-colors duration-300"
+                />
+              </div>
 
-            <button
-              type="submit"
-              disabled={!name.trim()}
-              className="font-cinzel mt-8 w-full border border-[#5c1f1f] bg-[#160909] px-8 py-5 text-lg uppercase tracking-[0.2em] text-[#d46060] transition hover:bg-[#220d0d] hover:text-[#ff7b7b] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Begin Descent
-            </button>
+              <div className="mt-6 grid grid-cols-2 gap-3 text-[12px] text-[#75685f]">
+                <div className="border border-[#2b2320] bg-black/30 px-3 py-2">
+                  <span className="text-[#8f7f75]">Sanity</span>
+                  <span className="float-right text-[#d8d0c8]">100</span>
+                </div>
+                <div className="border border-[#2b2320] bg-black/30 px-3 py-2">
+                  <span className="text-[#8f7f75]">Corruption</span>
+                  <span className="float-right text-[#d46060]">0</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!name.trim()}
+                className="font-cinzel mt-6 w-full border-2 border-[#5c1f1f] bg-[#160909] px-8 py-4 text-base uppercase tracking-[0.2em] text-[#d46060] transition-all duration-300 hover:bg-[#220d0d] hover:text-[#ff7b7b] hover:shadow-[0_0_30px_rgba(92,31,31,0.2)] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Begin Descent
+              </button>
+            </div>
           </div>
         </form>
       </section>
