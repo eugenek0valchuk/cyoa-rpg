@@ -1,5 +1,5 @@
 import { applyChoiceEffects } from './applyChoiceEffects'
-import { resolveEnding } from './resolveEnding'
+import { getEnding } from './endings'
 import { resolveNextScene } from './resolveNextScene'
 import { createStaticScene } from './createStaticScene'
 import { commitSceneTransition } from './commitSceneTransition'
@@ -9,7 +9,7 @@ import type {
   Character,
   Choice,
   Scene,
-  SceneMemory,
+  SceneHistoryEntry,
 } from '../types/game'
 import { logChoice, logEnding, logArtifact, logSceneTransition } from '../debug'
 
@@ -17,20 +17,20 @@ interface HandleChoiceParams {
   currentScene: Scene
   choice: Choice
   character: Character
-  sceneHistory: SceneMemory[]
+  sceneHistory: SceneHistoryEntry[]
   artifacts: Record<string, Artifact>
   generateScene: (
     currentScene: Scene,
     choice: Choice,
     character: Character,
-    sceneHistory: SceneMemory[],
+    sceneHistory: SceneHistoryEntry[],
   ) => Promise<Scene>
   updateSanity: (amount: number) => void
   updateCorruption: (amount: number) => void
   addFlag: (flag: string) => void
   addArtifact: (artifact: Artifact) => void
   setCurrentScene: (scene: Scene) => void
-  pushSceneHistory: (scene: SceneMemory) => void
+  pushSceneHistory: (scene: SceneHistoryEntry) => void
   pushHistory: (sceneId: string) => void
   revealArtifact: (artifact: Artifact) => Promise<void>
 }
@@ -63,10 +63,7 @@ export async function handleGameChoice({
     character,
   })
 
-  const ending = resolveEnding(
-    updatedCharacter.sanity,
-    updatedCharacter.corruption,
-  )
+  const ending = getEnding(updatedCharacter.sanity, updatedCharacter.corruption)
 
   if (ending) {
     setCurrentScene(

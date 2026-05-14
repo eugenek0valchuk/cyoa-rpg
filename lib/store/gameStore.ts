@@ -1,14 +1,14 @@
 import { create } from 'zustand'
 
-import type { Scene, SceneMemory } from '@/lib/types/game'
+import type { Scene, SceneHistoryEntry } from '@/lib/types/game'
 
 interface GameStore {
   currentScene: Scene | null
   history: string[]
-  sceneHistory: SceneMemory[]
+  sceneHistory: SceneHistoryEntry[]
   setCurrentScene: (scene: Scene) => void
   pushHistory: (sceneId: string) => void
-  pushSceneHistory: (scene: SceneMemory) => void
+  pushSceneHistory: (scene: SceneHistoryEntry) => void
   resetGame: () => void
 }
 

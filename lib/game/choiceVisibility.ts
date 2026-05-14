@@ -1,7 +1,6 @@
-import type { Character } from '@/lib/types/game'
-import type { Choice } from '@/lib/types/game'
+import type { Character, Choice } from '@/lib/types/game'
 
-export function isChoiceVisible(choice: Choice, character: Character) {
+export function isChoiceVisible(choice: Choice, character: Character): boolean {
   if (!choice.requirements) {
     return true
   }
@@ -26,7 +25,7 @@ export function isChoiceVisible(choice: Choice, character: Character) {
   if (
     req.requiredArtifact &&
     !character.inventory.some(
-      (artifact: any) => artifact.id === req.requiredArtifact,
+      (artifact) => artifact.id === req.requiredArtifact,
     )
   ) {
     return false

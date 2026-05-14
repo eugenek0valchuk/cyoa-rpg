@@ -1,4 +1,4 @@
-import type { Character, Choice, Scene, SceneMemory } from '../types/game'
+import type { Character, Choice, Scene, SceneHistoryEntry } from '../types/game'
 
 interface LogChoicePayload {
   scene: Scene
@@ -9,7 +9,7 @@ interface LogChoicePayload {
 interface LogScenePayload {
   previousScene: Scene
   nextScene: Scene
-  history: SceneMemory[]
+  history: SceneHistoryEntry[]
 }
 
 function appendLog(type: string, payload: unknown) {

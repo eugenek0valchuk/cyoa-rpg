@@ -1,4 +1,3 @@
-import { Choice } from '../types/game'
 import { createSceneId } from './createSceneId'
 import { SceneSchema } from './schema/sceneSchema'
 
@@ -14,14 +13,14 @@ export function parseScene(raw: string) {
 
     parsed.description = parsed.description?.replace(/\n{3,}/g, '\n\n')?.trim()
 
-    parsed.options = parsed.options?.map((option: Choice) => ({
+    parsed.options = parsed.options?.map((option: any) => ({
       ...option,
-
       id: String(option.id)
         .toLowerCase()
         .replace(/[^a-z0-9_]/g, '_'),
-
       text: option.text?.trim(),
+      requirements: option.requirements ?? undefined,
+      effects: option.effects ?? undefined,
     }))
 
     return SceneSchema.parse(parsed)

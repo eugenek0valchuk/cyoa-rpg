@@ -1,114 +1,126 @@
 import { artifacts } from '@/lib/game/artifacts'
-import { Character } from '../types/game'
+import type {
+  Character,
+  Choice,
+  ChoiceRequirements,
+  Scene,
+} from '../types/game'
 
 const MAX_OPTIONS = 4
 const MIN_OPTIONS = 2
 
-function normalizeText(value: unknown, fallback: string) {
+interface RawChoice {
+  id?: unknown
+  text?: unknown
+  requirements?: unknown
+  effects?: unknown
+}
+
+interface RawScene {
+  title?: unknown
+  description?: unknown
+  options?: RawChoice[]
+}
+
+function normalizeText(value: unknown, fallback: string): string {
   if (typeof value !== 'string') return fallback
   const cleaned = value.trim()
   return cleaned.length > 0 ? cleaned : fallback
 }
 
-function normalizeRequirements(requirements: any) {
+function normalizeRequirements(requirements: unknown): ChoiceRequirements {
   if (!requirements || typeof requirements !== 'object') return {}
 
-  const normalized: Record<string, any> = {}
+  const normalized: ChoiceRequirements = {}
+  const req = requirements as Record<string, unknown>
 
   if (
-    typeof requirements.minCorruption === 'number' &&
-    Number.isFinite(requirements.minCorruption)
+    typeof req.minCorruption === 'number' &&
+    Number.isFinite(req.minCorruption)
   ) {
     normalized.minCorruption = Math.max(
       0,
-      Math.min(100, Math.round(requirements.minCorruption)),
+      Math.min(100, Math.round(req.minCorruption)),
     )
   }
 
-  if (
-    typeof requirements.maxSanity === 'number' &&
-    Number.isFinite(requirements.maxSanity)
-  ) {
-    normalized.maxSanity = Math.max(
-      0,
-      Math.min(100, Math.round(requirements.maxSanity)),
-    )
+  if (typeof req.maxSanity === 'number' && Number.isFinite(req.maxSanity)) {
+    normalized.maxSanity = Math.max(0, Math.min(100, Math.round(req.maxSanity)))
   }
 
-  if (typeof requirements.requiredFlag === 'string') {
-    normalized.requiredFlag = requirements.requiredFlag
+  if (typeof req.requiredFlag === 'string') {
+    normalized.requiredFlag = req.requiredFlag
       .trim()
       .toLowerCase()
       .replace(/\s+/g, '_')
   }
 
   if (
-    typeof requirements.requiredArtifact === 'string' &&
-    artifacts[requirements.requiredArtifact]
+    typeof req.requiredArtifact === 'string' &&
+    artifacts[req.requiredArtifact]
   ) {
-    normalized.requiredArtifact = requirements.requiredArtifact
+    normalized.requiredArtifact = req.requiredArtifact
   }
 
   return normalized
 }
 
-function normalizeEffects(effects: any, ownedArtifacts: Set<string>) {
-  const normalized: Record<string, any> = {}
+function normalizeEffects(
+  effects: unknown,
+  ownedArtifacts: Set<string>,
+): Choice['effects'] {
+  const normalized: NonNullable<Choice['effects']> = {}
+  const eff = effects as Record<string, unknown> | null | undefined
 
-  if (typeof effects?.sanity === 'number' && Number.isFinite(effects.sanity)) {
-    normalized.sanity = Math.max(-25, Math.min(25, Math.round(effects.sanity)))
+  if (typeof eff?.sanity === 'number' && Number.isFinite(eff.sanity)) {
+    normalized.sanity = Math.max(-25, Math.min(25, Math.round(eff.sanity)))
   }
 
-  if (
-    typeof effects?.corruption === 'number' &&
-    Number.isFinite(effects.corruption)
-  ) {
+  if (typeof eff?.corruption === 'number' && Number.isFinite(eff.corruption)) {
     normalized.corruption = Math.max(
       -25,
-      Math.min(25, Math.round(effects.corruption)),
+      Math.min(25, Math.round(eff.corruption)),
     )
   }
 
-  if (typeof effects?.addFlag === 'string') {
-    normalized.addFlag = effects.addFlag
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '_')
+  if (typeof eff?.addFlag === 'string') {
+    normalized.addFlag = eff.addFlag.trim().toLowerCase().replace(/\s+/g, '_')
   }
 
   if (
-    typeof effects?.addArtifact === 'string' &&
-    artifacts[effects.addArtifact] &&
-    !ownedArtifacts.has(effects.addArtifact)
+    typeof eff?.addArtifact === 'string' &&
+    artifacts[eff.addArtifact] &&
+    !ownedArtifacts.has(eff.addArtifact)
   ) {
-    normalized.addArtifact = effects.addArtifact
+    normalized.addArtifact = eff.addArtifact
   }
 
-  return normalized
+  return Object.keys(normalized).length > 0 ? normalized : undefined
 }
 
-function canAccessOption(option: any, character?: Character) {
+function canAccessOption(option: Choice, character?: Character): boolean {
   if (!character) return true
 
-  const requirements = option.requirements || {}
+  const requirements = option.requirements
+  if (!requirements) return true
 
   if (
-    typeof requirements.minCorruption === 'number' &&
+    requirements.minCorruption !== undefined &&
     character.corruption < requirements.minCorruption
   ) {
     return false
   }
 
   if (
-    typeof requirements.maxSanity === 'number' &&
+    requirements.maxSanity !== undefined &&
     character.sanity > requirements.maxSanity
   ) {
     return false
   }
 
   if (
-    typeof requirements.requiredFlag === 'string' &&
-    !character.flags?.includes(requirements.requiredFlag)
+    requirements.requiredFlag &&
+    !character.flags.includes(requirements.requiredFlag)
   ) {
     return false
   }
@@ -116,28 +128,25 @@ function canAccessOption(option: any, character?: Character) {
   return true
 }
 
-function createFallbackOptions() {
+function createFallbackOptions(): Choice[] {
   return [
     {
       id: 'continue_forward',
       text: 'Continue deeper into the abyss',
       effects: { sanity: -3 },
-      requirements: {},
     },
     {
       id: 'observe',
       text: 'Remain still and listen to the dark',
-      effects: {},
-      requirements: {},
     },
   ]
 }
 
 export function validateScene(
-  rawScene: any,
+  rawScene: RawScene,
   ownedArtifacts: Set<string>,
   character?: Character,
-) {
+): Scene {
   const title = normalizeText(rawScene?.title, 'Unknown Depths').slice(0, 80)
   const description = normalizeText(
     rawScene?.description,
@@ -146,9 +155,9 @@ export function validateScene(
   const rawOptions = Array.isArray(rawScene?.options) ? rawScene.options : []
   const usedIds = new Set<string>()
 
-  const normalizedOptions = rawOptions
+  const normalizedOptions: Choice[] = rawOptions
     .slice(0, MAX_OPTIONS)
-    .map((option: any, index: number) => {
+    .map((option, index) => {
       let id = normalizeText(option?.id, `option_${index}`)
         .toLowerCase()
         .replace(/[^a-z0-9_]/g, '_')
@@ -159,25 +168,27 @@ export function validateScene(
         id,
         text: normalizeText(option?.text, `Choice ${index + 1}`).slice(0, 120),
         requirements: normalizeRequirements(option?.requirements),
-        effects: normalizeEffects(option?.effects || {}, ownedArtifacts),
+        effects: normalizeEffects(option?.effects, ownedArtifacts),
       }
     })
-    .filter((option: any) => option.text.length > 0)
+    .filter((option) => option.text.length > 0)
 
-  const accessibleOptions = normalizedOptions.filter((option: any) =>
+  const accessibleOptions = normalizedOptions.filter((option) =>
     canAccessOption(option, character),
   )
   const fallbackOptions = createFallbackOptions()
-  while (accessibleOptions.length < MIN_OPTIONS) {
+  const resultOptions = [...accessibleOptions]
+
+  while (resultOptions.length < MIN_OPTIONS) {
     const fallback =
       fallbackOptions[normalizedOptions.length % fallbackOptions.length]
-    accessibleOptions.push(fallback)
+    resultOptions.push(fallback)
   }
 
   return {
     id: `scene_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
     title,
     description,
-    options: accessibleOptions,
+    options: resultOptions,
   }
 }

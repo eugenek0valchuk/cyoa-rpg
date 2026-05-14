@@ -1,17 +1,17 @@
 import { scenes } from './scenes'
 
-import type { Choice, Character, Scene, SceneMemory } from '../types/game'
+import type { Choice, Character, Scene, SceneHistoryEntry } from '../types/game'
 
 interface ResolveNextSceneParams {
   currentScene: Scene
   choice: Choice
   character: Character
-  sceneHistory: SceneMemory[]
+  sceneHistory: SceneHistoryEntry[]
   generateScene: (
     currentScene: Scene,
     choice: Choice,
     character: Character,
-    sceneHistory: SceneMemory[],
+    sceneHistory: SceneHistoryEntry[],
   ) => Promise<Scene>
 }
 

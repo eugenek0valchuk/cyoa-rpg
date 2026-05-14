@@ -64,11 +64,10 @@ export interface Choice {
     corruption?: number
     addFlag?: string
     addArtifact?: string
-  }
-
-  requirements?: ChoiceRequirements
+  } | null
+  requirements?: ChoiceRequirements | null
 }
-export interface SceneMemory {
+export type SceneHistoryEntry = {
   id: string
   title: string
   description: string
@@ -79,10 +78,4 @@ export interface Scene {
   title: string
   description: string
   options: Choice[]
-}
-
-export type SceneHistoryEntry = {
-  id: string
-  title: string
-  description: string
 }

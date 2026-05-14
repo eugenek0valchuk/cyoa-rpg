@@ -1,9 +1,9 @@
-import type { Scene, SceneMemory } from '../types/game'
+import type { Scene, SceneHistoryEntry } from '../types/game'
 
 interface Params {
   currentScene: Scene
   nextScene: Scene
-  pushSceneHistory: (scene: SceneMemory) => void
+  pushSceneHistory: (scene: SceneHistoryEntry) => void
   pushHistory: (sceneId: string) => void
 }
 
