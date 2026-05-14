@@ -64,21 +64,21 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 value: character.stats.strength,
                 max: 20,
                 color: '#d46060',
-                icon: <GameIcon type="strength" size={24} />,
+                icon: <GameIcon type="strength" size={44} />,
               },
               {
                 label: 'Agility',
                 value: character.stats.agility,
                 max: 20,
                 color: '#b4c27d',
-                icon: <GameIcon type="agility" size={24} />,
+                icon: <GameIcon type="agility" size={44} />,
               },
               {
                 label: 'Intelligence',
                 value: character.stats.intelligence,
                 max: 20,
                 color: '#92a6dd',
-                icon: <GameIcon type="intelligence" size={24} />,
+                icon: <GameIcon type="intelligence" size={44} />,
               },
             ].map((stat, i) => (
               <motion.div
@@ -120,7 +120,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             value={character.sanity}
             max={100}
             color="#d8d0c8"
-            icon={<GameIcon type="sanity" size={24} />}
+            icon={<GameIcon type="sanity" size={44} />}
           />
 
           <StatBar
@@ -129,13 +129,13 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             max={100}
             color="#d46060"
             trackColor="#8e1f1f"
-            icon={<GameIcon type="corruption" size={24} />}
+            icon={<GameIcon type="corruption" size={44} />}
             bgColor="#1b1414"
           />
 
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.3em] text-[#7a6d63]">
-              <GameIcon type="artifact" size={24} />
+              <GameIcon type="artifact" size={44} />
               Artifacts
             </div>
 

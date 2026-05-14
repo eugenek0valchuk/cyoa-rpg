@@ -1,9 +1,9 @@
 import { GameIcon } from '../ui/GameIcon'
 
 export const ORIGIN_ICONS = {
-  hollow: <GameIcon type="hollow" size={32} />,
-  heretic: <GameIcon type="heretic" size={32} />,
-  witness: <GameIcon type="witness" size={32} />,
+  hollow: <GameIcon type="hollow" size={40} />,
+  heretic: <GameIcon type="heretic" size={40} />,
+  witness: <GameIcon type="witness" size={40} />,
 }
 
 export const ORIGIN_TITLES = {

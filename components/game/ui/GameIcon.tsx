@@ -29,8 +29,22 @@ const ICON_MAP: Record<string, string> = {
   witness: '/ui/gothic-sanity-eye.png',
 }
 
+const GLOW_MAP: Record<string, string> = {
+  sanity: 'drop-shadow(0 0 6px rgba(216,208,200,0.5))',
+  corruption: 'drop-shadow(0 0 8px rgba(212,96,96,0.6))',
+  strength: 'drop-shadow(0 0 8px rgba(212,96,96,0.6))',
+  agility: 'drop-shadow(0 0 8px rgba(180,194,125,0.5))',
+  intelligence: 'drop-shadow(0 0 8px rgba(146,166,221,0.5))',
+  artifact: 'drop-shadow(0 0 10px rgba(250,204,21,0.5))',
+  flag: 'drop-shadow(0 0 6px rgba(125,168,125,0.4))',
+  hollow: 'drop-shadow(0 0 6px rgba(150,130,120,0.4))',
+  heretic: 'drop-shadow(0 0 8px rgba(212,96,96,0.5))',
+  witness: 'drop-shadow(0 0 8px rgba(216,208,200,0.4))',
+}
+
 export function GameIcon({ type, size = 20, className }: GameIconProps) {
   const src = ICON_MAP[type]
+  const glow = GLOW_MAP[type]
   if (!src) return null
 
   return (
@@ -38,7 +52,12 @@ export function GameIcon({ type, size = 20, className }: GameIconProps) {
       src={src}
       alt=""
       className={className}
-      style={{ width: size, height: size, objectFit: 'contain' }}
+      style={{
+        width: size,
+        height: size,
+        objectFit: 'contain',
+        filter: glow,
+      }}
     />
   )
 }

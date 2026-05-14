@@ -26,7 +26,7 @@ const TYPE_MAP: Record<string, GameIconProps['type']> = {
 
 import type { GameIconProps } from './GameIcon'
 
-export function EffectIcon({ type, size = 28 }: EffectIconProps) {
+export function EffectIcon({ type, size = 48 }: EffectIconProps) {
   const iconType = TYPE_MAP[type]
   if (!iconType) return null
 
