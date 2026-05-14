@@ -20,36 +20,23 @@ import {
 
 interface HandleChoiceParams {
   currentScene: Scene
-
   choice: Choice
-
   character: Character
-
   sceneHistory: SceneMemory[]
-
   artifacts: Record<string, Artifact>
-
   generateScene: (
     currentScene: Scene,
     choice: Choice,
     character: Character,
     sceneHistory: SceneMemory[],
   ) => Promise<Scene>
-
   updateSanity: (amount: number) => void
-
   updateCorruption: (amount: number) => void
-
   addFlag: (flag: string) => void
-
   addArtifact: (artifact: Artifact) => void
-
   setCurrentScene: (scene: Scene) => void
-
   pushSceneHistory: (scene: SceneMemory) => void
-
   pushHistory: (sceneId: string) => void
-
   revealArtifact: (artifact: Artifact) => Promise<void>
 }
 

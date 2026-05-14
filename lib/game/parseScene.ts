@@ -30,21 +30,15 @@ export function parseScene(raw: string) {
 
     return {
       id: 'fallback_scene',
-
       title: 'Distortion',
-
       description: 'Reality fractures into incoherent fragments.',
-
       options: [
         {
           id: 'recover',
-
           text: 'Attempt to recover your thoughts',
         },
-
         {
           id: 'submit',
-
           text: 'Let the abyss consume you',
         },
       ],

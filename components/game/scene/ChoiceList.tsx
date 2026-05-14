@@ -1,11 +1,9 @@
 'use client'
 
-import { motion } from 'framer-motion'
-
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
-
-import type { Character, Choice } from '@/lib/types/game'
+import { Choice, Character } from '@/lib/types/game'
+import { motion } from 'framer-motion'
 
 interface ChoiceListProps {
   options: Choice[]

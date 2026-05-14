@@ -1,12 +1,13 @@
 'use client'
 
-import { ArtifactReveal } from '@/components/game/ArtifactReveal'
-import { CharacterPanel } from '@/components/game/CharacterPanel'
-import { GameHeader } from '@/components/game/GameHeader'
-import { GameLayout } from '@/components/game/GameLayout'
-import { GameSceneView } from '@/components/game/GameSceneView'
-import { GameViewport } from '@/components/game/GameViewport'
-
+import {
+  GameLayout,
+  GameHeader,
+  CharacterPanel,
+  GameViewport,
+  GameSceneView,
+  ArtifactReveal,
+} from '@/components/game'
 import { useGameSession } from '@/hooks/useGameSession'
 
 export default function GamePage() {

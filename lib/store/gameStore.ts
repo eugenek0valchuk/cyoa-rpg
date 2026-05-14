@@ -4,25 +4,17 @@ import type { Scene, SceneMemory } from '@/lib/types/game'
 
 interface GameStore {
   currentScene: Scene | null
-
   history: string[]
-
   sceneHistory: SceneMemory[]
-
   setCurrentScene: (scene: Scene) => void
-
   pushHistory: (sceneId: string) => void
-
   pushSceneHistory: (scene: SceneMemory) => void
-
   resetGame: () => void
 }
 
 export const useGameStore = create<GameStore>((set) => ({
   currentScene: null,
-
   history: [],
-
   sceneHistory: [],
 
   setCurrentScene: (scene) =>
@@ -43,9 +35,7 @@ export const useGameStore = create<GameStore>((set) => ({
   resetGame: () =>
     set({
       currentScene: null,
-
       history: [],
-
       sceneHistory: [],
     }),
 }))

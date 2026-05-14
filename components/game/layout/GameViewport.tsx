@@ -2,9 +2,7 @@
 
 interface Props {
   loading: boolean
-
   blocked: boolean
-
   children: React.ReactNode
 }
 

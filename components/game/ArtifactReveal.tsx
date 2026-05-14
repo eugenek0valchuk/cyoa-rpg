@@ -1,10 +1,9 @@
 'use client'
 
+import { Artifact } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useEffect, useState } from 'react'
-
-import type { Artifact } from '@/lib/types/game'
 
 interface ArtifactRevealProps {
   artifact: Artifact | null

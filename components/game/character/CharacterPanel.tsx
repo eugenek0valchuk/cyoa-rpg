@@ -1,19 +1,11 @@
-import { Eye, Flame, Package, Skull } from 'lucide-react'
+import { Package } from 'lucide-react'
+
+import { ORIGIN_ICONS, ORIGIN_TITLES } from '../constants/origins'
+
 import type { Character } from '@/lib/types/game'
 
 interface CharacterPanelProps {
   character: Character
-}
-
-const originIcons = {
-  hollow: <Skull className="h-4 w-4" />,
-  heretic: <Flame className="h-4 w-4" />,
-  witness: <Eye className="h-4 w-4" />,
-}
-const originTitles = {
-  hollow: 'THE HOLLOW',
-  heretic: 'THE HERETIC',
-  witness: 'THE WITNESS',
 }
 
 export function CharacterPanel({ character }: CharacterPanelProps) {
@@ -36,7 +28,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
             <div className="mt-6 inline-flex items-center gap-3 border border-[#3b2a2a] bg-[#140d0d]/90 px-4 py-3 text-[#d8c9be]">
               <div className="text-[#8e1f1f]">
-                {originIcons[character.origin]}
+                {ORIGIN_ICONS[character.origin]}
               </div>
 
               <div>
@@ -45,42 +37,48 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 </div>
 
                 <div className="font-cinzel mt-1 text-sm uppercase tracking-[0.12em]">
-                  {originTitles[character.origin]}
+                  {ORIGIN_TITLES[character.origin]}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center">
-              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
-                Strength
-              </div>
+            {[
+              {
+                label: 'Strength',
+                value: character.stats.strength,
+                color: '#d46060',
+              },
+              {
+                label: 'Agility',
+                value: character.stats.agility,
+                color: '#b4c27d',
+              },
+              {
+                label: 'Intelligence',
+                value: character.stats.intelligence,
+                color: '#92a6dd',
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center"
+              >
+                <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
+                  {stat.label}
+                </div>
 
-              <div className="mt-3 font-cinzel text-3xl text-[#d46060]">
-                {character.stats.strength}
+                <div
+                  className="mt-3 font-cinzel text-3xl"
+                  style={{
+                    color: stat.color,
+                  }}
+                >
+                  {stat.value}
+                </div>
               </div>
-            </div>
-
-            <div className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center">
-              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
-                Agility
-              </div>
-
-              <div className="mt-3 font-cinzel text-3xl text-[#b4c27d]">
-                {character.stats.agility}
-              </div>
-            </div>
-
-            <div className="min-w-[110px] border border-[#2f2622] bg-[#0c0808]/80 px-4 py-4 text-center">
-              <div className="text-[9px] uppercase tracking-[0.3em] text-[#7a6d63]">
-                Intelligence
-              </div>
-
-              <div className="mt-3 font-cinzel text-3xl text-[#92a6dd]">
-                {character.stats.intelligence}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
@@ -114,7 +112,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             </div>
 
             <div className="mt-3 flex items-end gap-2">
-              <span className="font-cinzel text-4xl text-[#b94b4b]">
+              <span className="font-cinzel text-4xl text-[#d46060]">
                 {character.corruption}
               </span>
 
@@ -133,17 +131,22 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.35em] text-[#7a6d63]">
-              <Package className="h-3 w-3" />
-              INVENTORY
+              <Package className="h-3.5 w-3.5" />
+              Artifacts
             </div>
 
-            <div className="mt-4 space-y-2 text-[13px] text-[#cbbdb1]">
-              {character.inventory.length > 0 ? (
-                character.inventory.map((item) => (
-                  <div key={item.id}>• {item.name}</div>
-                ))
+            <div className="mt-5 space-y-2">
+              {character.inventory.length === 0 ? (
+                <div className="text-sm text-[#75685f]">Nothing remains.</div>
               ) : (
-                <div className="text-[#6f6259]">Empty</div>
+                character.inventory.map((artifact) => (
+                  <div
+                    key={artifact.id}
+                    className="border border-[#241919] bg-black/30 px-3 py-2 text-sm text-[#d8c9be]"
+                  >
+                    {artifact.name}
+                  </div>
+                ))
               )}
             </div>
           </div>
