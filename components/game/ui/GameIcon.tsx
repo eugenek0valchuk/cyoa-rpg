@@ -30,16 +30,16 @@ const ICON_MAP: Record<string, string> = {
 }
 
 const GLOW_MAP: Record<string, string> = {
-  sanity: 'drop-shadow(0 0 6px rgba(216,208,200,0.5))',
-  corruption: 'drop-shadow(0 0 8px rgba(212,96,96,0.6))',
-  strength: 'drop-shadow(0 0 8px rgba(212,96,96,0.6))',
-  agility: 'drop-shadow(0 0 8px rgba(180,194,125,0.5))',
-  intelligence: 'drop-shadow(0 0 8px rgba(146,166,221,0.5))',
-  artifact: 'drop-shadow(0 0 10px rgba(250,204,21,0.5))',
-  flag: 'drop-shadow(0 0 6px rgba(125,168,125,0.4))',
-  hollow: 'drop-shadow(0 0 6px rgba(150,130,120,0.4))',
-  heretic: 'drop-shadow(0 0 8px rgba(212,96,96,0.5))',
-  witness: 'drop-shadow(0 0 8px rgba(216,208,200,0.4))',
+  sanity: 'drop-shadow(0 0 8px rgba(216,208,200,0.6))',
+  corruption: 'drop-shadow(0 0 10px rgba(212,96,96,0.7))',
+  strength: 'drop-shadow(0 0 10px rgba(212,96,96,0.7))',
+  agility: 'drop-shadow(0 0 10px rgba(180,194,125,0.6))',
+  intelligence: 'drop-shadow(0 0 10px rgba(146,166,221,0.6))',
+  artifact: 'drop-shadow(0 0 12px rgba(250,204,21,0.6))',
+  flag: 'drop-shadow(0 0 8px rgba(125,168,125,0.5))',
+  hollow: 'drop-shadow(0 0 8px rgba(150,130,120,0.5))',
+  heretic: 'drop-shadow(0 0 10px rgba(212,96,96,0.6))',
+  witness: 'drop-shadow(0 0 10px rgba(216,208,200,0.5))',
 }
 
 export function GameIcon({ type, size = 20, className }: GameIconProps) {

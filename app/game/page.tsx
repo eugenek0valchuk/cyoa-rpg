@@ -43,7 +43,7 @@ export default function GamePage() {
 
       <CharacterPanel character={character} />
 
-      <div className="h-6" />
+      <div className="h-4" />
 
       <GameViewport loading={isLoading} blocked={artifactOpen}>
         <GameSceneView

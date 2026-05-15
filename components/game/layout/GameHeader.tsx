@@ -9,13 +9,13 @@ interface Props {
 
 export function GameHeader({ isLoading, onReset }: Props) {
   return (
-    <div className="mb-10 flex items-start justify-between gap-6">
+    <div className="mb-6 flex items-start justify-between gap-6">
       <div className="flex-1 text-center">
         <div className="text-[10px] uppercase tracking-[0.7em] text-[#6d5e55]">
           THE CHRONICLE CONTINUES
         </div>
 
-        <div className="mx-auto mt-6 h-px w-48 bg-gradient-to-r from-transparent via-[#7a2222] to-transparent" />
+        <div className="mx-auto mt-4 h-px w-40 bg-gradient-to-r from-transparent via-[#7a2222] to-transparent" />
       </div>
 
       <button

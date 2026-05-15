@@ -19,7 +19,7 @@ export function GameLayout({ children }: Props) {
 
       <div className="pointer-events-none fixed inset-0 shadow-[inset_0_0_250px_rgba(0,0,0,0.8),inset_0_0_80px_rgba(80,10,10,0.1)]" />
 
-      <section className="relative z-10 mx-auto max-w-[1100px] pt-[8vh] pb-16">
+      <section className="relative z-10 mx-auto max-w-[1100px] pt-[5vh] pb-12">
         {children}
       </section>
     </main>

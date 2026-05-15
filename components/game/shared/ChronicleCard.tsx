@@ -8,6 +8,7 @@ interface ChronicleCardProps {
   className?: string
   contentClassName?: string
   icon?: ReactNode
+  maxHeight?: string
 }
 
 export function ChronicleCard({
@@ -17,6 +18,7 @@ export function ChronicleCard({
   className,
   contentClassName,
   icon,
+  maxHeight = 'max-h-[40vh]',
 }: ChronicleCardProps) {
   return (
     <section
@@ -49,7 +51,19 @@ export function ChronicleCard({
         </div>
       )}
 
-      <div className={clsx('px-6 py-6', contentClassName)}>{children}</div>
+      <div
+        className={clsx(
+          'px-4 py-4 overflow-y-auto chronicle-scrollbar scroll-smooth relative',
+          maxHeight,
+          contentClassName,
+        )}
+      >
+        {/* Fade overlays - always present, subtle atmospheric effect */}
+        <div className="chronicle-fade-top pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-[#0d0909] to-transparent" />
+        <div className="chronicle-fade-bottom pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#0d0909] to-transparent" />
+
+        {children}
+      </div>
     </section>
   )
 }

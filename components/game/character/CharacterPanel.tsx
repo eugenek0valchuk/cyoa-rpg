@@ -1,11 +1,10 @@
 'use client'
 
-import { Package } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 import { ORIGIN_ICONS, ORIGIN_TITLES } from '../constants/origins'
-import { StatBar } from '../ui/StatBar'
 import { GameIcon } from '../ui/GameIcon'
+import { StatBar } from '../ui/StatBar'
 
 import type { Character } from '@/lib/types/game'
 
@@ -24,14 +23,14 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
       <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.9)]" />
 
-      <div className="relative z-10 p-6 md:p-8">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+      <div className="relative z-10 p-4 md:p-5">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <div className="text-[12px] uppercase tracking-[0.4em] text-[#7a6d63]">
               VESSEL
             </div>
 
-            <h2 className="font-cinzel mt-3 text-4xl uppercase tracking-[0.14em] text-[#efe5dc]">
+            <h2 className="font-cinzel mt-2 text-3xl uppercase tracking-[0.14em] text-[#efe5dc]">
               {character.name}
             </h2>
 
@@ -39,7 +38,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
-              className="mt-6 inline-flex items-center gap-4 border-2 border-[#3b2a2a] bg-[#140d0d]/90 px-6 py-4 text-[#d8c9be]"
+              className="mt-4 inline-flex items-center gap-4 border-2 border-[#3b2a2a] bg-[#140d0d]/90 px-4 py-3 text-[#d8c9be]"
             >
               <div className="text-lg text-[#8e1f1f]">
                 {ORIGIN_ICONS[character.origin]}
@@ -57,28 +56,28 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {[
               {
                 label: 'Strength',
                 value: character.stats.strength,
                 max: 20,
                 color: '#d46060',
-                icon: <GameIcon type="strength" size={44} />,
+                icon: <GameIcon type="strength" size={56} />,
               },
               {
                 label: 'Agility',
                 value: character.stats.agility,
                 max: 20,
                 color: '#b4c27d',
-                icon: <GameIcon type="agility" size={44} />,
+                icon: <GameIcon type="agility" size={56} />,
               },
               {
                 label: 'Intelligence',
                 value: character.stats.intelligence,
                 max: 20,
                 color: '#92a6dd',
-                icon: <GameIcon type="intelligence" size={44} />,
+                icon: <GameIcon type="intelligence" size={56} />,
               },
             ].map((stat, i) => (
               <motion.div
@@ -86,21 +85,21 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i }}
-                className="min-w-[130px] border-2 border-[#2f2622] bg-[#0c0808]/85 px-6 py-5 text-center"
+                className="min-w-[110px] border-2 border-[#2f2622] bg-[#0c0808]/85 px-4 py-4 text-center"
               >
-                <div className="flex items-center justify-center gap-2 text-[13px] uppercase tracking-[0.25em] text-[#7a6d63]">
+                <div className="flex items-center justify-center gap-2 text-[12px] uppercase tracking-[0.25em] text-[#7a6d63]">
                   <span style={{ color: stat.color }}>{stat.icon}</span>
                   {stat.label}
                 </div>
 
                 <div
-                  className="mt-3 font-cinzel text-4xl"
+                  className="mt-2 font-cinzel text-3xl"
                   style={{ color: stat.color }}
                 >
                   {stat.value}
                 </div>
 
-                <div className="mx-auto mt-4 h-[3px] max-w-[80px] overflow-hidden bg-[#1b1414]">
+                <div className="mx-auto mt-3 h-[3px] max-w-[70px] overflow-hidden bg-[#1b1414]">
                   <motion.div
                     className="h-full"
                     style={{ background: stat.color }}
@@ -114,13 +113,13 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-4 lg:grid-cols-3">
+        <div className="mt-6 grid gap-3 lg:grid-cols-3">
           <StatBar
             label="Sanity"
             value={character.sanity}
             max={100}
             color="#d8d0c8"
-            icon={<GameIcon type="sanity" size={44} />}
+            icon={<GameIcon type="sanity" size={56} />}
           />
 
           <StatBar
@@ -129,13 +128,13 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
             max={100}
             color="#d46060"
             trackColor="#8e1f1f"
-            icon={<GameIcon type="corruption" size={44} />}
+            icon={<GameIcon type="corruption" size={56} />}
             bgColor="#1b1414"
           />
 
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.3em] text-[#7a6d63]">
-              <GameIcon type="artifact" size={44} />
+              <GameIcon type="artifact" size={56} />
               Artifacts
             </div>
 
