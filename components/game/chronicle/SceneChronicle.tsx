@@ -2,7 +2,7 @@
 
 import { Scene } from '@/lib/types/game'
 import { ScrollText } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChronicleCard } from '../shared/ChronicleCard'
 
 interface SceneChronicleProps {
@@ -10,7 +10,10 @@ interface SceneChronicleProps {
   onTypingComplete?: () => void
 }
 
-export function SceneChronicle({ scene, onTypingComplete }: SceneChronicleProps) {
+export function SceneChronicle({
+  scene,
+  onTypingComplete,
+}: SceneChronicleProps) {
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
   const indexRef = useRef(0)
@@ -22,11 +25,9 @@ export function SceneChronicle({ scene, onTypingComplete }: SceneChronicleProps)
     setDisplayedText('')
     setIsTyping(true)
 
-    // Если текст очень короткий — показываем сразу и завершаем
     if (text.length <= 2) {
       setDisplayedText(text)
       setIsTyping(false)
-      // Даем время на paint перед callback
       const timeout = setTimeout(() => {
         onTypingComplete?.()
       }, 60)
@@ -42,7 +43,6 @@ export function SceneChronicle({ scene, onTypingComplete }: SceneChronicleProps)
         setDisplayedText(text)
         setIsTyping(false)
         clearInterval(timer)
-        // Даем время на paint перед callback
         const timeout = setTimeout(() => {
           onTypingComplete?.()
         }, 60)
@@ -56,12 +56,11 @@ export function SceneChronicle({ scene, onTypingComplete }: SceneChronicleProps)
     return () => clearInterval(timer)
   }, [text, onTypingComplete])
 
-  // Прокручиваем за текстом по мере его появления — плавно и непрерывно
   useEffect(() => {
     if (!scrollRef.current) return
     const container = scrollRef.current
     const targetScroll = container.scrollHeight - container.clientHeight
-    
+
     if (targetScroll > container.scrollTop) {
       requestAnimationFrame(() => {
         if (scrollRef.current) {
@@ -85,8 +84,10 @@ export function SceneChronicle({ scene, onTypingComplete }: SceneChronicleProps)
         ref={scrollRef}
         className="w-full max-w-[720px] max-h-full overflow-y-auto chronicle-scrollbar scroll-smooth"
         style={{
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
+          maskImage:
+            'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
+          WebkitMaskImage:
+            'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
         }}
       >
         <div className="relative space-y-4 whitespace-pre-wrap text-[18px] leading-8 text-[#cfc2b8]">

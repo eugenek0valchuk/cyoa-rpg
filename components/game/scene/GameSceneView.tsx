@@ -1,8 +1,8 @@
 'use client'
 
-import { Scene, Character } from '@/lib/types/game'
+import { Character, Scene } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { SceneChronicle } from '../chronicle/SceneChronicle'
 import { fadeSlideUp, sceneTransition } from '../constants/animations'
 import { SceneChoices } from './SceneChoices'
@@ -25,7 +25,6 @@ export function GameSceneView({
   const [isTyping, setIsTyping] = useState(true)
   const prevSceneIdRef = useRef(scene.id)
 
-  // При СМЕНЕ сцены (когда id меняется) — сбрасываем isTyping в true
   useEffect(() => {
     if (prevSceneIdRef.current !== scene.id) {
       setIsTyping(true)
@@ -45,7 +44,10 @@ export function GameSceneView({
           {...fadeSlideUp}
           transition={sceneTransition}
         >
-          <SceneChronicle scene={scene} onTypingComplete={handleTypingComplete} />
+          <SceneChronicle
+            scene={scene}
+            onTypingComplete={handleTypingComplete}
+          />
         </motion.div>
       </AnimatePresence>
 
