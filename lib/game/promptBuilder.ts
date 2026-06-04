@@ -1,4 +1,4 @@
-import { getCorruptionPrompt, getCorruptionStage } from '@/lib/game/corruption'
+import { getCorruptionPrompt, getCorruptionStage, getCorruptionGameplayRules } from '@/lib/game/corruption'
 
 import { GENERAL_RULES } from './prompts/generalRules'
 import { ANTI_REPETITION_RULES } from './prompts/antiRepetitionRules'
@@ -66,6 +66,8 @@ ${scene.description.slice(0, 180)}
       : ''
 
   const corruptionPrompt = getCorruptionPrompt(character.corruption)
+  const corruptionRules = getCorruptionGameplayRules(character.corruption)
+  const maxOptions = corruptionRules.maxOptions
 
   const relevantLore = getRelevantLore({
     currentScene,
@@ -264,7 +266,11 @@ ANTI-LOOP RULES:
 
 RULES FOR OPTIONS:
 
-- Generate between 2 and 4 options only
+- Generate between 2 and ${maxOptions} options only
+${corruptionRules.allowHallucinations ? '- Include at least one option that may be a hallucination' : ''}
+${corruptionRules.forceParanoia ? '- At least one option should reflect paranoia or distrust' : ''}
+${corruptionRules.forceBodyHorror ? '- At least one option should involve body horror or physical transformation' : ''}
+${corruptionRules.forceEndingProgression ? '- Options should push toward irreversible climax' : ''}
 - Every option must feel distinct
 - Avoid obvious good/bad choices
 - At least one option should feel risky

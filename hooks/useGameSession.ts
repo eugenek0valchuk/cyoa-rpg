@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
 import { useArtifactReveal } from '@/hooks/useArtifactReveal'
+import { clearActiveSlotSave, useAutoSave } from '@/hooks/useAutoSave'
 import { useSceneGenerator } from '@/hooks/useSceneGenerator'
 
 import { artifacts } from '@/lib/game/artifacts'
@@ -19,13 +20,7 @@ export function useGameSession() {
 
   const character = useCharacterStore((state) => state.character)
 
-  const updateSanity = useCharacterStore((state) => state.updateSanity)
-
-  const updateCorruption = useCharacterStore((state) => state.updateCorruption)
-
-  const addArtifact = useCharacterStore((state) => state.addArtifact)
-
-  const addFlag = useCharacterStore((state) => state.addFlag)
+  const setCharacter = useCharacterStore((state) => state.setCharacter)
 
   const resetCharacter = useCharacterStore((state) => state.resetCharacter)
 
@@ -45,6 +40,8 @@ export function useGameSession() {
 
   const { artifact, open, revealArtifact, closeArtifactReveal } =
     useArtifactReveal()
+
+  useAutoSave()
 
   const [isLoading, setIsLoading] = useState(false)
 
@@ -94,10 +91,7 @@ export function useGameSession() {
           artifacts,
           generateScene,
 
-          updateSanity,
-          updateCorruption,
-          addFlag,
-          addArtifact,
+          setCharacter,
 
           setCurrentScene,
           pushSceneHistory,
@@ -122,10 +116,7 @@ export function useGameSession() {
       isLoading,
       sceneHistory,
       generateScene,
-      updateSanity,
-      updateCorruption,
-      addFlag,
-      addArtifact,
+      setCharacter,
       setCurrentScene,
       pushSceneHistory,
       pushHistory,
@@ -133,12 +124,14 @@ export function useGameSession() {
     ],
   )
 
-  const handleReset = useCallback(() => {
+  const handleReset = useCallback(async () => {
+    await clearActiveSlotSave()
+
     resetCharacter()
 
     resetGame()
 
-    router.push('/editor')
+    router.push('/archives')
   }, [resetCharacter, resetGame, router])
 
   return {

@@ -1,4 +1,5 @@
 import { applyChoiceEffects } from './applyChoiceEffects'
+import { buildDirectorState } from './director'
 import { getEnding } from './endings'
 import { resolveNextScene } from './resolveNextScene'
 import { createStaticScene } from './createStaticScene'
@@ -25,10 +26,7 @@ interface HandleChoiceParams {
     character: Character,
     sceneHistory: SceneHistoryEntry[],
   ) => Promise<Scene>
-  updateSanity: (amount: number) => void
-  updateCorruption: (amount: number) => void
-  addFlag: (flag: string) => void
-  addArtifact: (artifact: Artifact) => void
+  setCharacter: (character: Character) => void
   setCurrentScene: (scene: Scene) => void
   pushSceneHistory: (scene: SceneHistoryEntry) => void
   pushHistory: (sceneId: string) => void
@@ -42,10 +40,7 @@ export async function handleGameChoice({
   sceneHistory,
   artifacts,
   generateScene,
-  updateSanity,
-  updateCorruption,
-  addFlag,
-  addArtifact,
+  setCharacter,
   setCurrentScene,
   pushSceneHistory,
   pushHistory,
@@ -57,13 +52,21 @@ export async function handleGameChoice({
     artifacts,
   })
 
+  setCharacter(updatedCharacter)
+
   logChoice({
     scene: currentScene,
     choice,
-    character,
+    character: updatedCharacter,
   })
 
-  const ending = getEnding(updatedCharacter.sanity, updatedCharacter.corruption)
+  const directorState = buildDirectorState(updatedCharacter, sceneHistory)
+
+  const ending = getEnding(updatedCharacter, {
+    historyLength: sceneHistory.length,
+    phase: directorState.phase,
+    forceEnding: directorState.forceEnding,
+  })
 
   if (ending) {
     setCurrentScene(
@@ -79,21 +82,7 @@ export async function handleGameChoice({
     return
   }
 
-  if (choice.effects?.sanity) {
-    updateSanity(choice.effects.sanity)
-  }
-
-  if (choice.effects?.corruption) {
-    updateCorruption(choice.effects.corruption)
-  }
-
-  if (choice.effects?.addFlag) {
-    addFlag(choice.effects.addFlag)
-  }
-
   if (revealedArtifact) {
-    addArtifact(revealedArtifact)
-
     logArtifact(revealedArtifact.name)
 
     await revealArtifact(revealedArtifact)

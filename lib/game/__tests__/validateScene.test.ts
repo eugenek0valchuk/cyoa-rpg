@@ -133,4 +133,29 @@ describe('validateScene', () => {
     expect(result.options[0].effects?.sanity).toBe(-25)
     expect(result.options[0].effects?.corruption).toBe(25)
   })
+
+  it('caps options based on corruption stage', () => {
+    const character = {
+      name: 'Test',
+      origin: 'hollow' as const,
+      stats: { strength: 5, agility: 5, intelligence: 5 },
+      inventory: [],
+      sanity: 20,
+      corruption: 80,
+      flags: [],
+    }
+
+    const options = Array.from({ length: 6 }, (_, i) => ({
+      id: `opt_${i}`,
+      text: `Option ${i}`,
+    }))
+
+    const result = validateScene(
+      { title: 'T', description: 'D', options },
+      emptyOwned,
+      character,
+    )
+
+    expect(result.options.length).toBeLessThanOrEqual(2)
+  })
 })

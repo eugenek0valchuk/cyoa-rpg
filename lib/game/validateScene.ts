@@ -1,4 +1,5 @@
 import { artifacts } from '@/lib/game/artifacts'
+import { getCorruptionGameplayRules } from '@/lib/game/corruption'
 import type {
   Character,
   Choice,
@@ -6,8 +7,16 @@ import type {
   Scene,
 } from '../types/game'
 
-const MAX_OPTIONS = 4
+const DEFAULT_MAX_OPTIONS = 4
 const MIN_OPTIONS = 2
+
+function getMaxOptions(character?: Character): number {
+  if (!character) {
+    return DEFAULT_MAX_OPTIONS
+  }
+
+  return getCorruptionGameplayRules(character.corruption).maxOptions
+}
 
 interface RawChoice {
   id?: unknown
@@ -173,11 +182,12 @@ export function validateScene(
     rawScene?.description,
     'The darkness shifts around you.',
   ).slice(0, 2200)
+  const maxOptions = getMaxOptions(character)
   const rawOptions = Array.isArray(rawScene?.options) ? rawScene.options : []
   const usedIds = new Set<string>()
 
   const normalizedOptions: Choice[] = rawOptions
-    .slice(0, MAX_OPTIONS)
+    .slice(0, maxOptions)
     .map((option, index) => {
       let id = normalizeText(option?.id, `option_${index}`)
         .toLowerCase()

@@ -75,7 +75,8 @@ export async function POST(request: Request) {
     const hasLoop = detectSceneLoop(validatedScene, sceneHistory)
 
     if (hasLoop) {
-      throw new Error('Narrative loop detected')
+      console.warn('Narrative loop detected, using fallback scene')
+      newScene = getFallbackScene(choice.text, sceneHistory.length)
     }
 
     return NextResponse.json({ scene: validatedScene })

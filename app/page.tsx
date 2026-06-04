@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 
 export default function HomePage() {
@@ -40,7 +42,7 @@ export default function HomePage() {
 
           <div className="mt-14 space-y-4">
             <Link
-              href="/editor"
+              href="/editor?slot=0"
               className="group block border border-[#4b2a2a] bg-[#120909]/70 px-6 py-5 no-underline visited:text-inherit hover:border-[#8e1f1f] hover:bg-[#1a0d0d]"
             >
               <div className="text-center">
@@ -54,20 +56,20 @@ export default function HomePage() {
               </div>
             </Link>
 
-            <button
-              disabled
-              className="w-full border border-[#2b2522] bg-black/30 px-6 py-5 opacity-45"
+            <Link
+              href="/archives"
+              className="group block border border-[#4b2a2a] bg-[#120909]/70 px-6 py-5 no-underline visited:text-inherit hover:border-[#8e1f1f] hover:bg-[#1a0d0d]"
             >
               <div className="text-center">
-                <div className="font-cinzel text-3xl uppercase tracking-[0.18em] text-[#6d625b]">
+                <div className="font-cinzel text-3xl uppercase tracking-[0.18em] text-[#c84a4a] group-hover:text-[#ff6b6b]">
                   Archives
                 </div>
 
-                <div className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#4f4742]">
-                  Coming soon
+                <div className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#6d5d53]">
+                  Continue or begin in a save slot
                 </div>
               </div>
-            </button>
+            </Link>
           </div>
 
           <div className="mt-14 text-center">
