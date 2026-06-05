@@ -1,6 +1,7 @@
 import { getInitialScene } from './getInitialScene'
 import type { Artifact, Character } from '@/lib/types/game'
 import type { HubState, RaidState } from '@/lib/types/hub'
+import type { RaidSummary } from '@/lib/types/raidSummary'
 
 export {
   canExtractRaid,
@@ -149,4 +150,58 @@ export function failRaid(
 
 export function getRaidStartScene() {
   return getInitialScene()
+}
+
+function diffNewMarks(before: string[], after: string[]): string[] {
+  return after.filter((mark) => !before.includes(mark))
+}
+
+export function buildExtractSummary(
+  characterBefore: Character,
+  hubBefore: HubState,
+  raid: RaidState,
+  result: ReturnType<typeof completeRaidExtraction>,
+  depth: number,
+): RaidSummary {
+  const gainedArtifacts = characterBefore.inventory.filter(
+    (item) => !raid.inventoryAtStart.includes(item.id),
+  )
+
+  return {
+    outcome: 'extracted',
+    depth,
+    gainedArtifacts,
+    lostArtifacts: [],
+    newMarks: diffNewMarks(hubBefore.roomMarks, result.hub.roomMarks),
+    sanityBefore: characterBefore.sanity,
+    sanityAfter: result.character.sanity,
+    roomLevelAfter: result.hub.roomLevel,
+    bestDepthAfter: result.hub.bestDepth,
+    totalExtractionsAfter: result.hub.totalExtractions,
+  }
+}
+
+export function buildFailSummary(
+  characterBefore: Character,
+  hubBefore: HubState,
+  raid: RaidState,
+  result: ReturnType<typeof failRaid>,
+  depth: number,
+): RaidSummary {
+  const lostArtifacts = characterBefore.inventory.filter(
+    (item) => !raid.inventoryAtStart.includes(item.id),
+  )
+
+  return {
+    outcome: 'failed',
+    depth,
+    gainedArtifacts: [],
+    lostArtifacts,
+    newMarks: diffNewMarks(hubBefore.roomMarks, result.hub.roomMarks),
+    sanityBefore: characterBefore.sanity,
+    sanityAfter: result.character.sanity,
+    roomLevelAfter: result.hub.roomLevel,
+    bestDepthAfter: result.hub.bestDepth,
+    totalExtractionsAfter: result.hub.totalExtractions,
+  }
 }

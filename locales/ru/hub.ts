@@ -32,6 +32,56 @@ export const hubUi = {
   raidFailed: 'Спуск провален',
   raidExtracted: 'Извлечение успешно',
   endingReturn: 'Вернуться в камеру',
+  bottomStash: 'Сокровищница',
+  bottomVessel: 'Сосуд',
+  bottomChronicle: 'Хроника',
+  bottomDescend: 'Спуск',
+  bottomArchives: 'Архивы',
+  exitToMenu: 'В меню',
+  exitToMenuHint: 'Сохранить и вернуться на главный экран',
+  hotspotHint: 'Нажми на светящуюся область или кнопку внизу',
+  statTips: {
+    strength: 'Сила — грубая проверка: проломить, удержать, сломать.',
+    agility: 'Ловкость — ускользнуть, пролезть, ударить первым.',
+    intelligence: 'Интеллект — прочесть, обмануть ритуал, найти печать.',
+    sanity: 'Рассудок — сколько ещё выдержит разум. На нуле — конец.',
+    corruption: 'Скверна — чем выше, тем чаще открываются проклятые пути.',
+  },
+  hotspots: {
+    stash: {
+      label: 'Сокровищница',
+      hint: 'Реликвии между спусками',
+    },
+    vessel: {
+      label: 'Сосуд',
+      hint: 'Статы и состояние тела',
+    },
+    chronicle: {
+      label: 'Хроника камеры',
+      hint: 'Следы и числа спусков',
+    },
+    threshold: {
+      label: 'Порог',
+      hint: 'Снарядить и начать спуск',
+    },
+  },
+} as const
+
+export const raidSummaryUi = {
+  extractedTitle: 'Извлечение',
+  extractedSubtitle: 'Ты вернулся в камеру с добычей',
+  failedTitle: 'Спуск провален',
+  failedSubtitle: 'Машина помнит провал — добыча спуска потеряна',
+  depthReached: 'Глубина спуска',
+  bestDepth: 'Лучшая глубина',
+  sanity: 'Рассудок',
+  gained: 'В сокровищницу',
+  lost: 'Потеряно в спуске',
+  newMarks: 'Новые следы на стенах',
+  noLoot: 'Ничего нового',
+  noMarks: 'Стены пока молчат',
+  returnToChamber: 'Вернуться в камеру',
+  roomLevel: 'Камера',
 } as const
 
 export const roomMarks: Record<string, string> = {
