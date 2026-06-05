@@ -26,6 +26,8 @@ import { isNpcEncounterScene, getNpcMeetingFlag } from '@/lib/game/npcEncounter'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
+import { useAmbientAudio } from '@/hooks/useAmbientAudio'
+import { resolveAmbientTense } from '@/lib/audio/AmbientController'
 import { useHubStore } from '@/lib/store/hubStore'
 import { useGameStore } from '@/lib/store/gameStore'
 import { useCharacterStore } from '@/lib/store/characterStore'
@@ -184,6 +186,20 @@ export default function GamePage() {
     isEndingScene,
     raidModifier?.id,
   ])
+
+  useAmbientAudio({
+    mode: 'descent',
+    enabled: !!character && !!currentScene && raid?.active === true,
+    tense: resolveAmbientTense({
+      sanity: character?.sanity,
+      sanityStress,
+      npcOpen: npcEncounterOpen && isNpcScene,
+      keyChoicePending: pendingKeyChoice != null,
+      diceRolling: diceRoll != null,
+      ending: isEndingScene,
+      modalOpen: abandonOpen || chronicleOpen || showPrologue,
+    }),
+  })
 
   if (!character || !currentScene) {
     return (

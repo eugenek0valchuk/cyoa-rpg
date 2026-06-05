@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 
 import { t } from '@/lib/i18n'
 
+import { AmbientAudioShell } from '@/components/audio/AmbientAudioShell'
+
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
@@ -19,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AmbientAudioShell>{children}</AmbientAudioShell>
+      </body>
     </html>
   )
 }

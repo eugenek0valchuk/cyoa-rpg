@@ -161,6 +161,12 @@ export const ui = {
     },
   },
 
+  audio: {
+    mute: 'Выключить ambient',
+    unmute: 'Включить ambient',
+    clickToEnable: 'Кликни, чтобы включить звук',
+  },
+
   artifactReveal: {
     close: 'Принять',
     whispers: 'Шёпот',
