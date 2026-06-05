@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { useArtifactReveal } from '@/hooks/useArtifactReveal'
 import { clearActiveSlotSave, useAutoSave } from '@/hooks/useAutoSave'
-import { useSceneGenerator } from '@/hooks/useSceneGenerator'
 
 import { artifacts } from '@/lib/game/artifacts'
 import { getInitialScene } from '@/lib/game/getInitialScene'
@@ -35,8 +34,6 @@ export function useGameSession() {
   const sceneHistory = useGameStore((state) => state.sceneHistory)
 
   const resetGame = useGameStore((state) => state.resetGame)
-
-  const { generateScene } = useSceneGenerator()
 
   const { artifact, open, revealArtifact, closeArtifactReveal } =
     useArtifactReveal()
@@ -89,7 +86,6 @@ export function useGameSession() {
           sceneHistory,
 
           artifacts,
-          generateScene,
 
           setCharacter,
 
@@ -115,7 +111,6 @@ export function useGameSession() {
       character,
       isLoading,
       sceneHistory,
-      generateScene,
       setCharacter,
       setCurrentScene,
       pushSceneHistory,

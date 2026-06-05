@@ -20,12 +20,6 @@ interface HandleChoiceParams {
   character: Character
   sceneHistory: SceneHistoryEntry[]
   artifacts: Record<string, Artifact>
-  generateScene: (
-    currentScene: Scene,
-    choice: Choice,
-    character: Character,
-    sceneHistory: SceneHistoryEntry[],
-  ) => Promise<Scene>
   setCharacter: (character: Character) => void
   setCurrentScene: (scene: Scene) => void
   pushSceneHistory: (scene: SceneHistoryEntry) => void
@@ -39,7 +33,6 @@ export async function handleGameChoice({
   character,
   sceneHistory,
   artifacts,
-  generateScene,
   setCharacter,
   setCurrentScene,
   pushSceneHistory,
@@ -88,12 +81,11 @@ export async function handleGameChoice({
     await revealArtifact(revealedArtifact)
   }
 
-  const nextScene = await resolveNextScene({
+  const nextScene = resolveNextScene({
     currentScene,
     choice,
     character: updatedCharacter,
     sceneHistory,
-    generateScene,
   })
 
   setCurrentScene(nextScene)
