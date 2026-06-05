@@ -18,12 +18,19 @@ import {
   StatChangeFlash,
 } from '@/components/game'
 import { DiceRollOverlay } from '@/components/game/scene/DiceRollOverlay'
+import { KeyChoiceConfirm } from '@/components/game/scene/KeyChoiceConfirm'
+import { RaidPrologueModal } from '@/components/game/scene/RaidPrologueModal'
+import { buildPrologueSlides } from '@/lib/game/prologue'
+import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
+import { useHubStore } from '@/lib/store/hubStore'
 import { t } from '@/lib/i18n'
 
 export default function GamePage() {
   const [abandonOpen, setAbandonOpen] = useState(false)
+  const [prologueDone, setPrologueDone] = useState(false)
+  const raid = useHubStore((state) => state.raid)
 
   const {
     character,
@@ -49,6 +56,9 @@ export default function GamePage() {
     handleCloseChronicle,
     handleChoice,
     handleRiskChoice,
+    pendingKeyChoice,
+    handleKeyChoiceConfirm,
+    handleKeyChoiceCancel,
     diceRoll,
     handleDiceComplete,
     handleExtract,
@@ -59,6 +69,40 @@ export default function GamePage() {
   } = useGameSession()
 
   const { ui: hubText } = t.hub
+
+  const prologueSlides = useMemo(() => {
+    if (!character || !hub || !raid?.active) {
+      return []
+    }
+
+    const room = t.hub.rooms[character.origin]
+
+    return buildPrologueSlides({
+      origin: character.origin,
+      roomImage: room.image,
+      modifierId: raid.modifierId ?? null,
+      contractId: raid.contractId ?? null,
+      isFirstRaid: hub.totalRaids <= 1,
+    })
+  }, [character, hub, raid?.active, raid?.modifierId, raid?.contractId])
+
+  const showPrologue = prologueSlides.length > 0 && !prologueDone && !isEndingScene
+
+  const pendingKeyChoiceData = useMemo(() => {
+    if (!currentScene || pendingKeyChoice == null) {
+      return null
+    }
+
+    const choice = currentScene.options[pendingKeyChoice]
+    if (!choice) {
+      return null
+    }
+
+    return {
+      choice,
+      meta: getKeyChoiceMeta(currentScene.id, choice),
+    }
+  }, [currentScene, pendingKeyChoice])
 
   const sanityStress = useMemo(() => {
     if (!character || !currentScene || isEndingScene) {
@@ -110,34 +154,38 @@ export default function GamePage() {
 
   return (
     <GameLayout>
-      <GameHeader
-        isLoading={isLoading}
-        extractAvailable={extractAvailable}
-        extractBlockReason={extractBlockReason}
-        hasSigil={hasSigil}
-        raidDepth={raidDepth}
-        minExtractDepth={minExtractDepth}
-        raidZone={raidZone}
-        raidModifier={raidModifier}
-        isEndingScene={isEndingScene}
-        flagCount={flagCount}
-        journalCount={journalCount}
-        showNewFlagHint={showNewFlagHint}
-        onOpenChronicle={handleOpenChronicle}
-        onExtract={handleExtract}
-        onAbandon={() => setAbandonOpen(true)}
-        onReset={handleExitToMenu}
-      />
+      <div className="shrink-0">
+        <GameHeader
+          isLoading={isLoading}
+          extractAvailable={extractAvailable}
+          extractBlockReason={extractBlockReason}
+          hasSigil={hasSigil}
+          raidDepth={raidDepth}
+          minExtractDepth={minExtractDepth}
+          raidZone={raidZone}
+          raidModifier={raidModifier}
+          isEndingScene={isEndingScene}
+          flagCount={flagCount}
+          journalCount={journalCount}
+          showNewFlagHint={showNewFlagHint}
+          onOpenChronicle={handleOpenChronicle}
+          onExtract={handleExtract}
+          onAbandon={() => setAbandonOpen(true)}
+          onReset={handleExitToMenu}
+        />
+      </div>
 
-      <CharacterPanel character={character} sanityStress={sanityStress} />
-
-      <div className="h-4" />
+      <div className="shrink-0">
+        <CharacterPanel character={character} sanityStress={sanityStress} />
+      </div>
 
       <GameViewport loading={isLoading} blocked={artifactOpen}>
-        <RaidTipBanner
-          raidDepth={raidDepth}
-          isEndingScene={isEndingScene}
-        />
+        <div className="shrink-0">
+          <RaidTipBanner
+            raidDepth={raidDepth}
+            isEndingScene={isEndingScene}
+          />
+        </div>
         <StatChangeFlash flash={statFlash} />
         <GameSceneView
           scene={currentScene}
@@ -146,7 +194,7 @@ export default function GamePage() {
           raidModifierId={raidModifier?.id}
           roomMarks={hub?.roomMarks ?? []}
           isLoading={isLoading}
-          showChoices={showChoices}
+          showChoices={showChoices && !showPrologue}
           extractAvailable={extractAvailable && !isEndingScene}
           onExtract={handleExtract}
           onChoice={handleChoice}
@@ -154,6 +202,12 @@ export default function GamePage() {
           onReturnToChamber={handleExitToMenu}
         />
       </GameViewport>
+
+      <RaidPrologueModal
+        open={showPrologue}
+        slides={prologueSlides}
+        onComplete={() => setPrologueDone(true)}
+      />
 
       {diceRoll && (
         <DiceRollOverlay
@@ -164,6 +218,17 @@ export default function GamePage() {
           onComplete={handleDiceComplete}
         />
       )}
+
+      <KeyChoiceConfirm
+        open={pendingKeyChoiceData?.meta != null}
+        choice={pendingKeyChoiceData?.choice ?? null}
+        meta={pendingKeyChoiceData?.meta ?? null}
+        character={character}
+        raidModifierId={raidModifier?.id}
+        roomMarks={hub?.roomMarks ?? []}
+        onConfirm={handleKeyChoiceConfirm}
+        onCancel={handleKeyChoiceCancel}
+      />
 
       <ArtifactReveal
         artifact={artifact}

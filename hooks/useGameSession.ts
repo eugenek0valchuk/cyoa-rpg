@@ -20,6 +20,7 @@ import {
   type RiskOffer,
   type RiskRollResult,
 } from '@/lib/game/riskCheck'
+import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { applyRaidModifierTick } from '@/lib/game/raidModifiers'
 import { hasReturnSigil } from '@/lib/game/extraction'
 import { isRaidEndingScene } from '@/lib/game/isRaidEndingScene'
@@ -82,6 +83,7 @@ export function useGameSession() {
     offer: RiskOffer
     choiceIndex: number
   } | null>(null)
+  const [pendingKeyChoice, setPendingKeyChoice] = useState<number | null>(null)
 
   const syncJournal = useCallback(
     (endingId?: string) => {
@@ -360,14 +362,52 @@ export function useGameSession() {
 
   const handleChoice = useCallback(
     async (choiceIndex: number) => {
-      if (isLoading || diceRoll) {
+      if (isLoading || diceRoll || pendingKeyChoice != null) {
+        return
+      }
+
+      if (!currentScene || !character) {
+        return
+      }
+
+      const choice = currentScene.options[choiceIndex]
+      const journalEntries = hub?.journalEntries ?? []
+
+      if (
+        choice &&
+        isChoiceAvailable(choice, character, journalEntries) &&
+        getKeyChoiceMeta(currentScene.id, choice)
+      ) {
+        setPendingKeyChoice(choiceIndex)
         return
       }
 
       await executeChoice(choiceIndex)
     },
-    [diceRoll, executeChoice, isLoading],
+    [
+      character,
+      currentScene,
+      diceRoll,
+      executeChoice,
+      hub?.journalEntries,
+      isLoading,
+      pendingKeyChoice,
+    ],
   )
+
+  const handleKeyChoiceConfirm = useCallback(async () => {
+    if (pendingKeyChoice == null) {
+      return
+    }
+
+    const choiceIndex = pendingKeyChoice
+    setPendingKeyChoice(null)
+    await executeChoice(choiceIndex)
+  }, [executeChoice, pendingKeyChoice])
+
+  const handleKeyChoiceCancel = useCallback(() => {
+    setPendingKeyChoice(null)
+  }, [])
 
   const handleRiskChoice = useCallback(
     (choiceIndex: number) => {
@@ -513,6 +553,9 @@ export function useGameSession() {
     handleCloseChronicle,
     handleChoice,
     handleRiskChoice,
+    pendingKeyChoice,
+    handleKeyChoiceConfirm,
+    handleKeyChoiceCancel,
     diceRoll,
     handleDiceComplete,
     handleExtract,

@@ -57,8 +57,8 @@ export function GameSceneView({
   const revealActions = showChoices && !isTyping && !isLoading
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="max-h-[min(34vh,280px)] min-h-0 overflow-y-auto chronicle-scrollbar pr-0.5">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto chronicle-scrollbar scroll-smooth pr-0.5">
         <AnimatePresence mode="wait">
           <motion.div
             key={scene.id}
@@ -73,7 +73,7 @@ export function GameSceneView({
         </AnimatePresence>
       </div>
 
-      <div className="shrink-0 border-t border-[#241919]/90 bg-gradient-to-t from-black/90 via-black/70 to-transparent pt-3">
+      <div className="max-h-[min(48vh,440px)] shrink-0 overflow-y-auto chronicle-scrollbar border-t border-[#241919]/90 bg-gradient-to-t from-black/90 via-black/70 to-transparent pt-3">
       {isEnding && revealActions && onReturnToChamber ? (
         <EndingActions
           isLoading={isLoading}

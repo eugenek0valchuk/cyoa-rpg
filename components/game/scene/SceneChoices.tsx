@@ -70,6 +70,7 @@ export function SceneChoices({
 
             <ChoiceList
               options={scene.options}
+              sceneId={scene.id}
               character={character}
               journalEntries={journalEntries}
               raidModifierId={raidModifierId}

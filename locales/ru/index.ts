@@ -7,6 +7,8 @@ import { raidChronicleUi, raidFlags } from './raidChronicle'
 import { journalCatalog, journalUi } from './journal'
 import { raidModifierNames, raidUi } from './raid'
 import { worldLore } from './lore'
+import { loreCardUi, loreCards } from './loreCards'
+import { prologueUi } from './prologue'
 import {
   coreScenes,
   encounterScenes,
@@ -30,6 +32,8 @@ export const ru = {
   journal: { ui: journalUi, catalog: journalCatalog },
   hub: { ui: hubUi, chronicle: hubChronicleUi, raidSummary: raidSummaryUi, rooms, roomMarks, roomMarkEffects },
   lore: worldLore,
+  loreCards: { ui: loreCardUi, catalog: loreCards },
+  prologue: { ui: prologueUi },
   scenes: {
     ...coreScenes,
     ...eventScenes,

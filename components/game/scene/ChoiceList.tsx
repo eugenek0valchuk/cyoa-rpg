@@ -10,6 +10,7 @@ import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
 import type { ChoiceBlockReason } from '@/lib/game/choiceBlockReason'
 import { inferChoiceIntent } from '@/lib/game/choiceIntent'
+import { isKeyChoice } from '@/lib/game/keyChoices'
 import {
   computeCorruptionAfterChoice,
   computeSanityAfterChoice,
@@ -34,6 +35,7 @@ import { EffectIcon, getEffectColor } from '../ui/EffectIcon'
 
 interface ChoiceListProps {
   options: Choice[]
+  sceneId: string
   character: Character
   journalEntries?: string[]
   raidModifierId?: RaidModifierId | null
@@ -279,6 +281,20 @@ function ChoiceIntentBadge({ option }: { option: Choice }) {
   )
 }
 
+function KeyChoiceBadge({ option, sceneId }: { option: Choice; sceneId: string }) {
+  const { game } = t.ui
+
+  if (!isKeyChoice(sceneId, option)) {
+    return null
+  }
+
+  return (
+    <span className="inline-flex shrink-0 border border-[#6a5020]/80 bg-[#1a1408] px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] text-[#d4a850]">
+      {game.keyChoiceBadge}
+    </span>
+  )
+}
+
 function formatBlockReason(reason: ChoiceBlockReason): string {
   const { game } = t.ui
 
@@ -436,6 +452,7 @@ function RiskDiceButton({
 
 export function ChoiceList({
   options,
+  sceneId,
   character,
   journalEntries = [],
   raidModifierId,
@@ -444,11 +461,18 @@ export function ChoiceList({
   onRiskSelect,
   isLoading,
 }: ChoiceListProps) {
-  const visibleOptions = options.filter((option) =>
-    isChoiceVisible(option, character, journalEntries),
-  )
+  const visibleIndices = options
+    .map((option, index) => ({ option, index }))
+    .filter(({ option }) =>
+      isChoiceVisible(option, character, journalEntries),
+    )
+    .sort((a, b) => {
+      const aKey = isKeyChoice(sceneId, a.option) ? 0 : 1
+      const bKey = isKeyChoice(sceneId, b.option) ? 0 : 1
+      return aKey - bKey || a.index - b.index
+    })
 
-  if (visibleOptions.length === 0) {
+  if (visibleIndices.length === 0) {
     return (
       <p className="border border-[#241919] bg-[#0a0808]/80 px-4 py-3 text-[13px] leading-relaxed text-[#85776a]">
         {t.ui.game.noChoicesVisible}
@@ -456,26 +480,11 @@ export function ChoiceList({
     )
   }
 
-  const hasRiskOptions = options.some(
-    (option) =>
-      isChoiceVisible(option, character, journalEntries) &&
-      getRiskOffer(option, character, journalEntries) != null,
-  )
-
   return (
-    <div
-      className={`space-y-2 ${
-        hasRiskOptions
-          ? 'max-h-[min(46vh,420px)] overflow-y-auto pr-0.5 chronicle-scrollbar scroll-smooth'
-          : ''
-      }`}
-    >
-      {options.map((option, index) => {
-        if (!isChoiceVisible(option, character, journalEntries)) {
-          return null
-        }
-
+    <div className="space-y-2">
+      {visibleIndices.map(({ option, index }, visibleOrder) => {
         const available = isChoiceAvailable(option, character, journalEntries)
+        const isPivot = isKeyChoice(sceneId, option)
         const blockReason = getChoiceBlockReason(
           option,
           character,
@@ -491,14 +500,19 @@ export function ChoiceList({
               key={`${option.id}-${index}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="flex overflow-hidden border border-[#5c3030] bg-[#0c0909]/95 shadow-[0_0_20px_rgba(92,31,31,0.08)]"
+              transition={{ duration: 0.3, delay: visibleOrder * 0.05 }}
+              className={`flex overflow-hidden border bg-[#0c0909]/95 ${
+                isPivot
+                  ? 'border-[#6a5020]/70 shadow-[0_0_20px_rgba(106,80,32,0.12)]'
+                  : 'border-[#5c3030] shadow-[0_0_20px_rgba(92,31,31,0.08)]'
+              }`}
             >
               <div className="min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-3.5">
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#c8bdb6] sm:text-[16px]">
                     {option.text}
                   </div>
+                  <KeyChoiceBadge option={option} sceneId={sceneId} />
                   <ChoiceIntentBadge option={option} />
                 </div>
                 <ChoiceMeta option={option} character={character} />
@@ -530,22 +544,35 @@ export function ChoiceList({
             onClick={() => onSelect(index)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
+            transition={{ duration: 0.3, delay: visibleOrder * 0.05 }}
             className={`group relative w-full border text-left transition-all duration-300 ${
               available
-                ? 'border-[#2b2320] bg-[#0c0909]/95 hover:border-[#8e1f1f]/70 hover:bg-[#140d0d] hover:shadow-[0_0_24px_rgba(92,31,31,0.12)]'
+                ? isPivot
+                  ? 'border-[#6a5020]/70 bg-[#120e08]/95 hover:border-[#a08040]/80 hover:bg-[#1a1408] hover:shadow-[0_0_24px_rgba(106,80,32,0.14)]'
+                  : 'border-[#2b2320] bg-[#0c0909]/95 hover:border-[#8e1f1f]/70 hover:bg-[#140d0d] hover:shadow-[0_0_24px_rgba(92,31,31,0.12)]'
                 : 'cursor-not-allowed border-[#181212] bg-[#0a0808]/80 opacity-45'
             }`}
           >
-            <div className="absolute inset-y-0 left-0 w-[2px] bg-[#8e1f1f] opacity-0 transition-opacity group-hover:opacity-100" />
+            <div
+              className={`absolute inset-y-0 left-0 w-[2px] transition-opacity ${
+                isPivot
+                  ? 'bg-[#a08040] opacity-70 group-hover:opacity-100'
+                  : 'bg-[#8e1f1f] opacity-0 group-hover:opacity-100'
+              }`}
+            />
 
             <div className="relative px-4 py-3.5 sm:px-5 sm:py-4">
               <div className="flex items-start gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#e7ded7] sm:text-[17px]">
+                    <div
+                      className={`font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] sm:text-[17px] ${
+                        isPivot ? 'text-[#f0e4c8]' : 'text-[#e7ded7]'
+                      }`}
+                    >
                       {option.text}
                     </div>
+                    <KeyChoiceBadge option={option} sceneId={sceneId} />
                     <ChoiceIntentBadge option={option} />
                   </div>
                   <ChoiceMeta option={option} character={character} />

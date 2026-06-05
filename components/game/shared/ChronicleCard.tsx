@@ -10,6 +10,8 @@ interface ChronicleCardProps {
   titleClassName?: string
   icon?: ReactNode
   maxHeight?: string
+  /** When false, body grows with content — parent supplies the only scroll */
+  scrollBody?: boolean
 }
 
 export function ChronicleCard({
@@ -21,6 +23,7 @@ export function ChronicleCard({
   titleClassName,
   icon,
   maxHeight = 'max-h-[40vh]',
+  scrollBody = true,
 }: ChronicleCardProps) {
   return (
     <section
@@ -62,8 +65,9 @@ export function ChronicleCard({
 
       <div
         className={clsx(
-          'px-4 py-4 overflow-y-auto chronicle-scrollbar scroll-smooth relative',
-          maxHeight,
+          'relative px-4 py-4',
+          scrollBody && 'overflow-y-auto chronicle-scrollbar scroll-smooth',
+          scrollBody && maxHeight,
           contentClassName,
         )}
       >

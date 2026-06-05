@@ -5,6 +5,8 @@ import { useMemo, useState } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { journalCatalog, journalUi } from '@/locales/ru/journal'
+import { LoreCardModal } from '@/components/ui/LoreCardModal'
+import { getLoreCard } from '@/lib/game/loreCards'
 import { hubChronicleUi } from '@/locales/ru/hubChronicle'
 import { t } from '@/lib/i18n'
 import type { HubState } from '@/lib/types/hub'
@@ -44,6 +46,7 @@ export function HubChronicleMagazine({
 
   const [tab, setTab] = useState<TabId>('magazine')
   const [pageIndex, setPageIndex] = useState(0)
+  const [loreCardId, setLoreCardId] = useState<string | null>(null)
 
   const unlockedSet = useMemo(
     () => new Set(hub.journalEntries ?? []),
@@ -284,11 +287,21 @@ export function HubChronicleMagazine({
             <p className="mt-2 text-[13px] leading-relaxed text-[#6f6259]">
               {worldLore.intro}
             </p>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-4 space-y-2">
               {worldLore.factions.map((faction) => (
-                <li key={faction.id} className="text-[14px] text-[#9d8d82]">
-                  <span className="text-[#c4b5aa]">{faction.name}</span>
-                  <span className="text-[#85776a]"> — {faction.blurb}</span>
+                <li key={faction.id}>
+                  <button
+                    type="button"
+                    onClick={() => setLoreCardId(faction.id)}
+                    className="w-full border border-[#2b2320] bg-black/20 px-4 py-3 text-left transition hover:border-[#6a5020]/60 hover:bg-[#1a1408]/40"
+                  >
+                    <span className="font-cinzel text-[14px] uppercase tracking-[0.06em] text-[#c4b5aa]">
+                      {faction.name}
+                    </span>
+                    <span className="mt-1 block text-[13px] text-[#85776a]">
+                      {faction.blurb}
+                    </span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -327,6 +340,11 @@ export function HubChronicleMagazine({
           )}
         </div>
       )}
+      <LoreCardModal
+        open={loreCardId != null}
+        card={loreCardId ? getLoreCard(loreCardId) : null}
+        onClose={() => setLoreCardId(null)}
+      />
     </div>
   )
 }

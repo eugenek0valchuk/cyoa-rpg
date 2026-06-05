@@ -20,7 +20,7 @@ export function SceneChronicle({
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
   const indexRef = useRef(0)
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const textEndRef = useRef<HTMLSpanElement>(null)
   const text = scene.description
 
   useEffect(() => {
@@ -60,20 +60,7 @@ export function SceneChronicle({
   }, [text, onTypingComplete])
 
   useEffect(() => {
-    if (!scrollRef.current) return
-    const container = scrollRef.current
-    const targetScroll = container.scrollHeight - container.clientHeight
-
-    if (targetScroll > container.scrollTop) {
-      requestAnimationFrame(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTo({
-            top: targetScroll,
-            behavior: 'smooth',
-          })
-        }
-      })
-    }
+    textEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }, [displayedText])
 
   return (
@@ -81,27 +68,17 @@ export function SceneChronicle({
       title={scene.title}
       subtitle={t.ui.game.chronicleSubtitle}
       icon={<GameIcon type="flag" size={30} noBlend />}
-      maxHeight="max-h-[min(38vh,420px)]"
+      scrollBody={false}
       className="border-[#2b2320]/90 shadow-[0_0_40px_rgba(0,0,0,0.45)]"
       titleClassName="text-2xl sm:text-[1.65rem]"
     >
-      <div
-        ref={scrollRef}
-        className="w-full max-w-[720px] max-h-full overflow-y-auto chronicle-scrollbar scroll-smooth"
-        style={{
-          maskImage:
-            'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
-          WebkitMaskImage:
-            'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
-        }}
-      >
-        <div className="relative space-y-4 whitespace-pre-wrap text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">
-          {displayedText}
+      <div className="relative w-full max-w-[720px] space-y-4 whitespace-pre-wrap text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">
+        {displayedText}
 
-          {isTyping && (
-            <span className="inline-block h-5 w-2 animate-pulse bg-[#8e1f1f] align-middle ml-0.5" />
-          )}
-        </div>
+        {isTyping && (
+          <span className="ml-0.5 inline-block h-5 w-2 animate-pulse bg-[#8e1f1f] align-middle" />
+        )}
+        <span ref={textEndRef} className="block h-px w-full" aria-hidden />
       </div>
     </ChronicleCard>
   )
