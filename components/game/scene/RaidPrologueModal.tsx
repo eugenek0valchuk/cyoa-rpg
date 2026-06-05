@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 
 import type { PrologueSlide } from '@/lib/game/prologue'
+import { zLayers } from '@/lib/ui/layers'
 import { prologueUi } from '@/locales/ru/prologue'
 
 interface RaidPrologueModalProps {
@@ -46,7 +47,7 @@ export function RaidPrologueModal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[85] flex items-center justify-center bg-black/88 px-4"
+          className={`fixed inset-0 ${zLayers.raidPrologue} flex items-center justify-center bg-black/88 px-4`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

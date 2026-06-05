@@ -20,10 +20,6 @@ export function buildNpcEncounterDialogue(
   }
 }
 
-export function getNpcMeetingFlag(sceneId: string): string | null {
-  return getNpcEncounterDef(sceneId)?.meetingFlag ?? null
-}
-
 /** @deprecated use isNpcEncounterScene */
 export const isBreathlessEncounterScene = isNpcEncounterScene
 

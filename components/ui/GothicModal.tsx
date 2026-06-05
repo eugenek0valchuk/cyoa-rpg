@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 import { GameIcon, type GameIconProps } from '@/components/game/ui/GameIcon'
+import { zLayers } from '@/lib/ui/layers'
 
 interface GothicModalProps {
   open: boolean
@@ -60,7 +61,7 @@ export function GothicModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4 pb-24 sm:p-6 sm:pb-6"
+      className={`fixed inset-0 ${zLayers.gothicModal} flex items-center justify-center p-4 pb-24 sm:p-6 sm:pb-6`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="gothic-modal-title"

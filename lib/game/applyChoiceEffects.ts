@@ -19,6 +19,11 @@ export function applyChoiceEffects({
     choice.effects?.sanity ?? 0,
   )
 
+  const flagDeltas = [
+    ...(choice.effects?.addFlag ? [choice.effects.addFlag] : []),
+    ...(choice.effects?.addFlags ?? []),
+  ]
+
   const updatedCharacter = {
     ...character,
 
@@ -28,9 +33,10 @@ export function applyChoiceEffects({
       character.corruption + (choice.effects?.corruption ?? 0),
     ),
 
-    flags: choice.effects?.addFlag
-      ? Array.from(new Set([...character.flags, choice.effects.addFlag]))
-      : character.flags,
+    flags:
+      flagDeltas.length > 0
+        ? Array.from(new Set([...character.flags, ...flagDeltas]))
+        : character.flags,
 
     inventory: [...character.inventory],
   }

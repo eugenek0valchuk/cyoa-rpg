@@ -10,6 +10,7 @@ import {
 import type { KeyChoiceMeta } from '@/lib/game/keyChoices'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import { artifacts } from '@/lib/game/artifacts'
+import { zLayers } from '@/lib/ui/layers'
 import { t } from '@/lib/i18n'
 import type { Character, Choice } from '@/lib/types/game'
 
@@ -73,7 +74,7 @@ export function KeyChoiceConfirm({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 px-4 pb-6 sm:items-center sm:pb-0"
+          className={`fixed inset-0 ${zLayers.keyChoice} flex items-end justify-center bg-black/70 px-4 pb-6 sm:items-center sm:pb-0`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { getBreathlessHubLine } from '@/lib/game/merchant'
 import { merchantUi } from '@/locales/ru/merchant'
+import { zLayers } from '@/lib/ui/layers'
 import type { HubState } from '@/lib/types/hub'
 
 import { HubMerchantPanel } from './HubMerchantPanel'
@@ -61,7 +62,7 @@ export function HubMerchantOverlay({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[210] flex items-center justify-center p-3 sm:p-6"
+      className={`fixed inset-0 ${zLayers.hubMerchant} flex items-center justify-center p-3 sm:p-6`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="merchant-overlay-title"

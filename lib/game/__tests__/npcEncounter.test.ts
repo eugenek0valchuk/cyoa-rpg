@@ -40,4 +40,35 @@ describe('npcEncounter', () => {
 
     expect(dialogue.def?.imageSrc).toBe('/encounters/npc-wax-pilgrim.png')
   })
+
+  it('returns wax reunion lines from hub journal', () => {
+    const dialogue = buildNpcEncounterDialogue(
+      'encounter_wax_pilgrim',
+      ['npc_wax'],
+      new Set(),
+    )
+
+    expect(dialogue.lines[0]).toContain('Маска та же')
+  })
+
+  it('returns wax same-run lines when revisiting in one raid', () => {
+    const dialogue = buildNpcEncounterDialogue(
+      'encounter_wax_pilgrim',
+      [],
+      new Set(['encounter_wax_pilgrim']),
+    )
+
+    expect(dialogue.lines[0]).toContain('Паломник не отступает')
+  })
+
+  it('returns bell wretch first lines by default', () => {
+    const dialogue = buildNpcEncounterDialogue(
+      'encounter_bell_wretch',
+      [],
+      new Set(),
+    )
+
+    expect(dialogue.def?.npcName).toBe('Колокольный урод')
+    expect(dialogue.lines[0]).toContain('медью')
+  })
 })

@@ -86,6 +86,7 @@ export const coreScenes: Record<string, Scene> = {
           corruption: 4,
 
           addFlag: 'claimed_mask',
+          addFlags: ['met_breathless'],
         },
       },
 
@@ -109,6 +110,7 @@ export const coreScenes: Record<string, Scene> = {
         text: 'Оставить телегу с трупами позади',
         effects: {
           sanity: -2,
+          addFlag: 'met_breathless',
         },
       },
 

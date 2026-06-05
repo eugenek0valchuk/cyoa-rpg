@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 
 import type { LoreCardDef } from '@/locales/ru/loreCards'
+import { zLayers } from '@/lib/ui/layers'
 import { loreCardUi } from '@/locales/ru/loreCards'
 
 interface LoreCardModalProps {
@@ -35,7 +36,7 @@ export function LoreCardModal({ open, card, onClose }: LoreCardModalProps) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[210] flex items-end justify-center bg-black/82 px-4 pb-6 sm:items-center sm:pb-0"
+          className={`fixed inset-0 ${zLayers.loreCard} flex items-end justify-center bg-black/82 px-4 pb-6 sm:items-center sm:pb-0`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

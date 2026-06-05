@@ -67,6 +67,8 @@ export interface Choice {
     sanity?: number
     corruption?: number
     addFlag?: string
+    /** Additional flags applied with addFlag in one choice */
+    addFlags?: string[]
     addArtifact?: string
   } | null
   requirements?: ChoiceRequirements | null

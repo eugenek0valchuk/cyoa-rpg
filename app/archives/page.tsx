@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { GothicScreen } from '@/components/ui/GothicScreen'
 import { restoreActiveSlot, clearSessionMemory } from '@/hooks/useAutoSave'
+import { getSlotDisplayName } from '@/lib/archives/slotDisplayName'
 import { t } from '@/lib/i18n'
 import {
   deleteSaveSlot,
@@ -107,9 +108,26 @@ export default function ArchivesPage() {
 
         <div className="mx-auto mt-8 w-full max-w-3xl space-y-3">
           {loading ? (
-            <div className="border border-[#2b2320] bg-[#0d0909]/85 px-6 py-12 text-center text-sm uppercase tracking-[0.25em] text-[#75685f]">
-              {a.loading}
-            </div>
+            <>
+              {[0, 1, 2].map((slotId) => (
+                <article
+                  key={slotId}
+                  className="animate-pulse border border-[#2b2320] bg-[#0d0909]/88 backdrop-blur-sm"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-5">
+                    <div className="flex min-w-0 flex-1 items-start gap-4">
+                      <div className="h-11 w-11 shrink-0 bg-[#1a1414]" />
+                      <div className="min-w-0 flex-1 space-y-3">
+                        <div className="h-3 w-16 bg-[#1a1414]" />
+                        <div className="h-7 w-40 bg-[#241919]" />
+                        <div className="h-3 w-56 bg-[#1a1414]" />
+                      </div>
+                    </div>
+                    <div className="h-9 w-28 bg-[#1a1414]" />
+                  </div>
+                </article>
+              ))}
+            </>
           ) : (
             slots.map((slot) => {
               const occupied = slotHasProgress(slot)
@@ -130,7 +148,13 @@ export default function ArchivesPage() {
                           {a.slot} {slot.slotId + 1}
                         </div>
                         <h2 className="font-cinzel mt-1 text-2xl uppercase tracking-[0.08em] text-[#efe5dc]">
-                          {occupied ? slot.character!.name : a.emptyVessel}
+                          {occupied
+                            ? getSlotDisplayName(
+                                slot.character,
+                                a.emptyVessel,
+                                a.unnamedVessel,
+                              )
+                            : a.emptyVessel}
                         </h2>
                         <p className="mt-2 text-[13px] text-[#85776a]">
                           {occupied

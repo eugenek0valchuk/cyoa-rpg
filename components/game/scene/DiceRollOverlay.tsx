@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import type { RiskRollResult, RiskStat } from '@/lib/game/riskCheck'
+import { zLayers } from '@/lib/ui/layers'
 import { t } from '@/lib/i18n'
 
 interface DiceRollOverlayProps {
@@ -58,7 +59,7 @@ export function DiceRollOverlay({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 px-6"
+          className={`fixed inset-0 ${zLayers.diceRoll} flex items-center justify-center bg-black/85 px-6`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

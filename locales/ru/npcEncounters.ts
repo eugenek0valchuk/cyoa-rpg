@@ -23,7 +23,6 @@ export type NpcEncounterDef = {
   icon: NpcEncounterIcon
   journalId?: string
   baseSceneId?: string
-  meetingFlag?: string
   lines: NpcEncounterLines | string[]
 }
 
@@ -38,7 +37,6 @@ export const npcEncounterByScene: Record<string, NpcEncounterDef> = {
     imageSrc: '/encounters/npc-breathless.png',
     icon: 'merchant',
     journalId: 'npc_breathless',
-    meetingFlag: 'met_breathless',
     lines: {
       first: [
         'Он стоит у телеги с трупами и **не дышит**, пока на него смотрят.',
@@ -90,7 +88,6 @@ export const npcEncounterByScene: Record<string, NpcEncounterDef> = {
     imageSrc: '/encounters/npc-wax-pilgrim.png',
     icon: 'hollow',
     journalId: 'npc_wax',
-    meetingFlag: 'wax_offered',
     lines: {
       first: [
         'Из тумана — маска, воск на щеках **тёплый**, будто только что сняли с чужого лица.',

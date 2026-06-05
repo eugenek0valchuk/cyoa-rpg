@@ -1,12 +1,13 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 
 import { ChoiceList } from '@/components/game/scene/ChoiceList'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { buildNpcEncounterDialogue } from '@/lib/game/npcEncounter'
+import { zLayers } from '@/lib/ui/layers'
 import { npcEncounterUi } from '@/locales/ru/npcEncounters'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import type { Character, Scene } from '@/lib/types/game'
@@ -21,7 +22,6 @@ interface NpcEncounterModalProps {
   roomMarks?: string[]
   isLoading: boolean
   pendingKeyChoice?: number | null
-  onDialogueComplete: () => void
   onChoice: (choiceIndex: number) => void
   onRiskChoice?: (choiceIndex: number) => void
 }
@@ -50,7 +50,6 @@ export function NpcEncounterModal({
   roomMarks = [],
   isLoading,
   pendingKeyChoice = null,
-  onDialogueComplete,
   onChoice,
   onRiskChoice,
 }: NpcEncounterModalProps) {
@@ -83,6 +82,46 @@ export function NpcEncounterModal({
     }
   }, [open])
 
+  const advanceDialogue = useCallback(() => {
+    setStep((current) => {
+      if (current >= lines.length - 1) {
+        setPhase('choices')
+        return current
+      }
+
+      return current + 1
+    })
+  }, [lines.length])
+
+  const skipToChoices = useCallback(() => {
+    setPhase('choices')
+  }, [])
+
+  useEffect(() => {
+    if (!open || phase !== 'dialogue') {
+      return
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        advanceDialogue()
+        return
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        skipToChoices()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open, phase, advanceDialogue, skipToChoices])
+
   const choicesLocked = isLoading || pendingKeyChoice != null
 
   if (!open || !def || typeof document === 'undefined') {
@@ -91,24 +130,9 @@ export function NpcEncounterModal({
 
   const isLastLine = step >= lines.length - 1
 
-  const advanceDialogue = () => {
-    if (isLastLine) {
-      onDialogueComplete()
-      setPhase('choices')
-      return
-    }
-
-    setStep((value) => value + 1)
-  }
-
-  const skipToChoices = () => {
-    onDialogueComplete()
-    setPhase('choices')
-  }
-
   return createPortal(
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-5"
+      className={`fixed inset-0 ${zLayers.npcEncounter} flex items-center justify-center p-2 sm:p-5`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="npc-encounter-title"

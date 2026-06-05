@@ -22,15 +22,12 @@ import { NpcEncounterModal } from '@/components/game/scene/NpcEncounterModal'
 import { KeyChoiceConfirm } from '@/components/game/scene/KeyChoiceConfirm'
 import { RaidPrologueModal } from '@/components/game/scene/RaidPrologueModal'
 import { buildPrologueSlides } from '@/lib/game/prologue'
-import { isNpcEncounterScene, getNpcMeetingFlag } from '@/lib/game/npcEncounter'
+import { isNpcEncounterScene } from '@/lib/game/npcEncounter'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
-import { useAmbientAudio } from '@/hooks/useAmbientAudio'
-import { resolveAmbientTense } from '@/lib/audio/AmbientController'
 import { useHubStore } from '@/lib/store/hubStore'
 import { useGameStore } from '@/lib/store/gameStore'
-import { useCharacterStore } from '@/lib/store/characterStore'
 import { t } from '@/lib/i18n'
 
 export default function GamePage() {
@@ -39,7 +36,6 @@ export default function GamePage() {
   const raid = useHubStore((state) => state.raid)
   const setRaid = useHubStore((state) => state.setRaid)
   const sceneHistory = useGameStore((state) => state.sceneHistory)
-  const setCharacter = useCharacterStore((state) => state.setCharacter)
 
   const {
     character,
@@ -101,20 +97,6 @@ export default function GamePage() {
   useEffect(() => {
     setNpcEncounterOpen(isNpcScene)
   }, [isNpcScene, currentScene?.id])
-
-  const handleNpcDialogueComplete = useCallback(() => {
-    const active = useCharacterStore.getState().character
-    const flag = currentScene ? getNpcMeetingFlag(currentScene.id) : null
-
-    if (!active || !flag || active.flags.includes(flag)) {
-      return
-    }
-
-    setCharacter({
-      ...active,
-      flags: [...active.flags, flag],
-    })
-  }, [currentScene, setCharacter])
 
   const handleNpcChoice = useCallback(
     (choiceIndex: number) => {
@@ -186,20 +168,6 @@ export default function GamePage() {
     isEndingScene,
     raidModifier?.id,
   ])
-
-  useAmbientAudio({
-    mode: 'descent',
-    enabled: !!character && !!currentScene && raid?.active === true,
-    tense: resolveAmbientTense({
-      sanity: character?.sanity,
-      sanityStress,
-      npcOpen: npcEncounterOpen && isNpcScene,
-      keyChoicePending: pendingKeyChoice != null,
-      diceRolling: diceRoll != null,
-      ending: isEndingScene,
-      modalOpen: abandonOpen || chronicleOpen || showPrologue,
-    }),
-  })
 
   if (!character || !currentScene) {
     return (
@@ -296,7 +264,6 @@ export default function GamePage() {
         roomMarks={hub?.roomMarks ?? []}
         isLoading={isLoading}
         pendingKeyChoice={pendingKeyChoice}
-        onDialogueComplete={handleNpcDialogueComplete}
         onChoice={handleNpcChoice}
         onRiskChoice={handleNpcRiskChoice}
       />

@@ -48,6 +48,25 @@ describe('applyChoiceEffects', () => {
     expect(updatedCharacter.flags).toEqual(['heard_the_bell'])
   })
 
+  it('merges addFlag with addFlags in one choice', () => {
+    const choice: Choice = {
+      id: 'take_mask',
+      text: 'Take mask',
+      effects: {
+        addFlag: 'claimed_mask',
+        addFlags: ['met_breathless'],
+      },
+    }
+
+    const { updatedCharacter } = applyChoiceEffects({
+      character: baseCharacter,
+      choice,
+      artifacts,
+    })
+
+    expect(updatedCharacter.flags).toEqual(['claimed_mask', 'met_breathless'])
+  })
+
   it('grants artifact and applies artifact stat effects', () => {
     const choice: Choice = {
       id: 'take_mask',
