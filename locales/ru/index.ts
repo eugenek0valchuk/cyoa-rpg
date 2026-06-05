@@ -1,4 +1,5 @@
 import { artifacts } from './artifacts'
+import { hubUi, roomMarks, rooms } from './hub'
 import { endings } from './endings'
 import { origins, originTitles } from './origins'
 import { coreScenes, eventScenes, phaseScenes } from './scenes'
@@ -12,6 +13,7 @@ export const ru = {
   artifacts,
   origins,
   originTitles,
+  hub: { ui: hubUi, rooms, roomMarks },
   scenes: {
     ...coreScenes,
     ...eventScenes,

@@ -6,8 +6,10 @@ import {
   getActiveSlotId,
   saveCurrentGameState,
 } from '@/lib/persistence/saveStorage'
+import { createInitialHubState } from '@/lib/types/hub'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
+import { useHubStore } from '@/lib/store/hubStore'
 
 const SAVE_DEBOUNCE_MS = 800
 
@@ -23,8 +25,9 @@ export function useAutoSave() {
       timerRef.current = setTimeout(async () => {
         const character = useCharacterStore.getState().character
         const { currentScene, history, sceneHistory } = useGameStore.getState()
+        const { hub, raid } = useHubStore.getState()
 
-        if (!character || !currentScene) {
+        if (!character) {
           return
         }
 
@@ -33,16 +36,20 @@ export function useAutoSave() {
           currentScene,
           history,
           sceneHistory,
+          hub,
+          raid,
         })
       }, SAVE_DEBOUNCE_MS)
     }
 
     const unsubscribeCharacter = useCharacterStore.subscribe(scheduleSave)
     const unsubscribeGame = useGameStore.subscribe(scheduleSave)
+    const unsubscribeHub = useHubStore.subscribe(scheduleSave)
 
     return () => {
       unsubscribeCharacter()
       unsubscribeGame()
+      unsubscribeHub()
 
       if (timerRef.current) {
         clearTimeout(timerRef.current)
@@ -51,27 +58,45 @@ export function useAutoSave() {
   }, [])
 }
 
-export async function restoreActiveSlot(slotId: number): Promise<boolean> {
+export async function restoreActiveSlot(slotId: number): Promise<{
+  restored: boolean
+  raidActive: boolean
+}> {
   const { loadSaveSlot, setActiveSlotId } = await import(
     '@/lib/persistence/saveStorage'
   )
 
   const slot = await loadSaveSlot(slotId)
 
-  if (!slot?.character || !slot.currentScene) {
-    return false
+  if (!slot?.character) {
+    return { restored: false, raidActive: false }
   }
 
   setActiveSlotId(slotId)
 
   useCharacterStore.getState().setCharacter(slot.character)
-  useGameStore.setState({
-    currentScene: slot.currentScene,
-    history: slot.history,
-    sceneHistory: slot.sceneHistory,
-  })
 
-  return true
+  if (slot.hub) {
+    useHubStore.getState().setHub(slot.hub)
+    useHubStore.getState().setRaid(slot.raid)
+  } else {
+    useHubStore.getState().initHubForCharacter(slot.character.inventory)
+  }
+
+  if (slot.currentScene) {
+    useGameStore.setState({
+      currentScene: slot.currentScene,
+      history: slot.history,
+      sceneHistory: slot.sceneHistory,
+    })
+  } else {
+    useGameStore.getState().resetGame()
+  }
+
+  return {
+    restored: true,
+    raidActive: Boolean(slot.raid?.active),
+  }
 }
 
 export async function clearActiveSlotSave(): Promise<void> {
@@ -80,4 +105,10 @@ export async function clearActiveSlotSave(): Promise<void> {
   )
 
   await deleteSaveSlot(getActiveSlotId())
+}
+
+export function initHubForNewCharacter(inventory: Parameters<
+  typeof createInitialHubState
+>[0]) {
+  useHubStore.getState().initHubForCharacter(inventory ?? [])
 }

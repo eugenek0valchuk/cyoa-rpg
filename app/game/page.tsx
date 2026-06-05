@@ -15,16 +15,19 @@ export default function GamePage() {
   const {
     character,
     currentScene,
-
     artifact,
     artifactOpen,
-
     isLoading,
     showChoices,
-
+    isEndingScene,
+    extractAvailable,
+    extractBlockReason,
+    hasSigil,
+    raidDepth,
+    minExtractDepth,
     handleChoice,
+    handleExtract,
     handleReset,
-
     closeArtifactReveal,
   } = useGameSession()
 
@@ -40,7 +43,17 @@ export default function GamePage() {
 
   return (
     <GameLayout>
-      <GameHeader isLoading={isLoading} onReset={handleReset} />
+      <GameHeader
+        isLoading={isLoading}
+        extractAvailable={extractAvailable}
+        extractBlockReason={extractBlockReason}
+        hasSigil={hasSigil}
+        raidDepth={raidDepth}
+        minExtractDepth={minExtractDepth}
+        isEndingScene={isEndingScene}
+        onExtract={handleExtract}
+        onReset={handleReset}
+      />
 
       <CharacterPanel character={character} />
 

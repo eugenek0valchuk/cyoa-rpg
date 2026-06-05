@@ -38,10 +38,10 @@ export default function ArchivesPage() {
   }
 
   const handleContinue = async (slotId: number) => {
-    const restored = await restoreActiveSlot(slotId)
+    const result = await restoreActiveSlot(slotId)
 
-    if (restored) {
-      router.push('/game')
+    if (result.restored) {
+      router.push(result.raidActive ? '/game' : '/hub')
     }
   }
 

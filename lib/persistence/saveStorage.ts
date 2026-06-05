@@ -1,4 +1,5 @@
 import type { Character, Scene, SceneHistoryEntry } from '@/lib/types/game'
+import type { HubState, RaidState } from '@/lib/types/hub'
 
 export const SAVE_SLOT_COUNT = 3
 export const ACTIVE_SLOT_KEY = 'cyoa-active-slot'
@@ -9,11 +10,13 @@ export interface SaveSlot {
   currentScene: Scene | null
   history: string[]
   sceneHistory: SceneHistoryEntry[]
+  hub: HubState | null
+  raid: RaidState | null
   savedAt: number
 }
 
 const DB_NAME = 'cyoa-rpg-saves'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_NAME = 'slots'
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -52,12 +55,25 @@ function runTransaction<T>(
   )
 }
 
+function normalizeSlot(slot: Partial<SaveSlot> & { slotId: number }): SaveSlot {
+  return {
+    slotId: slot.slotId,
+    character: slot.character ?? null,
+    currentScene: slot.currentScene ?? null,
+    history: slot.history ?? [],
+    sceneHistory: slot.sceneHistory ?? [],
+    hub: slot.hub ?? null,
+    raid: slot.raid ?? null,
+    savedAt: slot.savedAt ?? 0,
+  }
+}
+
 export async function listSaveSlots(): Promise<SaveSlot[]> {
   const slots = await runTransaction<SaveSlot[]>('readonly', (store) =>
     store.getAll(),
   )
 
-  const slotMap = new Map(slots.map((slot) => [slot.slotId, slot]))
+  const slotMap = new Map(slots.map((slot) => [slot.slotId, normalizeSlot(slot)]))
 
   return Array.from({ length: SAVE_SLOT_COUNT }, (_, slotId) => {
     return (
@@ -67,6 +83,8 @@ export async function listSaveSlots(): Promise<SaveSlot[]> {
         currentScene: null,
         history: [],
         sceneHistory: [],
+        hub: null,
+        raid: null,
         savedAt: 0,
       }
     )
@@ -78,11 +96,11 @@ export async function loadSaveSlot(slotId: number): Promise<SaveSlot | null> {
     store.get(slotId),
   )
 
-  return slot ?? null
+  return slot ? normalizeSlot(slot) : null
 }
 
 export async function writeSaveSlot(slot: SaveSlot): Promise<void> {
-  await runTransaction('readwrite', (store) => store.put(slot))
+  await runTransaction('readwrite', (store) => store.put(normalizeSlot(slot)))
 }
 
 export async function deleteSaveSlot(slotId: number): Promise<void> {

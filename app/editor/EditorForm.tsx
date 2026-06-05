@@ -4,11 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
-import {
-  saveCurrentGameState,
-  setActiveSlotId,
-} from '@/lib/persistence/saveStorage'
-import { getInitialScene } from '@/lib/game/getInitialScene'
+import { saveCurrentGameState, setActiveSlotId } from '@/lib/persistence/saveStorage'
+import { initHubForNewCharacter } from '@/hooks/useAutoSave'
+import { createInitialHubState } from '@/lib/types/hub'
 import { t } from '@/lib/i18n'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
@@ -29,7 +27,6 @@ export function EditorForm() {
 
   const setCharacter = useCharacterStore((s) => s.setCharacter)
   const resetGame = useGameStore((s) => s.resetGame)
-  const setCurrentScene = useGameStore((s) => s.setCurrentScene)
 
   const [name, setName] = useState('')
   const [index, setIndex] = useState(0)
@@ -49,38 +46,34 @@ export function EditorForm() {
 
     setActiveSlotId(activeSlot)
 
+    const starterInventory = [...selected.inventory]
+
     const character = {
       name: name.trim(),
-
       origin: selected.value,
-
-      stats: {
-        ...selected.stats,
-      },
-
-      inventory: [...selected.inventory],
-
+      stats: { ...selected.stats },
+      inventory: [],
       sanity: 100,
-
       corruption: 0,
-
       flags: [],
     }
 
-    const initialScene = getInitialScene()
+    const hub = createInitialHubState(starterInventory)
 
+    initHubForNewCharacter(starterInventory)
     setCharacter(character)
     resetGame()
-    setCurrentScene(initialScene)
 
     await saveCurrentGameState(activeSlot, {
       character,
-      currentScene: initialScene,
+      currentScene: null,
       history: [],
       sceneHistory: [],
+      hub,
+      raid: null,
     })
 
-    router.push('/game')
+    router.push('/hub')
   }
 
   return (
