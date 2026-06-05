@@ -75,6 +75,32 @@ function boostPoolForJournal(
   return boosted
 }
 
+function boostPoolForContractFlags(
+  pool: string[],
+  character: Character,
+  visitedSceneIds: Set<string>,
+): string[] {
+  const boosted: string[] = []
+
+  for (const flag of character.flags) {
+    if (!flag.startsWith('contract_boost_')) {
+      continue
+    }
+
+    const sceneId = flag.slice('contract_boost_'.length)
+
+    if (
+      pool.includes(sceneId) &&
+      !visitedSceneIds.has(sceneId) &&
+      !boosted.includes(sceneId)
+    ) {
+      boosted.push(sceneId)
+    }
+  }
+
+  return boosted
+}
+
 function pickFromPool({
   pool,
   visitedSceneIds,
@@ -89,7 +115,18 @@ function pickFromPool({
     journalEntries,
     visitedSceneIds,
   )
-  const boosted = [...flagBoosted, ...journalBoosted.filter((id) => !flagBoosted.includes(id))]
+  const contractBoosted = boostPoolForContractFlags(
+    pool,
+    character,
+    visitedSceneIds,
+  )
+  const boosted = [
+    ...flagBoosted,
+    ...journalBoosted.filter((id) => !flagBoosted.includes(id)),
+    ...contractBoosted.filter(
+      (id) => !flagBoosted.includes(id) && !journalBoosted.includes(id),
+    ),
+  ]
 
   if (boosted.length > 0) {
     const sceneId = boosted[Math.abs(seed) % boosted.length]!

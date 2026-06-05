@@ -1,6 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+
+import { artifacts } from '@/lib/game/artifacts'
+import { isChoiceVisible } from '@/lib/game/choiceVisibility'
+import { computeSanityAfterChoice } from '@/lib/game/sanityPacing'
 
 import {
   GameLayout,
@@ -10,6 +14,8 @@ import {
   GameSceneView,
   ArtifactReveal,
   RaidChronicleModal,
+  RaidTipBanner,
+  StatChangeFlash,
 } from '@/components/game'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
@@ -45,9 +51,43 @@ export default function GamePage() {
     handleAbandonRaid,
     handleExitToMenu,
     closeArtifactReveal,
+    statFlash,
   } = useGameSession()
 
   const { ui: hubText } = t.hub
+
+  const sanityStress = useMemo(() => {
+    if (!character || !currentScene || isEndingScene) {
+      return false
+    }
+
+    if (character.sanity <= 15) {
+      return true
+    }
+
+    return currentScene.options.some((option) => {
+      if (!isChoiceVisible(option, character, hub?.journalEntries ?? [])) {
+        return false
+      }
+
+      return (
+        computeSanityAfterChoice(
+          character,
+          option,
+          artifacts,
+          raidModifier?.id,
+          hub?.roomMarks ?? [],
+        ) <= 15
+      )
+    })
+  }, [
+    character,
+    currentScene,
+    hub?.journalEntries,
+    hub?.roomMarks,
+    isEndingScene,
+    raidModifier?.id,
+  ])
 
   if (!character || !currentScene) {
     return (
@@ -85,15 +125,22 @@ export default function GamePage() {
         onReset={handleExitToMenu}
       />
 
-      <CharacterPanel character={character} />
+      <CharacterPanel character={character} sanityStress={sanityStress} />
 
       <div className="h-4" />
 
       <GameViewport loading={isLoading} blocked={artifactOpen}>
+        <RaidTipBanner
+          raidDepth={raidDepth}
+          isEndingScene={isEndingScene}
+        />
+        <StatChangeFlash flash={statFlash} />
         <GameSceneView
           scene={currentScene}
           character={character}
           journalEntries={hub?.journalEntries ?? []}
+          raidModifierId={raidModifier?.id}
+          roomMarks={hub?.roomMarks ?? []}
           isLoading={isLoading}
           showChoices={showChoices}
           extractAvailable={extractAvailable && !isEndingScene}

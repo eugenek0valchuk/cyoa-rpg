@@ -100,6 +100,38 @@ export default function RaidSummaryPage() {
               label={text.roomLevel}
               value={String(summary.roomLevelAfter + 1)}
             />
+            {isExtracted && summary.echoGain != null && summary.echoGain > 0 && (
+              <>
+                <SummaryRow
+                  label={text.echoGained}
+                  value={`+${summary.echoGain}`}
+                />
+                <SummaryRow
+                  label={text.echoTotal}
+                  value={String(summary.echoAfter ?? 0)}
+                />
+              </>
+            )}
+            {summary.contractTitle && (
+              <>
+                <SummaryRow
+                  label={text.contractTitle}
+                  value={summary.contractTitle}
+                />
+                <SummaryRow
+                  label={
+                    summary.contractFulfilled
+                      ? text.contractFulfilled
+                      : text.contractBroken
+                  }
+                  value={
+                    summary.contractFulfilled
+                      ? summary.contractReward ?? '—'
+                      : '—'
+                  }
+                />
+              </>
+            )}
           </div>
 
           <div className="border-t border-[#241919] pt-5">

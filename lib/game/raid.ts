@@ -1,8 +1,15 @@
 import { getInitialScene } from './getInitialScene'
+import { getContractEncounterBoostFlag, resolveRaidContract, type ContractResult } from './contracts'
+import {
+  applyRaidStartSanity,
+  calcEchoFromExtraction,
+  restVesselAfterFailedRaid,
+  syncHubProgression,
+} from './hubMeta'
 import type { RaidModifierId } from './raidModifiers'
 import type { Artifact, Character } from '@/lib/types/game'
 import type { HubState, RaidState } from '@/lib/types/hub'
-import type { RaidSummary } from '@/lib/types/raidSummary'
+import type { RaidSummary, RaidOutcome } from '@/lib/types/raidSummary'
 
 export {
   canExtractRaid,
@@ -13,6 +20,7 @@ export {
   SIGIL_EXTRACTION_SITES,
 } from './extraction'
 export type { ExtractBlockReason } from './extraction'
+export type { ContractResult } from './contracts'
 
 export function getRaidDepth(sceneHistoryLength: number): number {
   return sceneHistoryLength
@@ -23,22 +31,31 @@ export function startRaidFromHub(
   hub: HubState,
   loadout: Artifact[],
   modifierId: RaidModifierId | null = null,
+  contractId: string | null = null,
 ): { character: Character; hub: HubState; raid: RaidState } {
+  const boostFlag = getContractEncounterBoostFlag(
+    hub.pendingEncounterBoost ?? null,
+  )
+  const raidFlags = boostFlag ? [boostFlag] : []
+
   return {
     character: {
       ...character,
       inventory: loadout.map((item) => ({ ...item })),
-      flags: [],
+      flags: raidFlags,
+      sanity: applyRaidStartSanity(character.sanity, hub.roomMarks),
     },
     hub: {
       ...hub,
       totalRaids: hub.totalRaids + 1,
+      pendingEncounterBoost: null,
     },
     raid: {
       active: true,
       depth: 0,
       inventoryAtStart: loadout.map((item) => item.id),
       modifierId,
+      contractId,
     },
   }
 }
@@ -96,6 +113,7 @@ export function completeRaidExtraction(
   }
 
   const stash = mergeIntoStash(hub.stash, character.inventory)
+  const echoGain = calcEchoFromExtraction(depth, gained.length, roomMarks)
 
   return {
     character: {
@@ -103,14 +121,15 @@ export function completeRaidExtraction(
       inventory: [],
       sanity: Math.min(100, character.sanity + 15),
     },
-    hub: {
+    hub: syncHubProgression({
       ...hub,
       stash,
       bestDepth,
       totalExtractions,
       roomLevel,
       roomMarks,
-    },
+      echo: (hub.echo ?? 0) + echoGain,
+    }),
     raid: null,
   }
 }
@@ -135,11 +154,14 @@ export function failRaid(
     roomMarks.push('deep_wound')
   }
 
+  const rested = restVesselAfterFailedRaid(character)
+
   return {
     character: {
       ...character,
       inventory: [],
-      sanity: Math.max(20, Math.floor(character.sanity * 0.5)),
+      sanity: rested.sanity,
+      corruption: rested.corruption,
     },
     hub: {
       ...hub,
@@ -161,18 +183,59 @@ function diffNewMarks(before: string[], after: string[]): string[] {
   return after.filter((mark) => !before.includes(mark))
 }
 
+export function applyContractToRaidEnd(
+  hub: HubState,
+  raid: RaidState,
+  context: {
+    outcome: RaidOutcome
+    depth: number
+    flags: string[]
+    sanityAfter: number
+    extractSceneId?: string
+  },
+): { hub: HubState; contractResult: ContractResult | null } {
+  const resolved = resolveRaidContract(hub, raid, context)
+  return { hub: resolved.hub, contractResult: resolved.result }
+}
+
+function attachContractToSummary(
+  summary: RaidSummary,
+  hubBefore: HubState,
+  hubAfter: HubState,
+  contractResult: ContractResult | null,
+): RaidSummary {
+  if (!contractResult) {
+    return summary
+  }
+
+  return {
+    ...summary,
+    echoAfter: hubAfter.echo ?? 0,
+    echoGain: (hubAfter.echo ?? 0) - (hubBefore.echo ?? 0),
+    contractTitle: contractResult.title,
+    contractFulfilled: contractResult.fulfilled,
+    contractReward: contractResult.fulfilled
+      ? contractResult.rewardSummary
+      : undefined,
+  }
+}
+
 export function buildExtractSummary(
   characterBefore: Character,
   hubBefore: HubState,
   raid: RaidState,
   result: ReturnType<typeof completeRaidExtraction>,
   depth: number,
+  contractResult: ContractResult | null = null,
+  hubAfterContract?: HubState,
 ): RaidSummary {
   const gainedArtifacts = characterBefore.inventory.filter(
     (item) => !raid.inventoryAtStart.includes(item.id),
   )
+  const finalHub = hubAfterContract ?? result.hub
+  const echoGain = (finalHub.echo ?? 0) - (hubBefore.echo ?? 0)
 
-  return {
+  const summary: RaidSummary = {
     outcome: 'extracted',
     depth,
     gainedArtifacts,
@@ -180,10 +243,19 @@ export function buildExtractSummary(
     newMarks: diffNewMarks(hubBefore.roomMarks, result.hub.roomMarks),
     sanityBefore: characterBefore.sanity,
     sanityAfter: result.character.sanity,
-    roomLevelAfter: result.hub.roomLevel,
-    bestDepthAfter: result.hub.bestDepth,
-    totalExtractionsAfter: result.hub.totalExtractions,
+    roomLevelAfter: finalHub.roomLevel,
+    bestDepthAfter: finalHub.bestDepth,
+    totalExtractionsAfter: finalHub.totalExtractions,
+    echoGain,
+    echoAfter: finalHub.echo ?? 0,
   }
+
+  return attachContractToSummary(
+    summary,
+    hubBefore,
+    finalHub,
+    contractResult,
+  )
 }
 
 export function buildFailSummary(
@@ -192,12 +264,15 @@ export function buildFailSummary(
   raid: RaidState,
   result: ReturnType<typeof failRaid>,
   depth: number,
+  contractResult: ContractResult | null = null,
+  hubAfterContract?: HubState,
 ): RaidSummary {
   const lostArtifacts = characterBefore.inventory.filter(
     (item) => !raid.inventoryAtStart.includes(item.id),
   )
+  const finalHub = hubAfterContract ?? result.hub
 
-  return {
+  const summary: RaidSummary = {
     outcome: 'failed',
     depth,
     gainedArtifacts: [],
@@ -205,10 +280,17 @@ export function buildFailSummary(
     newMarks: diffNewMarks(hubBefore.roomMarks, result.hub.roomMarks),
     sanityBefore: characterBefore.sanity,
     sanityAfter: result.character.sanity,
-    roomLevelAfter: result.hub.roomLevel,
-    bestDepthAfter: result.hub.bestDepth,
-    totalExtractionsAfter: result.hub.totalExtractions,
+    roomLevelAfter: finalHub.roomLevel,
+    bestDepthAfter: finalHub.bestDepth,
+    totalExtractionsAfter: finalHub.totalExtractions,
   }
+
+  return attachContractToSummary(
+    summary,
+    hubBefore,
+    finalHub,
+    contractResult,
+  )
 }
 
 export function buildAbandonSummary(
@@ -217,9 +299,19 @@ export function buildAbandonSummary(
   raid: RaidState,
   result: ReturnType<typeof failRaid>,
   depth: number,
+  contractResult: ContractResult | null = null,
+  hubAfterContract?: HubState,
 ): RaidSummary {
   return {
-    ...buildFailSummary(characterBefore, hubBefore, raid, result, depth),
+    ...buildFailSummary(
+      characterBefore,
+      hubBefore,
+      raid,
+      result,
+      depth,
+      contractResult,
+      hubAfterContract,
+    ),
     outcome: 'abandoned',
   }
 }

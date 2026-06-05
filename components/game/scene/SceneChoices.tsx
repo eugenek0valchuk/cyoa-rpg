@@ -1,6 +1,7 @@
 'use client'
 
 import { ChevronRight, DoorOpen } from 'lucide-react'
+import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import { Scene, Character } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
 import { choiceAnimation, sceneTransition } from '../constants/animations'
@@ -11,6 +12,8 @@ interface SceneChoicesProps {
   scene: Scene
   character: Character
   journalEntries?: string[]
+  raidModifierId?: RaidModifierId | null
+  roomMarks?: string[]
   showChoices: boolean
   isLoading: boolean
   extractAvailable?: boolean
@@ -22,6 +25,8 @@ export function SceneChoices({
   scene,
   character,
   journalEntries = [],
+  raidModifierId,
+  roomMarks = [],
   showChoices,
   isLoading,
   extractAvailable = false,
@@ -65,6 +70,8 @@ export function SceneChoices({
               options={scene.options}
               character={character}
               journalEntries={journalEntries}
+              raidModifierId={raidModifierId}
+              roomMarks={roomMarks}
               onSelect={onChoice}
               isLoading={isLoading}
             />

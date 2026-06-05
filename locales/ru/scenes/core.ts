@@ -281,7 +281,7 @@ export const coreScenes: Record<string, Scene> = {
         effects: {
           corruption: 4,
 
-          sanity: -5,
+          sanity: -3,
         },
       },
 
@@ -331,9 +331,9 @@ export const coreScenes: Record<string, Scene> = {
         text: 'Спуститься в дышащую яму',
 
         effects: {
-          corruption: 8,
+          corruption: 6,
 
-          sanity: -10,
+          sanity: -6,
         },
       },
 
@@ -347,7 +347,7 @@ export const coreScenes: Record<string, Scene> = {
         },
 
         effects: {
-          sanity: -5,
+          sanity: -3,
 
           addFlag: 'read_the_writings',
         },

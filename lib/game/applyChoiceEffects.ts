@@ -1,4 +1,5 @@
 import { clampStat } from './clampStat'
+import { softenSanityDelta } from './sanityPacing'
 
 import type { Artifact, Character, Choice } from '../types/game'
 
@@ -13,10 +14,15 @@ export function applyChoiceEffects({
   choice,
   artifacts,
 }: ApplyChoiceEffectsParams) {
+  const sanityDelta = softenSanityDelta(
+    character.sanity,
+    choice.effects?.sanity ?? 0,
+  )
+
   const updatedCharacter = {
     ...character,
 
-    sanity: clampStat(character.sanity + (choice.effects?.sanity ?? 0)),
+    sanity: clampStat(character.sanity + sanityDelta),
 
     corruption: clampStat(
       character.corruption + (choice.effects?.corruption ?? 0),

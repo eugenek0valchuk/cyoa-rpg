@@ -31,10 +31,15 @@ export const RAID_MODIFIERS: Record<RaidModifierId, RaidModifierDef> = {
 }
 
 const MODIFIER_IDS = Object.keys(RAID_MODIFIERS) as RaidModifierId[]
+const HARSH_MODIFIER_IDS: RaidModifierId[] = ['blood_mist', 'hollow_wind']
 
-export function pickRaidModifier(seed = Date.now()): RaidModifierId {
-  const index = Math.abs(seed) % MODIFIER_IDS.length
-  return MODIFIER_IDS[index]!
+export function pickRaidModifier(
+  seed = Date.now(),
+  options?: { harshOnly?: boolean },
+): RaidModifierId {
+  const pool = options?.harshOnly ? HARSH_MODIFIER_IDS : MODIFIER_IDS
+  const index = Math.abs(seed) % pool.length
+  return pool[index]!
 }
 
 export function getRaidModifier(id: RaidModifierId | null | undefined): RaidModifierDef | null {
@@ -52,23 +57,35 @@ function clampStat(value: number): number {
 export function applyRaidModifierTick(
   character: Character,
   modifierId: RaidModifierId | null | undefined,
+  roomMarks: string[] = [],
 ): Character {
   if (!modifierId) {
     return character
   }
 
+  let next: Character
+
   switch (modifierId) {
     case 'muted_bells':
-      return { ...character, sanity: clampStat(character.sanity - 2) }
+      next = { ...character, sanity: clampStat(character.sanity - 2) }
+      break
     case 'blood_mist':
-      return { ...character, corruption: clampStat(character.corruption + 1) }
+      next = { ...character, corruption: clampStat(character.corruption + 1) }
+      break
     case 'hollow_wind':
-      return {
+      next = {
         ...character,
         sanity: clampStat(character.sanity - 1),
         corruption: clampStat(character.corruption + 1),
       }
+      break
     default:
-      return character
+      next = character
   }
+
+  if (roomMarks.includes('deep_echo')) {
+    next = { ...next, sanity: clampStat(next.sanity - 1) }
+  }
+
+  return next
 }

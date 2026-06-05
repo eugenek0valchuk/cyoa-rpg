@@ -1,5 +1,5 @@
 import { artifacts } from './artifacts'
-import { hubUi, raidSummaryUi, roomMarks, rooms } from './hub'
+import { hubUi, raidSummaryUi, roomMarkEffects, roomMarks, rooms } from './hub'
 import { hubChronicleUi } from './hubChronicle'
 import { endings } from './endings'
 import { origins, originTitles } from './origins'
@@ -28,7 +28,7 @@ export const ru = {
   raid: { ui: raidUi, modifierNames: raidModifierNames },
   raidChronicle: { ui: raidChronicleUi, flags: raidFlags },
   journal: { ui: journalUi, catalog: journalCatalog },
-  hub: { ui: hubUi, chronicle: hubChronicleUi, raidSummary: raidSummaryUi, rooms, roomMarks },
+  hub: { ui: hubUi, chronicle: hubChronicleUi, raidSummary: raidSummaryUi, rooms, roomMarks, roomMarkEffects },
   lore: worldLore,
   scenes: {
     ...coreScenes,

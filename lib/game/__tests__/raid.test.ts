@@ -58,12 +58,15 @@ describe('raid system', () => {
   it('carries reduced sanity into the next raid after fail', () => {
     const hub = createInitialHubState([])
     const raid = { active: true, depth: 2, inventoryAtStart: [] as string[] }
-    const character = { ...baseCharacter, sanity: 100 }
+    const character = { ...baseCharacter, sanity: 100, corruption: 85 }
 
     const failed = failRaid(character, hub, raid, 2)
     const next = startRaidFromHub(failed.character, failed.hub, [])
 
-    expect(next.character.sanity).toBe(50)
+    expect(failed.hub.roomMarks).toContain('failure_stain')
+    expect(failed.character.sanity).toBe(50)
+    expect(failed.character.corruption).toBe(75)
+    expect(next.character.sanity).toBe(44)
   })
 
   it('blocks extraction without exit site or return sigil', () => {

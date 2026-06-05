@@ -12,6 +12,7 @@ export interface HotspotBadges {
   stash?: string
   vessel?: string
   chronicle?: string
+  scribe?: string
   threshold?: string
 }
 

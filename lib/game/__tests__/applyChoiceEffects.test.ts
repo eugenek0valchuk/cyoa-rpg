@@ -28,7 +28,7 @@ describe('applyChoiceEffects', () => {
       artifacts,
     })
 
-    expect(updatedCharacter.sanity).toBe(40)
+    expect(updatedCharacter.sanity).toBe(42)
     expect(updatedCharacter.corruption).toBe(25)
   })
 

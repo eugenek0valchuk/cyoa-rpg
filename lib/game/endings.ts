@@ -63,7 +63,12 @@ export function getEnding(
     return ending('silent_departure')
   }
 
-  if (context.forceEnding && context.phase === 'COLLAPSE') {
+  if (
+    context.forceEnding &&
+    context.phase === 'COLLAPSE' &&
+    context.historyLength >= 3 &&
+    character.sanity <= 12
+  ) {
     return ending('reality_collapse')
   }
 

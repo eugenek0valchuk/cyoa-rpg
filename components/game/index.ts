@@ -15,6 +15,8 @@ export * from './layout/GameViewport'
 export * from './scene/GameSceneView'
 export * from './scene/SceneChoices'
 export * from './scene/ChoiceList'
+export * from './scene/RaidTipBanner'
+export * from './scene/StatChangeFlash'
 
 export * from './shared/ChronicleCard'
 

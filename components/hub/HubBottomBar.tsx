@@ -9,17 +9,19 @@ interface HubBottomBarProps {
     stash: string
     vessel: string
     chronicle: string
+    scribe?: string
     descend: string
     archives: string
   }
   origin: Origin
   activeId: HotspotId | null
   modalOpen: boolean
+  showScribe?: boolean
   onSelect: (id: HotspotId | null) => void
   onArchives: () => void
 }
 
-const BAR_ITEMS: {
+const CORE_ITEMS: {
   id: HotspotId
   key: keyof HubBottomBarProps['labels']
   icon: GameIconProps['type']
@@ -27,7 +29,6 @@ const BAR_ITEMS: {
   { id: 'stash', key: 'stash', icon: 'artifact' },
   { id: 'vessel', key: 'vessel', icon: 'sanity' },
   { id: 'chronicle', key: 'chronicle', icon: 'flag' },
-  { id: 'threshold', key: 'descend', icon: 'corruption' },
 ]
 
 const ORIGIN_ICON: Record<Origin, GameIconProps['type']> = {
@@ -41,6 +42,7 @@ export function HubBottomBar({
   origin,
   activeId,
   modalOpen,
+  showScribe = false,
   onSelect,
   onArchives,
 }: HubBottomBarProps) {
@@ -48,11 +50,17 @@ export function HubBottomBar({
     onSelect(activeId === id ? null : id)
   }
 
-  const barItems = BAR_ITEMS.map((item) =>
-    item.id === 'vessel'
-      ? { ...item, icon: ORIGIN_ICON[origin] }
-      : item,
-  )
+  const barItems = [
+    ...CORE_ITEMS.map((item) =>
+      item.id === 'vessel'
+        ? { ...item, icon: ORIGIN_ICON[origin] }
+        : item,
+    ),
+    ...(showScribe && labels.scribe
+      ? [{ id: 'scribe' as const, key: 'scribe' as const, icon: 'intelligence' as const }]
+      : []),
+    { id: 'threshold' as const, key: 'descend' as const, icon: 'corruption' as const },
+  ]
 
   return (
     <div
@@ -77,7 +85,7 @@ export function HubBottomBar({
             >
               <GameIcon type={icon} size={40} />
               <span className="text-[10px] uppercase tracking-[0.1em] sm:text-[11px] sm:tracking-[0.12em]">
-                {labels[key]}
+                {labels[key] ?? id}
               </span>
             </button>
           )

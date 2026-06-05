@@ -13,6 +13,7 @@ import { GothicTooltip } from '@/components/ui/GothicTooltip'
 
 interface CharacterPanelProps {
   character: Character
+  sanityStress?: boolean
 }
 
 function StatIconWell({ children }: { children: ReactNode }) {
@@ -23,7 +24,10 @@ function StatIconWell({ children }: { children: ReactNode }) {
   )
 }
 
-export function CharacterPanel({ character }: CharacterPanelProps) {
+export function CharacterPanel({
+  character,
+  sanityStress = false,
+}: CharacterPanelProps) {
   const { game } = t.ui
   const { statTips } = t.hub.ui
   const originIcon =
@@ -86,7 +90,14 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           </div>
         </div>
 
+        {sanityStress && (
+          <p className="mt-2 text-[10px] uppercase tracking-[0.14em] text-[#c06060] animate-pulse">
+            {game.sanityStress}
+          </p>
+        )}
+
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <div className={sanityStress ? 'min-w-0 flex-1 animate-pulse' : 'min-w-0 flex-1'}>
           <StatBar
             compact
             label={game.sanity}
@@ -101,6 +112,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
               </GothicTooltip>
             }
           />
+          </div>
           <StatBar
             compact
             label={game.corruption}

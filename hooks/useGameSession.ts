@@ -18,6 +18,7 @@ import {
   buildAbandonSummary,
   buildExtractSummary,
   buildFailSummary,
+  applyContractToRaidEnd,
   completeRaidExtraction,
   failRaid,
   getExtractBlockReason,
@@ -49,6 +50,7 @@ export function useGameSession() {
   const pushSceneHistory = useGameStore((state) => state.pushSceneHistory)
   const sceneHistory = useGameStore((state) => state.sceneHistory)
   const resetGame = useGameStore((state) => state.resetGame)
+  const setQueuedScene = useGameStore((state) => state.setQueuedScene)
 
   const { artifact, open, revealArtifact, closeArtifactReveal } =
     useArtifactReveal()
@@ -60,6 +62,10 @@ export function useGameSession() {
   const [chronicleOpen, setChronicleOpen] = useState(false)
   const [showNewFlagHint, setShowNewFlagHint] = useState(false)
   const [showNewJournalHint, setShowNewJournalHint] = useState(false)
+  const [statFlash, setStatFlash] = useState<{
+    sanity?: number
+    corruption?: number
+  } | null>(null)
 
   const syncJournal = useCallback(
     (endingId?: string) => {
@@ -176,17 +182,38 @@ export function useGameSession() {
   )
 
   const handleExtract = useCallback(async () => {
-    if (!character || !hub || !raid || !extractAvailable) {
+    if (!character || !hub || !raid || !extractAvailable || !currentScene) {
       return
     }
 
     const depth = sceneHistory.length
     const result = completeRaidExtraction(character, hub, raid, depth)
-    const summary = buildExtractSummary(character, hub, raid, result, depth)
+    const contractResolved = applyContractToRaidEnd(result.hub, raid, {
+      outcome: 'extracted',
+      depth,
+      flags: character.flags,
+      sanityAfter: result.character.sanity,
+      extractSceneId: currentScene.id,
+    })
+    const summary = buildExtractSummary(
+      character,
+      hub,
+      raid,
+      result,
+      depth,
+      contractResolved.contractResult,
+      contractResolved.hub,
+    )
 
-    await persistRaidReturn(result.character, result.hub, result.raid, summary)
+    await persistRaidReturn(
+      result.character,
+      contractResolved.hub,
+      result.raid,
+      summary,
+    )
   }, [
     character,
+    currentScene,
     extractAvailable,
     hub,
     persistRaidReturn,
@@ -201,9 +228,28 @@ export function useGameSession() {
 
     const depth = sceneHistory.length
     const result = failRaid(character, hub, raid, depth)
-    const summary = buildFailSummary(character, hub, raid, result, depth)
+    const contractResolved = applyContractToRaidEnd(result.hub, raid, {
+      outcome: 'failed',
+      depth,
+      flags: character.flags,
+      sanityAfter: result.character.sanity,
+    })
+    const summary = buildFailSummary(
+      character,
+      hub,
+      raid,
+      result,
+      depth,
+      contractResolved.contractResult,
+      contractResolved.hub,
+    )
 
-    await persistRaidReturn(result.character, result.hub, result.raid, summary)
+    await persistRaidReturn(
+      result.character,
+      contractResolved.hub,
+      result.raid,
+      summary,
+    )
   }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
 
   const handleChoice = useCallback(
@@ -222,6 +268,8 @@ export function useGameSession() {
       setShowChoices(false)
 
       const flagsBefore = character.flags
+      const sanityBefore = character.sanity
+      const corruptionBefore = character.corruption
 
       try {
         await handleGameChoice({
@@ -233,10 +281,13 @@ export function useGameSession() {
           raidModifierId: raid?.modifierId,
           setCharacter,
           setCurrentScene,
+          getQueuedScene: () => useGameStore.getState().queuedScene,
+          setQueuedScene,
           pushSceneHistory,
           pushHistory,
           revealArtifact,
           journalEntries: hub?.journalEntries ?? [],
+          roomMarks: hub?.roomMarks ?? [],
         })
 
         const flagsAfter =
@@ -248,6 +299,15 @@ export function useGameSession() {
         }
 
         syncJournal()
+
+        const afterCharacter = useCharacterStore.getState().character
+        if (afterCharacter) {
+          setStatFlash({
+            sanity: afterCharacter.sanity - sanityBefore,
+            corruption: afterCharacter.corruption - corruptionBefore,
+          })
+          window.setTimeout(() => setStatFlash(null), 2800)
+        }
 
         await new Promise((resolve) => setTimeout(resolve, 350))
         setShowChoices(true)
@@ -282,9 +342,28 @@ export function useGameSession() {
 
     const depth = sceneHistory.length
     const result = failRaid(character, hub, raid, depth)
-    const summary = buildAbandonSummary(character, hub, raid, result, depth)
+    const contractResolved = applyContractToRaidEnd(result.hub, raid, {
+      outcome: 'abandoned',
+      depth,
+      flags: character.flags,
+      sanityAfter: result.character.sanity,
+    })
+    const summary = buildAbandonSummary(
+      character,
+      hub,
+      raid,
+      result,
+      depth,
+      contractResolved.contractResult,
+      contractResolved.hub,
+    )
 
-    await persistRaidReturn(result.character, result.hub, result.raid, summary)
+    await persistRaidReturn(
+      result.character,
+      contractResolved.hub,
+      result.raid,
+      summary,
+    )
   }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
 
   const handleExitToMenu = useCallback(async () => {
@@ -335,5 +414,6 @@ export function useGameSession() {
     handleAbandonRaid,
     handleExitToMenu,
     closeArtifactReveal,
+    statFlash,
   }
 }

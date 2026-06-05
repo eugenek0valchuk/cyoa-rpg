@@ -4,8 +4,18 @@ import type { ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
+import { artifacts } from '@/lib/game/artifacts'
+import { getChoiceBlockReason } from '@/lib/game/choiceBlockReason'
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
+import type { ChoiceBlockReason } from '@/lib/game/choiceBlockReason'
+import { inferChoiceIntent } from '@/lib/game/choiceIntent'
+import {
+  computeCorruptionAfterChoice,
+  computeSanityAfterChoice,
+  isDangerousSanityChoice,
+} from '@/lib/game/sanityPacing'
+import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import {
   getEffectTooltip,
   getFlagTooltip,
@@ -21,6 +31,8 @@ interface ChoiceListProps {
   options: Choice[]
   character: Character
   journalEntries?: string[]
+  raidModifierId?: RaidModifierId | null
+  roomMarks?: string[]
   onSelect: (optionIndex: number) => void
   isLoading?: boolean
 }
@@ -235,10 +247,157 @@ function ChoiceMeta({
   )
 }
 
+const INTENT_STYLES = {
+  deeper: 'border-[#4a2323]/80 text-[#d46060] bg-[#160909]/80',
+  retreat: 'border-[#2b3528]/80 text-[#8a9a82] bg-[#0a0d0a]/80',
+  risk: 'border-[#6a2020]/80 text-[#e07070] bg-[#1a0808]/80',
+  lore: 'border-[#2a2a4a]/80 text-[#92a6dd] bg-[#0a0a14]/80',
+  rest: 'border-[#2a3d2a]/80 text-[#8fbc8f] bg-[#0a120a]/80',
+  neutral: 'border-[#2b2320] text-[#75685f] bg-[#0a0808]/80',
+} as const
+
+function ChoiceIntentBadge({ option }: { option: Choice }) {
+  const intent = inferChoiceIntent(option)
+  const { game } = t.ui
+
+  if (intent === 'neutral') {
+    return null
+  }
+
+  return (
+    <span
+      className={`inline-flex shrink-0 border px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] ${INTENT_STYLES[intent]}`}
+    >
+      {game.choiceIntent[intent]}
+    </span>
+  )
+}
+
+function formatBlockReason(reason: ChoiceBlockReason): string {
+  const { game } = t.ui
+
+  switch (reason.kind) {
+    case 'strength':
+      return game.choiceBlockedStrength
+        .replace('{need}', String(reason.need))
+        .replace('{have}', String(reason.have))
+    case 'agility':
+      return game.choiceBlockedAgility
+        .replace('{need}', String(reason.need))
+        .replace('{have}', String(reason.have))
+    case 'intelligence':
+      return game.choiceBlockedIntelligence
+        .replace('{need}', String(reason.need))
+        .replace('{have}', String(reason.have))
+    case 'origin':
+      return game.choiceBlockedOrigin
+    case 'corruption':
+      return game.choiceBlockedCorruption
+        .replace('{need}', String(reason.need))
+        .replace('{have}', String(reason.have))
+    case 'sanity':
+      return game.choiceBlockedSanity
+        .replace('{max}', String(reason.max))
+        .replace('{have}', String(reason.have))
+    case 'flag':
+      return game.choiceBlockedFlag
+    case 'artifact':
+      return game.choiceBlockedArtifact
+    case 'journal':
+      return game.choiceBlockedJournal
+  }
+}
+
+function CorruptionProjection({
+  option,
+  character,
+  raidModifierId,
+  roomMarks,
+}: {
+  option: Choice
+  character: Character
+  raidModifierId?: RaidModifierId | null
+  roomMarks?: string[]
+}) {
+  const { game } = t.ui
+  const projected = computeCorruptionAfterChoice(
+    character,
+    option,
+    artifacts,
+    raidModifierId,
+    roomMarks,
+  )
+
+  if (projected === character.corruption) {
+    return null
+  }
+
+  const label = game.corruptionProjection
+    .replace('{before}', String(character.corruption))
+    .replace('{after}', String(projected))
+
+  return (
+    <div className="mt-1 text-[11px] uppercase tracking-[0.1em] text-[#a07070]">
+      {label}
+    </div>
+  )
+}
+
+function SanityProjection({
+  option,
+  character,
+  raidModifierId,
+  roomMarks,
+}: {
+  option: Choice
+  character: Character
+  raidModifierId?: RaidModifierId | null
+  roomMarks?: string[]
+}) {
+  const { game } = t.ui
+  const projected = computeSanityAfterChoice(
+    character,
+    option,
+    artifacts,
+    raidModifierId,
+    roomMarks,
+  )
+
+  if (projected === character.sanity) {
+    return null
+  }
+
+  const dangerous = isDangerousSanityChoice(
+    character,
+    option,
+    artifacts,
+    raidModifierId,
+    roomMarks,
+  )
+
+  const label = game.sanityProjection
+    .replace('{before}', String(character.sanity))
+    .replace('{after}', String(projected))
+
+  return (
+    <div
+      className={`mt-2 text-[11px] uppercase tracking-[0.1em] ${
+        dangerous ? 'text-[#c06060]' : 'text-[#8b9a7a]'
+      }`}
+    >
+      {label}
+      {raidModifierId ? ` (${game.modifierSanityNote})` : ''}
+      {dangerous ? ` — ${game.sanityDanger}` : ''}
+    </div>
+  )
+}
+
 export function ChoiceList({
   options,
   character,
   journalEntries = [],
+  raidModifierId,
+  roomMarks = [],
   onSelect,
   isLoading,
 }: ChoiceListProps) {
@@ -263,6 +422,11 @@ export function ChoiceList({
           }
 
           const available = isChoiceAvailable(option, character, journalEntries)
+          const blockReason = getChoiceBlockReason(
+            option,
+            character,
+            journalEntries,
+          )
 
           return (
             <motion.button
@@ -284,10 +448,30 @@ export function ChoiceList({
               <div className="relative px-4 py-3.5 sm:px-5 sm:py-4">
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#e7ded7] sm:text-[17px]">
-                      {option.text}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#e7ded7] sm:text-[17px]">
+                        {option.text}
+                      </div>
+                      <ChoiceIntentBadge option={option} />
                     </div>
                     <ChoiceMeta option={option} character={character} />
+                    <SanityProjection
+                      option={option}
+                      character={character}
+                      raidModifierId={raidModifierId}
+                      roomMarks={roomMarks}
+                    />
+                    <CorruptionProjection
+                      option={option}
+                      character={character}
+                      raidModifierId={raidModifierId}
+                      roomMarks={roomMarks}
+                    />
+                    {!available && blockReason && (
+                      <p className="mt-2 text-[10px] uppercase tracking-[0.08em] text-[#8b5e5e]">
+                        {formatBlockReason(blockReason)}
+                      </p>
+                    )}
                   </div>
 
                   <ChevronRight

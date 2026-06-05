@@ -5,7 +5,11 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
+import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
+import { HubScribePanel } from '@/components/hub/HubScribePanel'
+import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
 import { journalCatalog } from '@/locales/ru/journal'
+import { contractById, scribeUi } from '@/locales/ru/contracts'
 import {
   RoomHotspotLayer,
   type HotspotBadges,
@@ -20,6 +24,19 @@ import {
   pickRaidModifier,
   type RaidModifierId,
 } from '@/lib/game/raidModifiers'
+import {
+  applyRaidStartSanity,
+  canAffordEchoReroll,
+  ECHO_REROLL_COST,
+  getRaidStartSanityDelta,
+  hasFreeModifierReroll,
+  hasHarshModifierPool,
+  spendEcho,
+} from '@/lib/game/hubMeta'
+import {
+  isScribeUnlocked,
+  pickOfferedContracts,
+} from '@/lib/game/contracts'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 import { roomHotspotLayouts, type HotspotId } from '@/lib/hub/roomHotspots'
 import { t } from '@/lib/i18n'
@@ -52,17 +69,42 @@ export default function HubPage() {
   const [pendingModifier, setPendingModifier] = useState<RaidModifierId>(() =>
     pickRaidModifier(),
   )
+  const [freeRerollUsed, setFreeRerollUsed] = useState(false)
+  const [selectedContractId, setSelectedContractId] = useState<string | null>(
+    null,
+  )
 
   const room = character ? rooms[character.origin] : null
   const hotspotRegions = character
     ? roomHotspotLayouts[character.origin]
     : []
 
+  const scribeUnlocked = hub ? isScribeUnlocked(hub) : false
+  const offeredContracts = useMemo(
+    () => (hub ? pickOfferedContracts(hub) : []),
+    [hub],
+  )
+  const visibleHotspots = useMemo(
+    () =>
+      hotspotRegions.filter(
+        (spot) => spot.id !== 'scribe' || scribeUnlocked,
+      ),
+    [hotspotRegions, scribeUnlocked],
+  )
+  const selectedContract = selectedContractId
+    ? contractById[selectedContractId]
+    : null
+
   useEffect(() => {
-    if (activeModal === 'threshold') {
-      setPendingModifier(pickRaidModifier())
+    if (activeModal === 'threshold' && hub) {
+      setPendingModifier(
+        pickRaidModifier(Date.now(), {
+          harshOnly: hasHarshModifierPool(hub.roomMarks),
+        }),
+      )
+      setFreeRerollUsed(false)
     }
-  }, [activeModal])
+  }, [activeModal, hub])
 
   useEffect(() => {
     if (!character || !hub) {
@@ -111,17 +153,51 @@ export default function HubPage() {
     router.push('/')
   }
 
+  const handleRerollModifier = () => {
+    if (!hub) {
+      return
+    }
+
+    const harshOnly = hasHarshModifierPool(hub.roomMarks)
+    const roll = () =>
+      setPendingModifier(
+        pickRaidModifier(Date.now(), { harshOnly }),
+      )
+
+    if (hasFreeModifierReroll(hub) && !freeRerollUsed) {
+      setFreeRerollUsed(true)
+      roll()
+      return
+    }
+
+    const spent = spendEcho(hub, ECHO_REROLL_COST)
+
+    if (!spent) {
+      return
+    }
+
+    setHub(spent)
+    roll()
+  }
+
   const handleBeginRaid = async () => {
     if (!character || !hub) {
       return
     }
 
-    const started = startRaidFromHub(character, hub, loadoutItems, pendingModifier)
+    const started = startRaidFromHub(
+      character,
+      hub,
+      loadoutItems,
+      pendingModifier,
+      selectedContractId,
+    )
 
     setCharacter(started.character)
     setHub(started.hub)
     setRaid(started.raid)
     setActiveModal(null)
+    setSelectedContractId(null)
 
     resetGame()
     const startScene = getRaidStartScene(
@@ -153,6 +229,26 @@ export default function HubPage() {
   const evolvedText = room.evolved[hub.roomLevel] ?? room.description
   const pendingModifierDef = getRaidModifier(pendingModifier)
   const { ui: raidText } = t.raid
+  const { roomMarkEffects } = t.hub
+  const raidStartSanity = applyRaidStartSanity(character.sanity, hub.roomMarks)
+  const sanityMarkDelta = getRaidStartSanityDelta(hub.roomMarks)
+  const lowSanityWarning =
+    raidStartSanity <= 18
+      ? raidText.prepareLowSanityWarn.replace(
+          '{sanity}',
+          String(raidStartSanity),
+        )
+      : null
+  const canRerollFree = hasFreeModifierReroll(hub) && !freeRerollUsed
+  const canRerollEcho = canAffordEchoReroll(hub)
+  const rerollLabel = canRerollFree
+    ? raidText.prepareModifierRollFree
+    : canRerollEcho
+      ? raidText.prepareModifierRollEcho.replace(
+          '{cost}',
+          String(ECHO_REROLL_COST),
+        )
+      : raidText.prepareModifierRoll
 
   const hotspotBadges: HotspotBadges = {
     stash: hub.stash.length > 0 ? String(hub.stash.length) : undefined,
@@ -163,7 +259,8 @@ export default function HubPage() {
         : hub.roomMarks.length > 0
           ? String(hub.roomMarks.length)
           : undefined,
-    threshold: '↓',
+    threshold: selectedContract ? '◆' : '↓',
+    scribe: selectedContract ? '◆' : scribeUnlocked ? '?' : undefined,
   }
 
   const closeModal = () => setActiveModal(null)
@@ -180,7 +277,7 @@ export default function HubPage() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50" />
 
       <RoomHotspotLayer
-        hotspots={hotspotRegions}
+        hotspots={visibleHotspots}
         labels={hotspots}
         badges={hotspotBadges}
         origin={character.origin}
@@ -191,6 +288,7 @@ export default function HubPage() {
       />
 
       <header className="absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-black/85 to-transparent px-5 pb-8 pt-6 sm:px-8">
+        <HubOnboardingBanner />
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-[12px] uppercase tracking-[0.15em] text-[#85776a]">
@@ -202,7 +300,19 @@ export default function HubPage() {
             <p className="mt-1 max-w-lg text-[14px] leading-relaxed text-[#b8a99e] sm:text-[15px]">
               {room.subtitle}
             </p>
-            <p className="mt-2 text-[12px] text-[#6f6259]">{hubText.hotspotHint}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-[#85776a]">
+              <span>
+                {hubText.echo}:{' '}
+                <span className="font-cinzel text-[#d8c9be]">{hub.echo ?? 0}</span>
+              </span>
+              <span>
+                {hubText.roomLevel}:{' '}
+                <span className="font-cinzel text-[#d8c9be]">
+                  {hub.roomLevel + 1}
+                </span>
+              </span>
+              <span className="text-[#6f6259]">{hubText.hotspotHint}</span>
+            </div>
           </div>
 
           <button
@@ -218,10 +328,12 @@ export default function HubPage() {
 
       <HubBottomBar
         origin={character.origin}
+        showScribe={scribeUnlocked}
         labels={{
           stash: hubText.bottomStash,
           vessel: hubText.bottomVessel,
           chronicle: hubText.bottomChronicle,
+          scribe: hubText.bottomScribe,
           descend: hubText.bottomDescend,
           archives: hubText.bottomArchives,
         }}
@@ -303,6 +415,37 @@ export default function HubPage() {
       </GothicModal>
 
       <GothicModal
+        open={activeModal === 'scribe'}
+        onClose={closeModal}
+        icon="intelligence"
+        title={scribeUnlocked ? scribeUi.title : scribeUi.lockedTitle}
+        subtitle={
+          scribeUnlocked ? scribeUi.subtitle : hotspots.scribe.hint
+        }
+        maxWidth="lg"
+        footer={
+          scribeUnlocked && selectedContract ? (
+            <p className="text-[13px] text-[#6a8f6a]">
+              {scribeUi.activeContract}: {selectedContract.title}
+            </p>
+          ) : undefined
+        }
+      >
+        {scribeUnlocked ? (
+          <HubScribePanel
+            hub={hub}
+            offered={offeredContracts}
+            selectedContractId={selectedContractId}
+            onSelect={setSelectedContractId}
+          />
+        ) : (
+          <p className="text-[15px] leading-relaxed text-[#75685f]">
+            {scribeUi.lockedBody}
+          </p>
+        )}
+      </GothicModal>
+
+      <GothicModal
         open={activeModal === 'threshold'}
         onClose={closeModal}
         icon="corruption"
@@ -336,6 +479,18 @@ export default function HubPage() {
               <div className="mt-2 flex items-center gap-2 text-[13px] text-[#9d8d82]">
                 <GameIcon type="sanity" size={28} />
                 {raidText.prepareSanity}: {character.sanity}
+                {sanityMarkDelta !== 0 && (
+                  <span className="text-[#d46060]">
+                    → {raidStartSanity} ({raidText.prepareStartSanity})
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 text-[11px] text-[#75685f]">
+                {raidText.prepareLoadoutSlots}: {hub.loadoutSlots}
+              </div>
+              <div className="mt-1 flex items-center gap-2 text-[11px] text-[#75685f]">
+                <GameIcon type="artifact" size={24} />
+                {raidText.prepareEcho}: {hub.echo ?? 0}
               </div>
             </div>
 
@@ -346,10 +501,11 @@ export default function HubPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setPendingModifier(pickRaidModifier(Date.now()))}
-                  className="text-[10px] uppercase tracking-[0.12em] text-[#85776a] transition hover:text-[#d46060]"
+                  onClick={handleRerollModifier}
+                  disabled={!canRerollFree && !canRerollEcho}
+                  className="text-[10px] uppercase tracking-[0.12em] text-[#85776a] transition hover:text-[#d46060] disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {raidText.prepareModifierRoll}
+                  {rerollLabel}
                 </button>
               </div>
               {pendingModifierDef && (
@@ -367,6 +523,47 @@ export default function HubPage() {
               )}
             </div>
           </div>
+
+          {lowSanityWarning && (
+            <div className="border border-[#4a2323] bg-[#160909]/50 px-4 py-3 text-[13px] leading-relaxed text-[#d46060]">
+              {lowSanityWarning}
+            </div>
+          )}
+
+          <ThresholdContractPicker
+            offered={offeredContracts}
+            selectedContractId={selectedContractId}
+            onSelect={setSelectedContractId}
+          />
+
+          {scribeUnlocked && (
+            <p className="text-[12px] text-[#75685f]">
+              {scribeUi.thresholdHint} — больше обетов у {hotspots.scribe.label}
+            </p>
+          )}
+
+          {hub.roomMarks.length > 0 && (
+            <div className="border border-[#2b2320] bg-black/30 px-4 py-3">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">
+                {raidText.prepareMarkEffects}
+              </div>
+              <ul className="mt-3 space-y-2">
+                {hub.roomMarks.map((mark) => (
+                  <li key={mark} className="text-[13px] text-[#9d8d82]">
+                    <span className="text-[#d8c9be]">
+                      {t.hub.roomMarks[mark] ?? mark}
+                    </span>
+                    {roomMarkEffects[mark] && (
+                      <span className="text-[#85776a]">
+                        {' '}
+                        — {roomMarkEffects[mark]}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div>
             <div className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">

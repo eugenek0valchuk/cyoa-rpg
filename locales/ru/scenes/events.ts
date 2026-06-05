@@ -1,6 +1,39 @@
 import type { Scene } from '@/lib/types/game'
 
 export const eventScenes: Record<string, Scene> = {
+  candle_afterglow: {
+    id: 'candle_afterglow',
+    title: 'Огонь Договаривает',
+    description: `
+Свеча трещит без звука. Ниши вокруг **не** повторяют твоё лицо — впервые за долгое время.
+
+Шёпот с ямы стихает, будто уважает паузу. Ты успеваешь понять: катакомбы — не карта улиц. Это **комната**, где можно остановиться.
+
+Потом огонь кивает в сторону спирали на полу — мол, когда будешь готов, не беги.
+    `.trim(),
+    options: [
+      {
+        id: 'catacombs',
+        text: 'Вернуться в зал — спокойнее',
+        targetSceneId: 'catacombs',
+        effects: { sanity: 2 },
+      },
+      {
+        id: 'jump_pit',
+        text: 'Теперь спуститься к яме — без спешки',
+        targetSceneId: 'jump_pit',
+        effects: { corruption: 2, sanity: -2 },
+      },
+      {
+        id: 'read_writings',
+        text: 'Прочесть надписи, пока тишина держится',
+        targetSceneId: 'read_writings',
+        requirements: { intelligence: 5 },
+        effects: { sanity: -2 },
+      },
+    ],
+  },
+
   light_candle: {
     id: 'light_candle',
     title: 'Свеча Хора',
@@ -25,8 +58,66 @@ export const eventScenes: Record<string, Scene> = {
       },
       {
         id: 'catacombs',
-        text: 'Отступить в центральную залу',
+        text: 'Остаться среди ниш — дать свече договорить',
+        targetSceneId: 'candle_afterglow',
+        effects: { sanity: 1 },
+      },
+    ],
+  },
+
+  pit_lip: {
+    id: 'pit_lip',
+    title: 'На Грани Горла',
+    description: `
+Вода чёрная — не от тьмы, а от **плотности**. Она не плещется; она дышит.
+
+Имя без согласных повторяется снова. Не зовёт **тебя** — проверяет, останешься ли ты слушать.
+
+На секунду ты понимаешь: спешить вниз — не единственный способ услышать ответ. Можно остаться на губе ямы и задать вопрос вслух.
+    `.trim(),
+    options: [
+      {
+        id: 'pit_listen',
+        text: 'Спросить, кто ждёт внизу — не спускаясь',
+        requirements: { intelligence: 5 },
+        effects: { sanity: -2, corruption: 1 },
+      },
+      {
+        id: 'submerged_crypt',
+        text: 'Войти в воду — горло сомкнётся',
+        effects: { corruption: 4, sanity: -5 },
+      },
+      {
+        id: 'light_candle',
+        text: 'Вернуться к свече — огонь ещё не договорил',
+        targetSceneId: 'light_candle',
         effects: { sanity: 2 },
+      },
+    ],
+  },
+
+  pit_listen: {
+    id: 'pit_listen',
+    title: 'Имя Без Согласных',
+    description: `
+Ты спрашиваешь. Вода замирает.
+
+Ответ — не слово, а **температура**: теплее, чем должна быть вода в склепе. Будто кто-то снизу узнал твой шаг из прошлого спуска.
+
+«Ещё не время», — наконец говорит тишина. Или это говоришь ты — уже не уверен.
+    `.trim(),
+    options: [
+      {
+        id: 'jump_pit',
+        text: 'Остаться у ямы — дождаться следующего вдоха',
+        targetSceneId: 'jump_pit',
+        effects: { sanity: 1 },
+      },
+      {
+        id: 'read_writings',
+        text: 'Идти к надписям — там ответ записан',
+        targetSceneId: 'read_writings',
+        effects: { sanity: -2 },
       },
     ],
   },
@@ -43,9 +134,10 @@ export const eventScenes: Record<string, Scene> = {
     `.trim(),
     options: [
       {
-        id: 'submerged_crypt',
-        text: 'Броситься в затопленные глубины',
-        effects: { corruption: 5, sanity: -8 },
+        id: 'pit_lip',
+        text: 'Подойти к краю — вода зовёт',
+        targetSceneId: 'pit_lip',
+        effects: { corruption: 2, sanity: -3 },
       },
       {
         id: 'iron_passage',

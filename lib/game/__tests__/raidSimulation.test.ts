@@ -130,7 +130,7 @@ describe('raid path simulation', () => {
   })
 
   it('collapse ending triggers at low sanity in collapse phase', () => {
-    const character = makeHeretic({ sanity: 9, corruption: 83 })
+    const character = makeHeretic({ sanity: 4, corruption: 83 })
     const director = buildDirectorState(character, Array.from({ length: 4 }, (_, i) => ({
       id: `s${i}`,
       title: `S${i}`,

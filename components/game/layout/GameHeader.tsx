@@ -1,6 +1,7 @@
 'use client'
 
-import { RotateCcw, DoorOpen, Skull } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronDown, RotateCcw, DoorOpen, Skull } from 'lucide-react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { t } from '@/lib/i18n'
@@ -32,28 +33,33 @@ function getExtractHint(
   hasSigil: boolean,
   raidDepth: number,
   minExtractDepth: number,
-): string | null {
+): { summary: string; detail?: string } | null {
   const { ui: hubText } = t.hub
 
   if (reason === 'available') {
-    return hubText.extractAvailable
+    return { summary: hubText.extractAvailable }
   }
 
   if (reason === 'need_depth') {
-    return hubText.extractHintDepth
-      .replace('{depth}', String(raidDepth))
-      .replace('{min}', String(minExtractDepth))
+    return {
+      summary: hubText.extractHintDepth
+        .replace('{depth}', String(raidDepth))
+        .replace('{min}', String(minExtractDepth)),
+    }
   }
 
   if (reason === 'need_sigil_site') {
-    return hubText.extractHintSigilSite
+    return { summary: hubText.extractHintSigilSite }
   }
 
   if (hasSigil) {
-    return hubText.extractHintSigilSite
+    return { summary: hubText.extractHintSigilSite }
   }
 
-  return `${hubText.extractHintExitSite} ${hubText.extractHintSigil}`
+  return {
+    summary: hubText.extractHintShort,
+    detail: `${hubText.extractHintExitSite} ${hubText.extractHintSigil}`,
+  }
 }
 
 export function GameHeader({
@@ -74,6 +80,7 @@ export function GameHeader({
   onAbandon,
   onReset,
 }: Props) {
+  const [extractExpanded, setExtractExpanded] = useState(false)
   const { game } = t.ui
   const { ui: hubText } = t.hub
   const { ui: raidText } = t.raid
@@ -149,7 +156,7 @@ export function GameHeader({
                 type="button"
                 onClick={onExtract}
                 disabled={isLoading || !extractAvailable}
-                title={extractHint ?? undefined}
+                title={extractHint?.summary ?? undefined}
                 className="inline-flex items-center gap-1.5 border border-[#4a2323] bg-[#160909]/90 px-3 py-2 text-[9px] uppercase tracking-[0.18em] text-[#d46060] transition hover:bg-[#220d0d] disabled:cursor-help disabled:opacity-45"
               >
                 <DoorOpen className="h-3 w-3" />
@@ -195,9 +202,28 @@ export function GameHeader({
       )}
 
       {!isEndingScene && extractHint && !extractAvailable && (
-        <p className="border border-[#241919] bg-[#0a0808]/60 px-3 py-2 text-[10px] leading-relaxed text-[#85776a]">
-          {extractHint}
-        </p>
+        <div className="border border-[#241919] bg-[#0a0808]/60 px-3 py-2 text-[10px] leading-relaxed text-[#85776a]">
+          <p>{extractHint.summary}</p>
+          {extractHint.detail && (
+            <>
+              <button
+                type="button"
+                onClick={() => setExtractExpanded((value) => !value)}
+                className="mt-1.5 inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.12em] text-[#6d5e55] transition hover:text-[#9d8d82]"
+              >
+                <ChevronDown
+                  className={`h-3 w-3 transition ${extractExpanded ? 'rotate-180' : ''}`}
+                />
+                {extractExpanded ? game.extractHintLess : game.extractHintMore}
+              </button>
+              {extractExpanded && (
+                <p className="mt-2 text-[10px] leading-relaxed text-[#75685f]">
+                  {extractHint.detail}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       )}
 
       <div className="h-px w-full bg-gradient-to-r from-transparent via-[#7a2222]/50 to-transparent" />

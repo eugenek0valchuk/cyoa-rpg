@@ -27,8 +27,12 @@ export function getStoryPhase(
   corruption: number,
   historyLength: number,
 ): StoryPhase {
-  if (corruption >= 80) {
+  if (corruption >= 80 && historyLength >= 4) {
     return 'COLLAPSE'
+  }
+
+  if (corruption >= 80) {
+    return 'COMMUNION'
   }
 
   if (corruption >= 60) {
@@ -76,6 +80,6 @@ export function buildDirectorState(
     phase,
     nextSceneType: getNextSceneType(history.length),
     escalationLevel: Math.min(10, Math.floor(history.length / 3)),
-    forceEnding: character.corruption >= 90 || character.sanity <= 10,
+    forceEnding: character.corruption >= 90 || character.sanity <= 5,
   }
 }

@@ -12,6 +12,11 @@ describe('raid modifiers', () => {
     expect(RAID_MODIFIERS[id]).toBeDefined()
   })
 
+  it('picks only harsh modifiers when failure stain is active', () => {
+    const id = pickRaidModifier(42, { harshOnly: true })
+    expect(['blood_mist', 'hollow_wind']).toContain(id)
+  })
+
   it('applies muted bells sanity drain', () => {
     const result = applyRaidModifierTick(
       {

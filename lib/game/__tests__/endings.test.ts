@@ -90,7 +90,7 @@ describe('getEnding', () => {
 
   it('returns reality_collapse when director forces ending in collapse phase', () => {
     const result = getEnding(
-      makeCharacter({ corruption: 85, sanity: 15 }),
+      makeCharacter({ corruption: 85, sanity: 10 }),
       {
         historyLength: 10,
         phase: 'COLLAPSE',
@@ -99,5 +99,31 @@ describe('getEnding', () => {
     )
 
     expect(result?.id).toBe('reality_collapse')
+  })
+
+  it('does not collapse when sanity is still above the fracture line', () => {
+    const result = getEnding(
+      makeCharacter({ corruption: 85, sanity: 15 }),
+      {
+        historyLength: 10,
+        phase: 'COLLAPSE',
+        forceEnding: true,
+      },
+    )
+
+    expect(result).toBeNull()
+  })
+
+  it('does not collapse on first step of a raid', () => {
+    const result = getEnding(
+      makeCharacter({ corruption: 85, sanity: 9 }),
+      {
+        historyLength: 0,
+        phase: 'COLLAPSE',
+        forceEnding: true,
+      },
+    )
+
+    expect(result).toBeNull()
   })
 })

@@ -13,4 +13,9 @@ export interface RaidSummary {
   roomLevelAfter: number
   bestDepthAfter: number
   totalExtractionsAfter: number
+  echoGain?: number
+  echoAfter?: number
+  contractTitle?: string
+  contractFulfilled?: boolean
+  contractReward?: string
 }

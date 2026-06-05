@@ -60,6 +60,8 @@ function normalizeSlot(slot: Partial<SaveSlot> & { slotId: number }): SaveSlot {
     ? {
         ...slot.hub,
         journalEntries: slot.hub.journalEntries ?? [],
+        echo: slot.hub.echo ?? 0,
+        pendingEncounterBoost: slot.hub.pendingEncounterBoost ?? null,
       }
     : null
 

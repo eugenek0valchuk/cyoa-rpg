@@ -11,6 +11,7 @@ export const hubUi = {
   extractions: 'Извлечений',
   bestDepth: 'Глубина',
   roomLevel: 'Камера',
+  echo: 'Эхо',
   marks: 'Следы',
   worldLore: 'Фракции',
   beginRaid: 'Начать спуск',
@@ -24,8 +25,9 @@ export const hubUi = {
   extractAvailable: 'Путь назад открыт — можно отступить с добычей',
   extractHintDepth:
     'Сначала спустись глубже. Сейчас глубина {depth}, нужно минимум {min}.',
+  extractHintShort: 'Выход только у пути назад — или с печатью возврата.',
   extractHintExitSite:
-    'Здесь нельзя выбраться. Ищи точку выхода: пепельная галерея (трещина к свету), внешний двор монастыря или опустошённый склеп (лестница наверх).',
+    'Точки выхода: пепельная галерея, внешний двор монастыря, опустошённый склеп.',
   extractHintSigil:
     'Печать возврата ещё не найдена. Вырежь её в катакомбах — сцена «Запретный лексикон» (нужен интеллект 5).',
   extractHintSigilSite:
@@ -44,6 +46,7 @@ export const hubUi = {
   bottomStash: 'Сокровищница',
   bottomVessel: 'Сосуд',
   bottomChronicle: 'Хроника',
+  bottomScribe: 'Писец',
   bottomDescend: 'Спуск',
   bottomArchives: 'Архивы',
   exitToMenu: 'В меню',
@@ -68,6 +71,10 @@ export const hubUi = {
     chronicle: {
       label: 'Хроника камеры',
       hint: 'Журнал сосуда — листай страницы между спусками',
+    },
+    scribe: {
+      label: 'Писец Эха',
+      hint: 'Обет перед спуском — награда за выполнение',
     },
     threshold: {
       label: 'Порог',
@@ -94,7 +101,20 @@ export const raidSummaryUi = {
   noMarks: 'Стены пока молчат',
   returnToChamber: 'Вернуться в камеру',
   roomLevel: 'Камера',
+  echoGained: 'Эхо камеры',
+  echoTotal: 'Всего эха',
+  contractTitle: 'Обет',
+  contractFulfilled: 'Выполнен',
+  contractBroken: 'Нарушен',
+  contractReward: 'Награда обета',
 } as const
+
+export const roomMarkEffects: Record<string, string> = {
+  first_spoils: '+1 эхо за извлечение',
+  deep_echo: '−5 рассудка на старте спуска, −1 рассудка за сцену с модификатором, +1 эхо',
+  failure_stain: '−6 рассудка на старте; только жёсткие проклятия спуска',
+  deep_wound: '−3 рассудка на старте каждого спуска',
+}
 
 export const roomMarks: Record<string, string> = {
   first_spoils: 'Первая добыча на стене',

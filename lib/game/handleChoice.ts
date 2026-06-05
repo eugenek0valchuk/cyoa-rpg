@@ -6,6 +6,12 @@ import { createStaticScene } from './createStaticScene'
 import { commitSceneTransition } from './commitSceneTransition'
 import { applyRaidModifierTick } from './raidModifiers'
 import type { RaidModifierId } from './raidModifiers'
+import {
+  isZoneBridgeScene,
+  ZONE_BRIDGE_CONTINUE_ID,
+  wrapSceneWithZoneBridge,
+} from './zoneTransitions'
+import { getRaidZone } from './zones'
 
 import type {
   Artifact,
@@ -25,10 +31,13 @@ interface HandleChoiceParams {
   raidModifierId?: RaidModifierId | null
   setCharacter: (character: Character) => void
   setCurrentScene: (scene: Scene) => void
+  getQueuedScene?: () => Scene | null
+  setQueuedScene?: (scene: Scene | null) => void
   pushSceneHistory: (scene: SceneHistoryEntry) => void
   pushHistory: (sceneId: string) => void
   revealArtifact: (artifact: Artifact) => Promise<void>
   journalEntries?: string[]
+  roomMarks?: string[]
 }
 
 export async function handleGameChoice({
@@ -40,10 +49,13 @@ export async function handleGameChoice({
   raidModifierId,
   setCharacter,
   setCurrentScene,
+  getQueuedScene,
+  setQueuedScene,
   pushSceneHistory,
   pushHistory,
   revealArtifact,
   journalEntries = [],
+  roomMarks = [],
 }: HandleChoiceParams) {
   const { updatedCharacter, revealedArtifact } = applyChoiceEffects({
     character,
@@ -51,23 +63,33 @@ export async function handleGameChoice({
     artifacts,
   })
 
-  setCharacter(updatedCharacter)
+  const skipModifierTick =
+    isZoneBridgeScene(currentScene.id) &&
+    choice.id === ZONE_BRIDGE_CONTINUE_ID
+
+  const characterAfterTick =
+    raidModifierId && !skipModifierTick
+      ? applyRaidModifierTick(updatedCharacter, raidModifierId, roomMarks)
+      : updatedCharacter
+
+  setCharacter(characterAfterTick)
 
   logChoice({
     scene: currentScene,
     choice,
-    character: updatedCharacter,
+    character: characterAfterTick,
   })
 
-  const directorState = buildDirectorState(updatedCharacter, sceneHistory)
+  const directorState = buildDirectorState(characterAfterTick, sceneHistory)
 
-  const ending = getEnding(updatedCharacter, {
+  const ending = getEnding(characterAfterTick, {
     historyLength: sceneHistory.length,
     phase: directorState.phase,
     forceEnding: directorState.forceEnding,
   })
 
   if (ending) {
+    setQueuedScene?.(null)
     setCurrentScene(
       createStaticScene({
         id: ending.id,
@@ -87,30 +109,68 @@ export async function handleGameChoice({
     await revealArtifact(revealedArtifact)
   }
 
-  const nextScene = resolveNextScene({
+  const queuedScene = getQueuedScene?.() ?? null
+
+  if (
+    isZoneBridgeScene(currentScene.id) &&
+    choice.id === ZONE_BRIDGE_CONTINUE_ID &&
+    queuedScene
+  ) {
+    setQueuedScene?.(null)
+    setCurrentScene(queuedScene)
+
+    logSceneTransition({
+      previousScene: currentScene,
+      nextScene: queuedScene,
+      history: sceneHistory,
+    })
+
+    commitSceneTransition({
+      currentScene,
+      nextScene: queuedScene,
+      pushSceneHistory,
+      pushHistory,
+    })
+
+    return
+  }
+
+  const resolvedScene = resolveNextScene({
     currentScene,
     choice,
-    character: updatedCharacter,
+    character: characterAfterTick,
     sceneHistory,
     journalEntries,
   })
 
-  setCurrentScene(nextScene)
+  const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
+  const wrapped = wrapSceneWithZoneBridge(
+    resolvedScene,
+    sceneHistory.length,
+    sceneHistory.length + 1,
+    characterAfterTick.corruption,
+    visitedSceneIds,
+    getRaidZone,
+  )
+
+  setCurrentScene(wrapped.scene)
+
+  if (wrapped.queuedScene) {
+    setQueuedScene?.(wrapped.queuedScene)
+  } else {
+    setQueuedScene?.(null)
+  }
 
   logSceneTransition({
     previousScene: currentScene,
-    nextScene,
+    nextScene: wrapped.scene,
     history: sceneHistory,
   })
 
   commitSceneTransition({
     currentScene,
-    nextScene,
+    nextScene: wrapped.scene,
     pushSceneHistory,
     pushHistory,
   })
-
-  if (raidModifierId) {
-    setCharacter(applyRaidModifierTick(updatedCharacter, raidModifierId))
-  }
 }

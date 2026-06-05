@@ -1,5 +1,6 @@
 'use client'
 
+import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import { Character, Scene } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +15,8 @@ interface Props {
   character: Character
   isLoading: boolean
   journalEntries?: string[]
+  raidModifierId?: RaidModifierId | null
+  roomMarks?: string[]
   showChoices: boolean
   extractAvailable?: boolean
   onExtract?: () => void
@@ -26,6 +29,8 @@ export function GameSceneView({
   character,
   isLoading,
   journalEntries = [],
+  raidModifierId,
+  roomMarks = [],
   showChoices,
   extractAvailable,
   onExtract,
@@ -76,6 +81,8 @@ export function GameSceneView({
           scene={scene}
           character={character}
           journalEntries={journalEntries}
+          raidModifierId={raidModifierId}
+          roomMarks={roomMarks}
           showChoices={revealActions}
           isLoading={isLoading}
           extractAvailable={extractAvailable}

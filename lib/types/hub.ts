@@ -6,6 +6,10 @@ export interface HubState {
   roomMarks: string[]
   /** Постоянные записи дневника — сохраняются между спусками */
   journalEntries: string[]
+  /** Валюта камеры — за успешные извлечения */
+  echo: number
+  /** Приоритет встречи на следующий спуск (награда обета) */
+  pendingEncounterBoost?: string | null
   stash: Artifact[]
   totalRaids: number
   totalExtractions: number
@@ -18,6 +22,8 @@ export interface RaidState {
   depth: number
   inventoryAtStart: string[]
   modifierId?: RaidModifierId | null
+  /** Обет, принятый у Писца перед спуском */
+  contractId?: string | null
 }
 
 export const MIN_EXTRACT_DEPTH = 2
@@ -30,6 +36,8 @@ export function createInitialHubState(
     roomLevel: 0,
     roomMarks: [],
     journalEntries: [],
+    echo: 0,
+    pendingEncounterBoost: null,
     stash: [...starterInventory],
     totalRaids: 0,
     totalExtractions: 0,

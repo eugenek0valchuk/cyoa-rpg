@@ -13,6 +13,10 @@ export const hubChronicleUi = {
   progress: 'Записано страниц',
   chamberEvolution: 'Состояние камеры',
   statsTitle: 'Счёт спусков',
+  echoTitle: 'Эхо камеры',
+  echoHint: 'Тратится на переброс проклятия спуска. Копится при извлечении.',
+  markEffectLabel: 'Влияние на спуск',
+  roomPerksTitle: 'Привилегии камеры',
   emptyMarks: 'Стены пока чисты. Провалы и извлечения оставят след.',
   jumpToPage: 'Оглавление',
 } as const
