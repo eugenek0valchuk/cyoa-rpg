@@ -4,12 +4,20 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
-import { RoomHotspotLayer } from '@/components/hub/RoomHotspotLayer'
+import {
+  RoomHotspotLayer,
+  type HotspotBadges,
+} from '@/components/hub/RoomHotspotLayer'
 import { VesselStats } from '@/components/hub/VesselStats'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { saveCurrentGameState, getActiveSlotId } from '@/lib/persistence/saveStorage'
 import { getRaidStartScene, startRaidFromHub } from '@/lib/game/raid'
+import {
+  getRaidModifier,
+  pickRaidModifier,
+  type RaidModifierId,
+} from '@/lib/game/raidModifiers'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 import { roomHotspotLayouts, type HotspotId } from '@/lib/hub/roomHotspots'
 import { t } from '@/lib/i18n'
@@ -39,11 +47,20 @@ export default function HubPage() {
 
   const [activeModal, setActiveModal] = useState<HotspotId | null>(null)
   const [selectedLoadout, setSelectedLoadout] = useState<string[]>([])
+  const [pendingModifier, setPendingModifier] = useState<RaidModifierId>(() =>
+    pickRaidModifier(),
+  )
 
   const room = character ? rooms[character.origin] : null
   const hotspotRegions = character
     ? roomHotspotLayouts[character.origin]
     : []
+
+  useEffect(() => {
+    if (activeModal === 'threshold') {
+      setPendingModifier(pickRaidModifier())
+    }
+  }, [activeModal])
 
   useEffect(() => {
     if (!character || !hub) {
@@ -97,7 +114,7 @@ export default function HubPage() {
       return
     }
 
-    const started = startRaidFromHub(character, hub, loadoutItems)
+    const started = startRaidFromHub(character, hub, loadoutItems, pendingModifier)
 
     setCharacter(started.character)
     setHub(started.hub)
@@ -128,6 +145,18 @@ export default function HubPage() {
   }
 
   const evolvedText = room.evolved[hub.roomLevel] ?? room.description
+  const pendingModifierDef = getRaidModifier(pendingModifier)
+  const { ui: raidText } = t.raid
+
+  const hotspotBadges: HotspotBadges = {
+    stash: hub.stash.length > 0 ? String(hub.stash.length) : undefined,
+    vessel: String(character.sanity),
+    chronicle:
+      hub.roomMarks.length > 0
+        ? String(hub.roomMarks.length)
+        : String(hub.totalRaids),
+    threshold: '↓',
+  }
 
   const closeModal = () => setActiveModal(null)
 
@@ -145,6 +174,8 @@ export default function HubPage() {
       <RoomHotspotLayer
         hotspots={hotspotRegions}
         labels={hotspots}
+        badges={hotspotBadges}
+        origin={character.origin}
         activeId={activeModal}
         onSelect={(id) =>
           setActiveModal((current) => (current === id ? null : id))
@@ -299,8 +330,8 @@ export default function HubPage() {
         open={activeModal === 'threshold'}
         onClose={closeModal}
         icon="corruption"
-        title={hotspots.threshold.label}
-        subtitle={hotspots.threshold.hint}
+        title={raidText.prepareTitle}
+        subtitle={raidText.prepareSubtitle}
         maxWidth="lg"
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -317,49 +348,99 @@ export default function HubPage() {
           </div>
         }
       >
-        <p className="text-[14px] leading-relaxed text-[#9d8d82]">
-          {hubText.extractionBody}
-        </p>
+        <div className="space-y-5">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="border border-[#2b2320] bg-black/30 px-4 py-3">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">
+                {raidText.prepareVesselTitle}
+              </div>
+              <div className="mt-2 font-cinzel text-xl text-[#efe5dc]">
+                {character.name}
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-[13px] text-[#9d8d82]">
+                <GameIcon type="sanity" size={28} />
+                {raidText.prepareSanity}: {character.sanity}
+              </div>
+            </div>
 
-        <div className="mt-5">
-          <div className="text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
-            {hubText.loadout}
+            <div className="border border-[#4a2323] bg-[#160909]/40 px-4 py-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-[11px] uppercase tracking-[0.12em] text-[#d46060]">
+                  {raidText.modifierLabel}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPendingModifier(pickRaidModifier(Date.now()))}
+                  className="text-[10px] uppercase tracking-[0.12em] text-[#85776a] transition hover:text-[#d46060]"
+                >
+                  {raidText.prepareModifierRoll}
+                </button>
+              </div>
+              {pendingModifierDef && (
+                <>
+                  <div className="mt-2 font-cinzel text-lg text-[#efe5dc]">
+                    {pendingModifierDef.name}
+                  </div>
+                  <p className="mt-2 text-[13px] leading-relaxed text-[#9d8d82]">
+                    {pendingModifierDef.description}
+                  </p>
+                  <p className="mt-2 text-[11px] uppercase tracking-[0.1em] text-[#75685f]">
+                    {pendingModifierDef.hint}
+                  </p>
+                </>
+              )}
+            </div>
           </div>
 
-          {hub.stash.length === 0 ? (
-            <p className="mt-3 text-[15px] text-[#75685f]">{hubText.emptyStash}</p>
-          ) : (
-            <div className="mt-3 space-y-2">
-              {hub.stash.map((artifact) => {
-                const selected = selectedLoadout.includes(artifact.id)
-                const slotsFull =
-                  !selected && selectedLoadout.length >= hub.loadoutSlots
-
-                return (
-                  <button
-                    key={artifact.id}
-                    type="button"
-                    disabled={slotsFull}
-                    onClick={() => toggleLoadout(artifact.id)}
-                    title={artifact.description}
-                    className={`flex w-full items-center gap-3 border px-4 py-3 text-left transition disabled:opacity-40 ${
-                      selected
-                        ? 'border-[#8e1f1f] bg-[#160909]'
-                        : 'border-[#2b2320] bg-black/30 hover:border-[#5c1f1f]'
-                    }`}
-                  >
-                    <GameIcon type="artifact" size={40} />
-                    <span className="text-[15px] text-[#d8c9be]">{artifact.name}</span>
-                    {selected && (
-                      <span className="ml-auto text-[11px] uppercase text-[#d46060]">
-                        ✓
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">
+              {raidText.prepareRulesTitle}
             </div>
-          )}
+            <p className="mt-2 text-[14px] leading-relaxed text-[#9d8d82]">
+              {hubText.extractionBody}
+            </p>
+          </div>
+
+          <div>
+            <div className="text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
+              {raidText.prepareLoadoutTitle}
+            </div>
+
+            {hub.stash.length === 0 ? (
+              <p className="mt-3 text-[15px] text-[#75685f]">{hubText.emptyStash}</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {hub.stash.map((artifact) => {
+                  const selected = selectedLoadout.includes(artifact.id)
+                  const slotsFull =
+                    !selected && selectedLoadout.length >= hub.loadoutSlots
+
+                  return (
+                    <button
+                      key={artifact.id}
+                      type="button"
+                      disabled={slotsFull}
+                      onClick={() => toggleLoadout(artifact.id)}
+                      title={artifact.description}
+                      className={`flex w-full items-center gap-3 border px-4 py-3 text-left transition disabled:opacity-40 ${
+                        selected
+                          ? 'border-[#8e1f1f] bg-[#160909]'
+                          : 'border-[#2b2320] bg-black/30 hover:border-[#5c1f1f]'
+                      }`}
+                    >
+                      <GameIcon type="artifact" size={40} />
+                      <span className="text-[15px] text-[#d8c9be]">{artifact.name}</span>
+                      {selected && (
+                        <span className="ml-auto text-[11px] uppercase text-[#d46060]">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </GothicModal>
     </main>

@@ -1,4 +1,5 @@
 import { getInitialScene } from './getInitialScene'
+import type { RaidModifierId } from './raidModifiers'
 import type { Artifact, Character } from '@/lib/types/game'
 import type { HubState, RaidState } from '@/lib/types/hub'
 import type { RaidSummary } from '@/lib/types/raidSummary'
@@ -21,12 +22,12 @@ export function startRaidFromHub(
   character: Character,
   hub: HubState,
   loadout: Artifact[],
+  modifierId: RaidModifierId | null = null,
 ): { character: Character; hub: HubState; raid: RaidState } {
   return {
     character: {
       ...character,
       inventory: loadout.map((item) => ({ ...item })),
-      sanity: 100,
       flags: [],
     },
     hub: {
@@ -37,6 +38,7 @@ export function startRaidFromHub(
       active: true,
       depth: 0,
       inventoryAtStart: loadout.map((item) => item.id),
+      modifierId,
     },
   }
 }
@@ -203,5 +205,18 @@ export function buildFailSummary(
     roomLevelAfter: result.hub.roomLevel,
     bestDepthAfter: result.hub.bestDepth,
     totalExtractionsAfter: result.hub.totalExtractions,
+  }
+}
+
+export function buildAbandonSummary(
+  characterBefore: Character,
+  hubBefore: HubState,
+  raid: RaidState,
+  result: ReturnType<typeof failRaid>,
+  depth: number,
+): RaidSummary {
+  return {
+    ...buildFailSummary(characterBefore, hubBefore, raid, result, depth),
+    outcome: 'abandoned',
   }
 }

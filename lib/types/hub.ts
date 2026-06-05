@@ -1,4 +1,5 @@
 import type { Artifact } from './game'
+import type { RaidModifierId } from '@/lib/game/raidModifiers'
 
 export interface HubState {
   roomLevel: number
@@ -14,6 +15,7 @@ export interface RaidState {
   active: boolean
   depth: number
   inventoryAtStart: string[]
+  modifierId?: RaidModifierId | null
 }
 
 export const MIN_EXTRACT_DEPTH = 2

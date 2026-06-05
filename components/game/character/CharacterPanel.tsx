@@ -1,169 +1,139 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { motion } from 'framer-motion'
 
-import { ORIGIN_ICONS, ORIGIN_TITLES } from '../constants/origins'
+import { ORIGIN_TITLES } from '../constants/origins'
 import { GameIcon } from '../ui/GameIcon'
 import { StatBar } from '../ui/StatBar'
 
 import { t } from '@/lib/i18n'
 import type { Character } from '@/lib/types/game'
+import { GothicTooltip } from '@/components/ui/GothicTooltip'
 
 interface CharacterPanelProps {
   character: Character
 }
 
+function StatIconWell({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-sm border border-[#2b2320] bg-[#0a0707]">
+      {children}
+    </span>
+  )
+}
+
 export function CharacterPanel({ character }: CharacterPanelProps) {
   const { game } = t.ui
+  const { statTips } = t.hub.ui
+  const originIcon =
+    character.origin === 'hollow'
+      ? 'hollow'
+      : character.origin === 'heretic'
+        ? 'heretic'
+        : 'witness'
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden border-2 border-[#2b2320] bg-[linear-gradient(to_bottom,#120c0c,#080505)]"
+      className="relative overflow-hidden border border-[#2b2320]/90 bg-[#0a0707]/94 backdrop-blur-[2px]"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(142,31,31,0.12),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(142,31,31,0.08),transparent_60%)]" />
 
-      <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.9)]" />
-
-      <div className="relative z-10 p-4 md:p-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <div className="text-[12px] uppercase tracking-[0.4em] text-[#7a6d63]">
-              {game.vessel}
+      <div className="relative z-10 p-3 sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+          <div className="flex min-w-0 items-center gap-3 lg:min-w-[190px] lg:max-w-[240px]">
+            <StatIconWell>
+              <GameIcon type={originIcon} size={36} noBlend />
+            </StatIconWell>
+            <div className="min-w-0">
+              <div className="text-[9px] uppercase tracking-[0.2em] text-[#75685f]">
+                {game.vessel}
+              </div>
+              <h2 className="font-cinzel truncate text-xl uppercase tracking-[0.08em] text-[#efe5dc] sm:text-2xl">
+                {character.name}
+              </h2>
+              <div className="text-[10px] uppercase tracking-[0.1em] text-[#85776a]">
+                {ORIGIN_TITLES[character.origin]}
+              </div>
             </div>
-
-            <h2 className="font-cinzel mt-2 text-3xl uppercase tracking-[0.14em] text-[#efe5dc]">
-              {character.name}
-            </h2>
-
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
-              className="mt-4 inline-flex items-center gap-4 border-2 border-[#3b2a2a] bg-[#140d0d]/90 px-4 py-3 text-[#d8c9be]"
-            >
-              <div className="text-lg text-[#8e1f1f]">
-                {ORIGIN_ICONS[character.origin]}
-              </div>
-
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.3em] text-[#6f6259]">
-                  {game.origin}
-                </div>
-
-                <div className="font-cinzel mt-1 text-sm uppercase tracking-[0.12em]">
-                  {ORIGIN_TITLES[character.origin]}
-                </div>
-              </div>
-            </motion.div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid flex-1 grid-cols-3 gap-2">
             {[
-              {
-                label: game.strength,
-                value: character.stats.strength,
-                max: 20,
-                color: '#d46060',
-                icon: <GameIcon type="strength" size={72} />,
-              },
-              {
-                label: game.agility,
-                value: character.stats.agility,
-                max: 20,
-                color: '#b4c27d',
-                icon: <GameIcon type="agility" size={72} />,
-              },
-              {
-                label: game.intelligence,
-                value: character.stats.intelligence,
-                max: 20,
-                color: '#92a6dd',
-                icon: <GameIcon type="intelligence" size={72} />,
-              },
-            ].map((stat, i) => (
-              <motion.div
+              { label: game.strength, value: character.stats.strength, icon: 'strength' as const, color: '#d46060' },
+              { label: game.agility, value: character.stats.agility, icon: 'agility' as const, color: '#b4c27d' },
+              { label: game.intelligence, value: character.stats.intelligence, icon: 'intelligence' as const, color: '#92a6dd' },
+            ].map((stat) => (
+              <div
                 key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * i }}
-                className="min-w-[110px] border-2 border-[#2f2622] bg-[#0c0808]/85 px-3 py-4 text-center"
+                className="flex flex-col items-center border border-[#241919] bg-black/30 px-2 py-2.5 text-center"
               >
-                <div className="flex justify-center">{stat.icon}</div>
-
-                <div className="mt-2 text-[11px] uppercase tracking-[0.15em] text-[#7a6d63]">
+                <GothicTooltip title={stat.label} body={statTips[stat.icon]}>
+                  <StatIconWell>
+                    <GameIcon type={stat.icon} size={30} noBlend />
+                  </StatIconWell>
+                </GothicTooltip>
+                <div className="mt-1.5 text-[9px] uppercase tracking-[0.08em] text-[#75685f]">
                   {stat.label}
                 </div>
-
-                <div
-                  className="mt-1 font-cinzel text-3xl"
-                  style={{ color: stat.color }}
-                >
+                <div className="font-cinzel text-xl tabular-nums" style={{ color: stat.color }}>
                   {stat.value}
                 </div>
-
-                <div className="mx-auto mt-3 h-[3px] max-w-[70px] overflow-hidden bg-[#1b1414]">
-                  <motion.div
-                    className="h-full"
-                    style={{ background: stat.color }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(stat.value / stat.max) * 100}%` }}
-                    transition={{ duration: 0.6, delay: 0.2 + 0.1 * i }}
-                  />
-                </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 lg:grid-cols-3">
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
           <StatBar
+            compact
             label={game.sanity}
             value={character.sanity}
             max={100}
             color="#d8d0c8"
-            icon={<GameIcon type="sanity" size={56} />}
+            icon={
+              <GothicTooltip title={game.sanity} body={statTips.sanity}>
+                <StatIconWell>
+                  <GameIcon type="sanity" size={26} noBlend />
+                </StatIconWell>
+              </GothicTooltip>
+            }
           />
-
           <StatBar
+            compact
             label={game.corruption}
             value={character.corruption}
             max={100}
             color="#d46060"
             trackColor="#8e1f1f"
-            icon={<GameIcon type="corruption" size={56} />}
+            icon={
+              <GothicTooltip title={game.corruption} body={statTips.corruption}>
+                <StatIconWell>
+                  <GameIcon type="corruption" size={26} noBlend />
+                </StatIconWell>
+              </GothicTooltip>
+            }
             bgColor="#1b1414"
           />
-
-          <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
-            <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.3em] text-[#7a6d63]">
-              <GameIcon type="artifact" size={56} />
-              {game.inventory}
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {character.inventory.length === 0 ? (
-                <div className="text-sm text-[#75685f]">{game.inventoryEmpty}</div>
-              ) : (
-                character.inventory.map((artifact, i) => (
-                  <motion.div
-                    key={artifact.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 * i }}
-                    className="flex items-center gap-2 border border-[#241919] bg-black/30 px-3 py-2 text-sm text-[#d8c9be]"
-                  >
-                    <span className="shrink-0 text-[10px] text-[#8b5e5e]">
-                      ◆
-                    </span>
-                    {artifact.name}
-                  </motion.div>
-                ))
-              )}
-            </div>
-          </div>
         </div>
+
+        {character.inventory.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#241919] pt-3">
+            <StatIconWell>
+              <GameIcon type="artifact" size={26} noBlend />
+            </StatIconWell>
+            {character.inventory.map((artifact) => (
+              <span
+                key={artifact.id}
+                className="border border-[#2b2320] bg-black/40 px-2.5 py-1 text-[11px] text-[#d8c9be] sm:text-[12px]"
+              >
+                {artifact.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </motion.section>
   )

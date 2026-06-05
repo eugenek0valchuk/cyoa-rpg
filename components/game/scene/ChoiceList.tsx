@@ -1,59 +1,235 @@
 'use client'
 
+import type { ReactNode } from 'react'
+import { ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
+import {
+  getEffectTooltip,
+  getFlagTooltip,
+  getRelicTooltip,
+  getRequirementTooltip,
+} from '@/lib/game/choiceTooltips'
 import { t } from '@/lib/i18n'
 import { Character, Choice } from '@/lib/types/game'
-import { motion } from 'framer-motion'
-import { EffectIcon } from '../ui/EffectIcon'
+import { GothicTooltip } from '@/components/ui/GothicTooltip'
+import { EffectIcon, getEffectColor } from '../ui/EffectIcon'
 
 interface ChoiceListProps {
   options: Choice[]
-
   character: Character
-
   onSelect: (id: string) => void
-
   isLoading?: boolean
 }
 
-function RequirementBadge({
-  type,
-  value,
-  met,
+function IconWell({
+  children,
+  accent,
+  tooltip,
 }: {
-  type: 'strength' | 'agility' | 'intelligence'
-  value: number
-  met: boolean
+  children: ReactNode
+  accent?: 'met' | 'unmet' | 'default'
+  tooltip?: { title: string; body: string }
 }) {
-  return (
-    <div
-      className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1 text-[12px] uppercase tracking-[0.2em] ${
-        met
-          ? 'bg-[#1a2a1a]/60 text-[#7da87d] border border-[#2a4a2a]/40'
-          : 'bg-[#2a1a1a]/60 text-[#a87d7d] border border-[#4a2a2a]/40'
-      }`}
+  const accentBorder =
+    accent === 'met'
+      ? 'border-[#3a6a3a]/80'
+      : accent === 'unmet'
+        ? 'border-[#6a3a3a]/80'
+        : 'border-[#2b2320]'
+
+  const well = (
+    <span
+      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border bg-[#0a0707] shadow-[inset_0_0_12px_rgba(0,0,0,0.6)] ${accentBorder}`}
     >
-      <EffectIcon type={type} size={44} />
-      {value}
-    </div>
+      {children}
+    </span>
+  )
+
+  if (!tooltip) {
+    return well
+  }
+
+  return (
+    <GothicTooltip title={tooltip.title} body={tooltip.body}>
+      {well}
+    </GothicTooltip>
   )
 }
 
-function EffectBadge({
-  type,
+function RequirementTag({
+  met,
+  icon,
   value,
+  have,
 }: {
-  type: 'sanity' | 'corruption'
+  met: boolean
+  icon: 'strength' | 'agility' | 'intelligence'
   value: number
+  have: number
 }) {
+  const tooltip = getRequirementTooltip(icon, value, have)
+
   return (
-    <div className="inline-flex items-center gap-1.5 text-[14px] text-[#75685f]">
-      <EffectIcon type={type} size={44} />
-      <span className={value < 0 ? 'text-[#a87d7d]' : 'text-[#7da87d]'}>
-        {value > 0 ? '+' : ''}
+    <span className="inline-flex items-center gap-2">
+      <IconWell accent={met ? 'met' : 'unmet'} tooltip={tooltip}>
+        <EffectIcon type={icon} size={28} noBlend />
+      </IconWell>
+      <span
+        className={`font-cinzel text-base tabular-nums ${met ? 'text-[#8fbc8f]' : 'text-[#c09090]'}`}
+      >
         {value}
       </span>
+    </span>
+  )
+}
+
+function EffectTag({
+  type,
+  value,
+  label,
+}: {
+  type: 'sanity' | 'corruption' | 'addArtifact' | 'addFlag'
+  value?: number
+  label?: string
+}) {
+  const showValue = value !== undefined
+
+  const tooltip =
+    type === 'addArtifact'
+      ? getRelicTooltip()
+      : type === 'addFlag'
+        ? getFlagTooltip()
+        : showValue
+          ? getEffectTooltip(type, value!)
+          : undefined
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <IconWell tooltip={tooltip}>
+        <EffectIcon type={type} size={28} noBlend />
+      </IconWell>
+      {label ? (
+        <span className="text-[11px] uppercase tracking-[0.08em] text-[#c8b84a]">
+          {label}
+        </span>
+      ) : showValue ? (
+        <span
+          className="font-cinzel text-base tabular-nums"
+          style={{ color: getEffectColor(type) }}
+        >
+          {value! > 0 ? '+' : ''}
+          {value}
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+function ChoiceMeta({
+  option,
+  character,
+}: {
+  option: Choice
+  character: Character
+}) {
+  const { game } = t.ui
+  const req = option.requirements
+  const tags: { key: string; node: ReactNode }[] = []
+
+  if (req?.strength !== undefined) {
+    tags.push({
+      key: 'str',
+      node: (
+        <RequirementTag
+          met={character.stats.strength >= req.strength}
+          icon="strength"
+          value={req.strength}
+          have={character.stats.strength}
+        />
+      ),
+    })
+  }
+
+  if (req?.agility !== undefined) {
+    tags.push({
+      key: 'agi',
+      node: (
+        <RequirementTag
+          met={character.stats.agility >= req.agility}
+          icon="agility"
+          value={req.agility}
+          have={character.stats.agility}
+        />
+      ),
+    })
+  }
+
+  if (req?.intelligence !== undefined) {
+    tags.push({
+      key: 'int',
+      node: (
+        <RequirementTag
+          met={character.stats.intelligence >= req.intelligence}
+          icon="intelligence"
+          value={req.intelligence}
+          have={character.stats.intelligence}
+        />
+      ),
+    })
+  }
+
+  if (option.effects?.addArtifact) {
+    tags.push({
+      key: 'art',
+      node: <EffectTag type="addArtifact" label={game.choiceRelic} />,
+    })
+  }
+
+  if (option.effects?.addFlag) {
+    tags.push({
+      key: 'flag',
+      node: <EffectTag type="addFlag" label={game.choiceFlag} />,
+    })
+  }
+
+  if (option.effects?.sanity !== undefined) {
+    tags.push({
+      key: 'san',
+      node: <EffectTag type="sanity" value={option.effects.sanity} />,
+    })
+  }
+
+  if (option.effects?.corruption !== undefined) {
+    tags.push({
+      key: 'cor',
+      node: <EffectTag type="corruption" value={option.effects.corruption} />,
+    })
+  }
+
+  if (req?.minCorruption || req?.maxSanity) {
+    tags.push({
+      key: 'cond',
+      node: (
+        <span className="self-center text-[10px] uppercase tracking-[0.1em] text-[#8b5e5e]">
+          {req.minCorruption && `${game.reqCorruption} ${req.minCorruption}+ `}
+          {req.maxSanity && `${game.reqSanity} ≤ ${req.maxSanity}`}
+        </span>
+      ),
+    })
+  }
+
+  if (tags.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {tags.map((tag) => (
+        <span key={tag.key}>{tag.node}</span>
+      ))}
     </div>
   )
 }
@@ -64,18 +240,15 @@ export function ChoiceList({
   onSelect,
   isLoading,
 }: ChoiceListProps) {
-  const { game } = t.ui
-
   const visibleOptions = options.filter((option) =>
     isChoiceVisible(option, character),
   )
 
   return (
-    <div className="max-h-[340px] overflow-y-auto pr-1 chronicle-scrollbar scroll-smooth">
-      <div className="space-y-3">
+    <div className="max-h-[min(42vh,360px)] overflow-y-auto pr-0.5 chronicle-scrollbar scroll-smooth">
+      <div className="space-y-2">
         {visibleOptions.map((option, index) => {
           const available = isChoiceAvailable(option, character)
-          const req = option.requirements
 
           return (
             <motion.button
@@ -83,104 +256,33 @@ export function ChoiceList({
               type="button"
               disabled={!available || isLoading}
               onClick={() => onSelect(option.id)}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: index * 0.06 }}
-              className={`
-                group relative w-full border-2 bg-[#0c0909]/95 text-left
-                transition-all duration-500
-
-                ${
-                  available
-                    ? `
-                      border-[#2b2320] shadow-[inset_0_0_0_1px_rgba(43,35,32,0.3)]
-                      hover:border-[#8e1f1f]/80 hover:bg-[#140d0d]
-                      hover:shadow-[inset_0_0_0_1px_rgba(142,31,31,0.2),_0_0_40px_rgba(92,31,31,0.15)]
-                    `
-                    : `
-                      cursor-not-allowed border-[#181212] opacity-40 shadow-[inset_0_0_0_1px_rgba(24,18,18,0.2)]
-                    `
-                }
-              `}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              className={`group relative w-full border text-left transition-all duration-300 ${
+                available
+                  ? 'border-[#2b2320] bg-[#0c0909]/95 hover:border-[#8e1f1f]/70 hover:bg-[#140d0d] hover:shadow-[0_0_24px_rgba(92,31,31,0.12)]'
+                  : 'cursor-not-allowed border-[#181212] bg-[#0a0808]/80 opacity-45'
+              }`}
             >
-              <div className="absolute inset-y-2 left-0 w-[3px] bg-gradient-to-b from-transparent via-[#8e1f1f]/60 to-transparent opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:via-[#8e1f1f]" />
+              <div className="absolute inset-y-0 left-0 w-[2px] bg-[#8e1f1f] opacity-0 transition-opacity group-hover:opacity-100" />
 
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(120,20,20,0.08),transparent_70%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-              <div className="relative flex items-start justify-between gap-4 px-6 py-4">
-                <div className="min-w-0 flex-1">
-                  <div className="font-cinzel text-[18px] uppercase tracking-[0.12em] text-[#e7ded7]">
-                    {option.text}
+              <div className="relative px-4 py-3.5 sm:px-5 sm:py-4">
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#e7ded7] sm:text-[17px]">
+                      {option.text}
+                    </div>
+                    <ChoiceMeta option={option} character={character} />
                   </div>
 
-                  {(req?.strength || req?.agility || req?.intelligence) && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {req.strength !== undefined && (
-                        <RequirementBadge
-                          type="strength"
-                          value={req.strength}
-                          met={character.stats.strength >= req.strength}
-                        />
-                      )}
-                      {req.agility !== undefined && (
-                        <RequirementBadge
-                          type="agility"
-                          value={req.agility}
-                          met={character.stats.agility >= req.agility}
-                        />
-                      )}
-                      {req.intelligence !== undefined && (
-                        <RequirementBadge
-                          type="intelligence"
-                          value={req.intelligence}
-                          met={character.stats.intelligence >= req.intelligence}
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  {(req?.minCorruption || req?.maxSanity) && (
-                    <div className="mt-2 text-[13px] uppercase tracking-[0.25em] text-[#8b5e5e]">
-                      {req.minCorruption && (
-                        <span>
-                          {game.reqCorruption} {req.minCorruption}+{' '}
-                        </span>
-                      )}
-                      {req.maxSanity && (
-                        <span>
-                          {game.reqSanity} ≤ {req.maxSanity}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  {option.effects?.addArtifact && (
-                    <div className="inline-flex items-center gap-1.5 rounded-sm bg-[#2a2a1a]/60 px-3 py-1 text-[12px] uppercase tracking-[0.2em] text-[#c8b84a] border border-[#4a4a2a]/40">
-                      <EffectIcon type="addArtifact" size={36} />
-                      {game.choiceRelic}
-                    </div>
-                  )}
-
-                  {option.effects?.addFlag && (
-                    <div className="inline-flex items-center gap-1.5 text-[14px] text-[#7da87d]">
-                      <EffectIcon type="addFlag" size={36} />
-                      {game.choiceFlag}
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap justify-end gap-2">
-                    {option.effects?.sanity !== undefined && (
-                      <EffectBadge type="sanity" value={option.effects.sanity} />
-                    )}
-                    {option.effects?.corruption !== undefined && (
-                      <EffectBadge
-                        type="corruption"
-                        value={option.effects.corruption}
-                      />
-                    )}
-                  </div>
+                  <ChevronRight
+                    className={`mt-1 h-5 w-5 shrink-0 transition-transform ${
+                      available
+                        ? 'text-[#75685f] group-hover:translate-x-0.5 group-hover:text-[#d46060]'
+                        : 'text-[#4c433d]'
+                    }`}
+                  />
                 </div>
               </div>
             </motion.button>

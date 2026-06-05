@@ -4,6 +4,8 @@ import { getEnding } from './endings'
 import { resolveNextScene } from './resolveNextScene'
 import { createStaticScene } from './createStaticScene'
 import { commitSceneTransition } from './commitSceneTransition'
+import { applyRaidModifierTick } from './raidModifiers'
+import type { RaidModifierId } from './raidModifiers'
 
 import type {
   Artifact,
@@ -20,6 +22,7 @@ interface HandleChoiceParams {
   character: Character
   sceneHistory: SceneHistoryEntry[]
   artifacts: Record<string, Artifact>
+  raidModifierId?: RaidModifierId | null
   setCharacter: (character: Character) => void
   setCurrentScene: (scene: Scene) => void
   pushSceneHistory: (scene: SceneHistoryEntry) => void
@@ -33,6 +36,7 @@ export async function handleGameChoice({
   character,
   sceneHistory,
   artifacts,
+  raidModifierId,
   setCharacter,
   setCurrentScene,
   pushSceneHistory,
@@ -102,4 +106,8 @@ export async function handleGameChoice({
     pushSceneHistory,
     pushHistory,
   })
+
+  if (raidModifierId) {
+    setCharacter(applyRaidModifierTick(updatedCharacter, raidModifierId))
+  }
 }

@@ -1,11 +1,11 @@
 'use client'
 
-import { ScrollText } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { t } from '@/lib/i18n'
 import { Scene } from '@/lib/types/game'
 
+import { GameIcon } from '../ui/GameIcon'
 import { ChronicleCard } from '../shared/ChronicleCard'
 
 interface SceneChronicleProps {
@@ -80,8 +80,10 @@ export function SceneChronicle({
     <ChronicleCard
       title={scene.title}
       subtitle={t.ui.game.chronicleSubtitle}
-      icon={<ScrollText className="h-5 w-5 text-[#8e1f1f]" />}
-      maxHeight="max-h-[28vh]"
+      icon={<GameIcon type="flag" size={30} noBlend />}
+      maxHeight="max-h-[min(38vh,420px)]"
+      className="border-[#2b2320]/90 shadow-[0_0_40px_rgba(0,0,0,0.45)]"
+      titleClassName="text-2xl sm:text-[1.65rem]"
     >
       <div
         ref={scrollRef}
@@ -93,7 +95,7 @@ export function SceneChronicle({
             'linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%)',
         }}
       >
-        <div className="relative space-y-4 whitespace-pre-wrap text-[18px] leading-8 text-[#cfc2b8]">
+        <div className="relative space-y-4 whitespace-pre-wrap text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">
           {displayedText}
 
           {isTyping && (

@@ -12,6 +12,7 @@ interface EffectIconProps {
     | 'agility'
     | 'intelligence'
   size?: number
+  noBlend?: boolean
 }
 
 const TYPE_MAP: Record<string, GameIconProps['type']> = {
@@ -26,11 +27,11 @@ const TYPE_MAP: Record<string, GameIconProps['type']> = {
 
 import type { GameIconProps } from './GameIcon'
 
-export function EffectIcon({ type, size = 48 }: EffectIconProps) {
+export function EffectIcon({ type, size = 48, noBlend = false }: EffectIconProps) {
   const iconType = TYPE_MAP[type]
   if (!iconType) return null
 
-  return <GameIcon type={iconType} size={size} />
+  return <GameIcon type={iconType} size={size} noBlend={noBlend} />
 }
 
 export function formatEffectValue(effect: {

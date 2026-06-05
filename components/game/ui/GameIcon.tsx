@@ -14,6 +14,8 @@ export interface GameIconProps {
     | 'witness'
   size?: number
   className?: string
+  /** Disable screen blend — use on tinted/colored backgrounds. */
+  noBlend?: boolean
 }
 
 /** Bump when replacing PNG assets so browsers pick up new files. */
@@ -61,7 +63,7 @@ const GLOW_MAP: Record<string, string> = {
   witness: 'drop-shadow(0 0 10px rgba(216,208,200,0.5))',
 }
 
-export function GameIcon({ type, size = 20, className }: GameIconProps) {
+export function GameIcon({ type, size = 20, className, noBlend = false }: GameIconProps) {
   const path = ICON_MAP[type]
   const glow = GLOW_MAP[type]
 
@@ -84,7 +86,8 @@ export function GameIcon({ type, size = 20, className }: GameIconProps) {
         className="h-full w-full object-contain"
         style={{
           filter: glow,
-          mixBlendMode: BLEND_SCREEN_TYPES.has(type) ? 'screen' : 'normal',
+          mixBlendMode:
+            !noBlend && BLEND_SCREEN_TYPES.has(type) ? 'screen' : 'normal',
         }}
       />
     </span>

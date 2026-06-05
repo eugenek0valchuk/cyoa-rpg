@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import {
+  buildAbandonSummary,
   canExtractRaid,
   completeRaidExtraction,
   failRaid,
@@ -28,7 +29,7 @@ const activeRaid = {
 }
 
 describe('raid system', () => {
-  it('starts raid with selected loadout and fresh sanity', () => {
+  it('starts raid with selected loadout and vessel sanity from hub', () => {
     const hub = createInitialHubState([
       {
         id: 'ashen_faceless_mask',
@@ -42,9 +43,27 @@ describe('raid system', () => {
 
     expect(result.raid.active).toBe(true)
     expect(result.character.inventory).toHaveLength(1)
-    expect(result.character.sanity).toBe(100)
+    expect(result.character.sanity).toBe(40)
     expect(result.character.flags).toEqual([])
     expect(result.hub.totalRaids).toBe(1)
+  })
+
+  it('starts raid with modifier id stored on raid state', () => {
+    const hub = createInitialHubState([])
+    const result = startRaidFromHub(baseCharacter, hub, [], 'blood_mist')
+
+    expect(result.raid.modifierId).toBe('blood_mist')
+  })
+
+  it('carries reduced sanity into the next raid after fail', () => {
+    const hub = createInitialHubState([])
+    const raid = { active: true, depth: 2, inventoryAtStart: [] as string[] }
+    const character = { ...baseCharacter, sanity: 100 }
+
+    const failed = failRaid(character, hub, raid, 2)
+    const next = startRaidFromHub(failed.character, failed.hub, [])
+
+    expect(next.character.sanity).toBe(50)
   })
 
   it('blocks extraction without exit site or return sigil', () => {
@@ -146,5 +165,29 @@ describe('raid system', () => {
     expect(result.hub.stash[0]?.id).toBe('ashen_faceless_mask')
     expect(result.hub.roomMarks).toContain('failure_stain')
     expect(result.raid).toBeNull()
+  })
+
+  it('marks abandon summary as abandoned with same loot loss as fail', () => {
+    const hub = createInitialHubState([])
+    const raid = { active: true, depth: 2, inventoryAtStart: [] as string[] }
+    const character = {
+      ...baseCharacter,
+      inventory: [
+        {
+          id: 'buried_choir_candle',
+          name: 'Candle',
+          description: 'd',
+          rarity: 'rare',
+        },
+      ],
+    }
+
+    const result = failRaid(character, hub, raid, 2)
+    const summary = buildAbandonSummary(character, hub, raid, result, 2)
+
+    expect(summary.outcome).toBe('abandoned')
+    expect(summary.lostArtifacts).toHaveLength(1)
+    expect(summary.lostArtifacts[0]?.id).toBe('buried_choir_candle')
+    expect(summary.gainedArtifacts).toHaveLength(0)
   })
 })

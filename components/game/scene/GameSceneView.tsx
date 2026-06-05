@@ -12,6 +12,8 @@ interface Props {
   character: Character
   isLoading: boolean
   showChoices: boolean
+  extractAvailable?: boolean
+  onExtract?: () => void
   onChoice: (choiceId: string) => void
 }
 
@@ -20,6 +22,8 @@ export function GameSceneView({
   character,
   isLoading,
   showChoices,
+  extractAvailable,
+  onExtract,
   onChoice,
 }: Props) {
   const [isTyping, setIsTyping] = useState(true)
@@ -58,6 +62,8 @@ export function GameSceneView({
         character={character}
         showChoices={showChoices && !isTyping}
         isLoading={isLoading}
+        extractAvailable={extractAvailable}
+        onExtract={onExtract}
         onChoice={onChoice}
       />
     </div>

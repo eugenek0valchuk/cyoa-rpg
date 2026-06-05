@@ -1,6 +1,6 @@
 import type { Artifact } from './game'
 
-export type RaidOutcome = 'extracted' | 'failed'
+export type RaidOutcome = 'extracted' | 'failed' | 'abandoned'
 
 export interface RaidSummary {
   outcome: RaidOutcome

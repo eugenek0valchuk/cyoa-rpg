@@ -10,7 +10,10 @@ import { artifacts } from '@/lib/game/artifacts'
 import { handleGameChoice } from '@/lib/game/handleChoice'
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { hasReturnSigil } from '@/lib/game/extraction'
+import { getRaidModifier } from '@/lib/game/raidModifiers'
+import { getRaidZone } from '@/lib/game/zones'
 import {
+  buildAbandonSummary,
   buildExtractSummary,
   buildFailSummary,
   completeRaidExtraction,
@@ -62,6 +65,8 @@ export function useGameSession() {
   const extractAvailable = extractBlockReason === 'available'
   const hasSigil = hasReturnSigil(character?.flags ?? [])
   const raidDepth = sceneHistory.length
+  const raidZone = getRaidZone(raidDepth, character?.corruption ?? 0)
+  const raidModifier = getRaidModifier(raid?.modifierId)
 
   useEffect(() => {
     if (!character || !hub) {
@@ -182,6 +187,7 @@ export function useGameSession() {
           character,
           sceneHistory,
           artifacts,
+          raidModifierId: raid?.modifierId,
           setCharacter,
           setCurrentScene,
           pushSceneHistory,
@@ -212,6 +218,18 @@ export function useGameSession() {
     ],
   )
 
+  const handleAbandonRaid = useCallback(async () => {
+    if (!character || !hub || !raid) {
+      return
+    }
+
+    const depth = sceneHistory.length
+    const result = failRaid(character, hub, raid, depth)
+    const summary = buildAbandonSummary(character, hub, raid, result, depth)
+
+    await persistRaidReturn(result.character, result.hub, result.raid, summary)
+  }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
+
   const handleExitToMenu = useCallback(async () => {
     if (isEndingScene) {
       await handleReturnToHub()
@@ -234,10 +252,13 @@ export function useGameSession() {
     extractBlockReason,
     hasSigil,
     raidDepth,
+    raidZone,
+    raidModifier,
     minExtractDepth: MIN_EXTRACT_DEPTH,
     handleChoice,
     handleExtract,
     handleReturnToHub,
+    handleAbandonRaid,
     handleExitToMenu,
     closeArtifactReveal,
   }

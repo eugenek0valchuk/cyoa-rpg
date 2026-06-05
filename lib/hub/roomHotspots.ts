@@ -1,4 +1,5 @@
 import type { Origin } from '@/lib/types/game'
+import type { GameIconProps } from '@/components/game/ui/GameIcon'
 
 export type HotspotId = 'stash' | 'vessel' | 'chronicle' | 'threshold'
 
@@ -8,6 +9,32 @@ export interface HotspotRegion {
   top: number
   width: number
   height: number
+}
+
+export const HOTSPOT_ICONS: Record<
+  Exclude<HotspotId, 'vessel'>,
+  GameIconProps['type']
+> = {
+  stash: 'artifact',
+  chronicle: 'flag',
+  threshold: 'corruption',
+}
+
+export function getVesselHotspotIcon(origin: Origin): GameIconProps['type'] {
+  if (origin === 'hollow') return 'hollow'
+  if (origin === 'heretic') return 'heretic'
+  return 'witness'
+}
+
+export function getHotspotIcon(
+  id: HotspotId,
+  origin: Origin,
+): GameIconProps['type'] {
+  if (id === 'vessel') {
+    return getVesselHotspotIcon(origin)
+  }
+
+  return HOTSPOT_ICONS[id]
 }
 
 /** Percent-based click regions over room art — tweak per asset. */

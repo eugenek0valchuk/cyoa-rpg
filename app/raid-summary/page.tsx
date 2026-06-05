@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
+import { getRaidZone } from '@/lib/game/zones'
 import { t } from '@/lib/i18n'
 import { useHubStore } from '@/lib/store/hubStore'
 
@@ -13,6 +14,7 @@ export default function RaidSummaryPage() {
   const clearSummary = useHubStore((state) => state.setPendingSummary)
 
   const { raidSummary: text, roomMarks } = t.hub
+  const { ui: raidText } = t.raid
 
   useEffect(() => {
     if (!summary) {
@@ -29,7 +31,22 @@ export default function RaidSummaryPage() {
   }
 
   const isExtracted = summary.outcome === 'extracted'
+  const isAbandoned = summary.outcome === 'abandoned'
   const loot = isExtracted ? summary.gainedArtifacts : summary.lostArtifacts
+
+  const title = isExtracted
+    ? text.extractedTitle
+    : isAbandoned
+      ? text.abandonedTitle
+      : text.failedTitle
+
+  const subtitle = isExtracted
+    ? text.extractedSubtitle
+    : isAbandoned
+      ? text.abandonedSubtitle
+      : text.failedSubtitle
+
+  const endZone = getRaidZone(summary.depth)
 
   const handleReturn = () => {
     clearSummary(null)
@@ -50,19 +67,27 @@ export default function RaidSummaryPage() {
         <div className="text-center">
           <div
             className={`text-[12px] uppercase tracking-[0.2em] ${
-              isExtracted ? 'text-[#6a8f6a]' : 'text-[#d46060]'
+              isExtracted
+                ? 'text-[#6a8f6a]'
+                : isAbandoned
+                  ? 'text-[#a08080]'
+                  : 'text-[#d46060]'
             }`}
           >
-            {isExtracted ? text.extractedTitle : text.failedTitle}
+            {title}
           </div>
           <h1 className="font-cinzel mt-3 text-4xl uppercase tracking-[0.1em] text-[#efe5dc] sm:text-5xl">
-            {isExtracted ? text.extractedSubtitle : text.failedSubtitle}
+            {subtitle}
           </h1>
         </div>
 
         <div className="mt-12 space-y-4 border border-[#2b2320] bg-[#0d0909]/95 p-6 sm:p-8">
           <div className="grid gap-4 sm:grid-cols-2">
             <SummaryRow label={text.depthReached} value={String(summary.depth)} />
+            <SummaryRow
+              label={text.zoneReached}
+              value={raidText.zones[endZone]}
+            />
             <SummaryRow
               label={text.bestDepth}
               value={String(summary.bestDepthAfter)}

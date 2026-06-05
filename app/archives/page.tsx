@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
+import { GameIcon } from '@/components/game/ui/GameIcon'
+import { GothicScreen } from '@/components/ui/GothicScreen'
 import { restoreActiveSlot } from '@/hooks/useAutoSave'
 import { t } from '@/lib/i18n'
 import {
@@ -14,6 +16,7 @@ import {
 } from '@/lib/persistence/saveStorage'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useHubStore } from '@/lib/store/hubStore'
+import type { Origin } from '@/lib/types/game'
 
 function formatSavedAt(timestamp: number): string {
   if (!timestamp) {
@@ -25,6 +28,12 @@ function formatSavedAt(timestamp: number): string {
 
 function slotHasProgress(slot: SaveSlot): boolean {
   return Boolean(slot.character && (slot.hub || slot.currentScene || slot.raid?.active))
+}
+
+const ORIGIN_ICON: Record<Origin, 'hollow' | 'heretic' | 'witness'> = {
+  hollow: 'hollow',
+  heretic: 'heretic',
+  witness: 'witness',
 }
 
 export default function ArchivesPage() {
@@ -86,75 +95,87 @@ export default function ArchivesPage() {
   }, [character, hub, router, slots])
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black px-6 py-10 text-zinc-100">
-      <img
-        src="/main-bg.png"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-40"
-      />
-
-      <div className="absolute inset-0 bg-black/70" />
-
-      <section className="relative z-10 mx-auto max-w-[720px]">
-        <div className="mb-8 text-center">
-          <div className="text-[11px] uppercase tracking-[0.35em] text-[#75685f]">
+    <GothicScreen>
+      <div className="flex h-full flex-col overflow-y-auto px-5 py-8 sm:px-8 sm:py-10">
+        <header className="mx-auto w-full max-w-3xl">
+          <div className="text-[12px] uppercase tracking-[0.15em] text-[#85776a]">
             {a.eyebrow}
           </div>
-          <h1 className="font-cinzel mt-2 text-4xl uppercase tracking-[0.12em] text-[#d6cdc3]">
+          <h1 className="font-cinzel mt-1 text-4xl uppercase tracking-[0.1em] text-[#efe5dc] sm:text-5xl">
             {a.title}
           </h1>
-          <p className="mt-4 text-[14px] leading-7 text-[#85776a]">
+          <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-[#9d8d82]">
             {a.description}
           </p>
-        </div>
+        </header>
 
-        <div className="space-y-4">
+        <div className="mx-auto mt-8 w-full max-w-3xl space-y-3">
           {loading ? (
-            <div className="border border-[#3b3028]/80 bg-[#080505]/88 px-6 py-10 text-center text-sm uppercase tracking-[0.3em] text-[#75685f]">
+            <div className="border border-[#2b2320] bg-[#0d0909]/85 px-6 py-12 text-center text-sm uppercase tracking-[0.25em] text-[#75685f]">
               {a.loading}
             </div>
           ) : (
             slots.map((slot) => {
               const occupied = slotHasProgress(slot)
+              const origin = slot.character?.origin
 
               return (
                 <article
                   key={slot.slotId}
-                  className="border border-[#3b3028]/80 bg-[#080505]/88 px-6 py-5"
+                  className="border border-[#2b2320] bg-[#0d0909]/88 backdrop-blur-sm"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[11px] uppercase tracking-[0.35em] text-[#75685f]">
-                        {a.slot} {slot.slotId + 1}
+                  <div className="flex flex-wrap items-start justify-between gap-4 px-5 py-5">
+                    <div className="flex min-w-0 items-start gap-4">
+                      {origin && (
+                        <GameIcon type={ORIGIN_ICON[origin]} size={44} />
+                      )}
+                      <div>
+                        <div className="text-[11px] uppercase tracking-[0.15em] text-[#75685f]">
+                          {a.slot} {slot.slotId + 1}
+                        </div>
+                        <h2 className="font-cinzel mt-1 text-2xl uppercase tracking-[0.08em] text-[#efe5dc]">
+                          {occupied ? slot.character!.name : a.emptyVessel}
+                        </h2>
+                        <p className="mt-2 text-[13px] text-[#85776a]">
+                          {occupied
+                            ? slot.raid?.active
+                              ? `${a.inRaid} · ${formatSavedAt(slot.savedAt)}`
+                              : `${a.inChamber} · ${formatSavedAt(slot.savedAt)}`
+                            : a.noDescent}
+                        </p>
+
+                        {occupied && slot.character && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center gap-1.5 border border-[#241919] bg-black/35 px-2 py-1 text-[11px] text-[#9d8d82]">
+                              <GameIcon type="sanity" size={20} />
+                              {a.sanity}: {slot.character.sanity}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 border border-[#241919] bg-black/35 px-2 py-1 text-[11px] text-[#9d8d82]">
+                              <GameIcon type="corruption" size={20} />
+                              {a.depth}:{' '}
+                              {slot.raid?.active
+                                ? slot.raid.depth
+                                : slot.hub?.bestDepth ?? 0}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <h2 className="font-cinzel mt-2 text-2xl uppercase tracking-[0.1em] text-[#d6cdc3]">
-                        {occupied ? slot.character!.name : a.emptyVessel}
-                      </h2>
-                      <p className="mt-2 text-[13px] text-[#85776a]">
-                        {occupied
-                          ? slot.raid?.active
-                            ? `${t.hub.ui.continueRaid} · ${formatSavedAt(slot.savedAt)}`
-                            : slot.currentScene
-                              ? `${slot.currentScene.title} · ${formatSavedAt(slot.savedAt)}`
-                              : `${t.hub.ui.roomLabel} · ${formatSavedAt(slot.savedAt)}`
-                          : a.noDescent}
-                      </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2">
                       {occupied ? (
                         <>
                           <button
                             type="button"
                             onClick={() => handleContinue(slot.slotId)}
-                            className="border border-[#5c1f1f] bg-[#160909] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#d46060] transition hover:bg-[#220d0d]"
+                            className="border border-[#5c1f1f] bg-[#160909] px-5 py-2 text-[11px] uppercase tracking-[0.18em] text-[#d46060] transition hover:bg-[#220d0d]"
                           >
                             {a.continue}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(slot.slotId)}
-                            className="border border-[#2b2320] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#75685f] transition hover:border-[#5c1f1f] hover:text-[#d46060]"
+                            className="border border-[#2b2320] px-5 py-2 text-[11px] uppercase tracking-[0.18em] text-[#75685f] transition hover:border-[#5c1f1f] hover:text-[#d46060]"
                           >
                             {a.erase}
                           </button>
@@ -163,7 +184,7 @@ export default function ArchivesPage() {
                         <button
                           type="button"
                           onClick={() => handleNewDescent(slot.slotId)}
-                          className="border border-[#5c1f1f] bg-[#160909] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#d46060] transition hover:bg-[#220d0d]"
+                          className="border border-[#5c1f1f] bg-[#160909] px-5 py-2 text-[11px] uppercase tracking-[0.18em] text-[#d46060] transition hover:bg-[#220d0d]"
                         >
                           {a.newDescent}
                         </button>
@@ -176,16 +197,16 @@ export default function ArchivesPage() {
           )}
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mx-auto mt-8 w-full max-w-3xl text-center">
           <button
             type="button"
             onClick={handleBack}
-            className="border-0 bg-transparent text-[11px] uppercase tracking-[0.3em] text-[#75685f] transition hover:text-[#d46060]"
+            className="border border-[#2b2320] px-5 py-2 text-[11px] uppercase tracking-[0.18em] text-[#75685f] transition hover:border-[#5c1f1f] hover:text-[#d46060]"
           >
             {a.return}
           </button>
         </div>
-      </section>
-    </main>
+      </div>
+    </GothicScreen>
   )
 }

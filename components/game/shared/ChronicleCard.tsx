@@ -7,6 +7,7 @@ interface ChronicleCardProps {
   children: ReactNode
   className?: string
   contentClassName?: string
+  titleClassName?: string
   icon?: ReactNode
   maxHeight?: string
 }
@@ -17,6 +18,7 @@ export function ChronicleCard({
   children,
   className,
   contentClassName,
+  titleClassName,
   icon,
   maxHeight = 'max-h-[40vh]',
 }: ChronicleCardProps) {
@@ -27,6 +29,8 @@ export function ChronicleCard({
         className,
       )}
     >
+      <div className="pointer-events-none absolute left-0 top-0 h-8 w-8 border-l border-t border-[#8e1f1f]/30" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-8 w-8 border-b border-r border-[#8e1f1f]/30" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(142,31,31,0.06),transparent_60%)]" />
 
       {(title || subtitle) && (
@@ -42,7 +46,12 @@ export function ChronicleCard({
               )}
 
               {title && (
-                <h2 className="mt-1 font-cinzel text-3xl uppercase tracking-[0.08em] text-[#ece2d9]">
+                <h2
+                  className={clsx(
+                    'mt-1 font-cinzel uppercase tracking-[0.08em] text-[#ece2d9]',
+                    titleClassName ?? 'text-3xl',
+                  )}
+                >
                   {title}
                 </h2>
               )}

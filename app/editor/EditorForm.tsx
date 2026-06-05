@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
+import { GothicScreen } from '@/components/ui/GothicScreen'
 import { saveCurrentGameState, setActiveSlotId } from '@/lib/persistence/saveStorage'
 import { initHubForNewCharacter } from '@/hooks/useAutoSave'
 import { createInitialHubState } from '@/lib/types/hub'
@@ -12,13 +13,14 @@ import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
 import type { Origin } from '@/lib/types/game'
 
-const ORIGIN_ICON_MAP: Record<Origin, 'hollow' | 'heretic' | 'witness'> = {
+const ORIGIN_ICON: Record<Origin, 'hollow' | 'heretic' | 'witness'> = {
   hollow: 'hollow',
   heretic: 'heretic',
   witness: 'witness',
 }
 
 const origins = t.origins
+const rooms = t.hub.rooms
 
 export function EditorForm() {
   const { editor: e } = t.ui
@@ -32,9 +34,10 @@ export function EditorForm() {
   const [index, setIndex] = useState(0)
 
   const selected = origins[index]!
+  const room = rooms[selected.value]
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
 
     if (!name.trim()) {
       return
@@ -77,200 +80,146 @@ export function EditorForm() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black px-6 text-[#e7e2dc]">
-      <img
-        src="/main-bg.png"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-50"
-      />
-
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
-
-      <div className="pointer-events-none fixed inset-0 shadow-[inset_0_0_250px_rgba(0,0,0,0.8),inset_0_0_80px_rgba(80,10,10,0.1)]" />
-
-      <section className="relative z-10 mx-auto max-w-[1100px] pt-[6vh] pb-12">
-        <div className="border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
-          <div className="border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
-            <div>
-              <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
-                {e.chooseOrigin}
-              </div>
-              <h1 className="font-cinzel mt-1 text-3xl uppercase tracking-[0.08em] text-[#ece2d9]">
-                {e.title}
-              </h1>
+    <GothicScreen image={room.image} imageClassName="opacity-70">
+      <header className="absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-black/90 to-transparent px-5 pb-10 pt-6 sm:px-8">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[12px] uppercase tracking-[0.15em] text-[#85776a]">
+              {e.chooseOrigin}
             </div>
+            <h1 className="font-cinzel mt-1 text-2xl uppercase tracking-[0.1em] text-[#efe5dc] sm:text-4xl">
+              {e.title}
+            </h1>
+            <p className="mt-2 max-w-lg text-[13px] leading-relaxed text-[#9d8d82] sm:text-[14px]">
+              {e.hotspotHint}
+            </p>
           </div>
 
-          <div className="relative flex items-center justify-between border-b border-[#241919]/60 px-8 py-5">
-            <div
-              onClick={() => setIndex((i) => Math.max(i - 1, 0))}
-              className="cursor-pointer p-3 -m-3"
-            >
-              <img
-                src="/ui/gothic-arrow-left.png"
-                alt="Previous"
-                className="h-[80px] w-[80px] object-contain opacity-60 transition-all duration-500 hover:opacity-100 hover:drop-shadow-[0_0_30px_rgba(200,180,160,0.45)]"
-              />
-            </div>
+          <button
+            type="button"
+            onClick={() => router.push('/archives')}
+            className="shrink-0 border border-[#2b2320] px-3 py-2 text-[10px] uppercase tracking-[0.15em] text-[#75685f] transition hover:border-[#5c1f1f] hover:text-[#d46060] sm:px-4 sm:text-[11px]"
+          >
+            {e.back}
+          </button>
+        </div>
+      </header>
 
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-              <div className="text-[13px] uppercase tracking-[0.4em] text-[#6d5d53]">
-                {index + 1}
+      <div className="flex h-full flex-col justify-end pb-28 pt-28 sm:pb-32">
+        <div className="mx-auto w-full max-w-2xl px-5 sm:px-8">
+          <div className="border border-[#3b2a2a]/90 bg-[#0d0909]/88 shadow-[0_0_40px_rgba(0,0,0,0.55)] backdrop-blur-sm">
+            <div className="flex items-start gap-4 border-b border-[#241919] bg-[#120d0d]/95 px-5 py-4">
+              <GameIcon type={ORIGIN_ICON[selected.value]} size={44} />
+              <div className="min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.2em] text-[#75685f]">
+                  {e.origin}
+                </div>
+                <h2 className="font-cinzel mt-1 text-2xl uppercase tracking-[0.1em] text-[#efe5dc] sm:text-3xl">
+                  {selected.title}
+                </h2>
+                <p className="mt-1 text-[14px] text-[#b8a99e]">{selected.subtitle}</p>
               </div>
-              <div className="mt-1 h-px w-8 bg-[#3b3028]/50" />
-              <div className="mt-1 text-[10px] uppercase tracking-[0.3em] text-[#4c433d]">
-                {origins.length}
-              </div>
             </div>
 
-            <div
-              onClick={() =>
-                setIndex((i) => Math.min(i + 1, origins.length - 1))
-              }
-              className="cursor-pointer p-3 -m-3"
-            >
-              <img
-                src="/ui/gothic-arrow-right.png"
-                alt="Next"
-                className="h-[80px] w-[80px] object-contain opacity-60 transition-all duration-500 hover:opacity-100 hover:drop-shadow-[0_0_30px_rgba(200,180,160,0.45)]"
-              />
-            </div>
-          </div>
+            <div className="space-y-5 px-5 py-5">
+              <p className="text-[15px] leading-relaxed text-[#cfc2b8]">
+                {selected.description}
+              </p>
 
-          <div className="border-t-2 border-[#241919]/60">
-            {origins.map((origin, i) => (
-              <div
-                key={origin.value}
-                className={i === index ? 'block' : 'hidden'}
-              >
-                <div className="min-w-0 grid grid-cols-1 md:grid-cols-[minmax(300px,35%)_1fr]">
-                  <div className="relative min-h-[360px] overflow-hidden md:min-h-full">
-                    <img
-                      src={origin.image}
-                      alt={origin.title}
-                      className="h-full w-full object-cover object-top"
-                    />
-                  </div>
-
-                  <div className="flex min-w-0 flex-col justify-between p-6">
-                    <div className="min-w-0 space-y-4">
-                      <div>
-                        <div className="text-[12px] uppercase tracking-[0.3em] text-[#6f6259]">
-                          {e.origin}
-                        </div>
-                        <h2 className="font-cinzel mt-2 break-words text-3xl uppercase tracking-[0.14em] text-[#e4d8cf]">
-                          {origin.title}
-                        </h2>
-                        <p className="mt-1 break-words text-[14px] text-[#9d8d82]">
-                          {origin.subtitle}
-                        </p>
-
-                        <div className="mt-5 break-words text-[14px] leading-7 text-[#b8a99e]">
-                          {origin.description}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          {
-                            label: e.stats.str,
-                            value: origin.stats.strength,
-                            icon: 'strength',
-                          },
-                          {
-                            label: e.stats.agi,
-                            value: origin.stats.agility,
-                            icon: 'agility',
-                          },
-                          {
-                            label: e.stats.int,
-                            value: origin.stats.intelligence,
-                            icon: 'intelligence',
-                          },
-                        ].map((s) => (
-                          <div
-                            key={s.label}
-                            className="flex min-w-0 items-center gap-2 border border-[#2b2320] bg-black/40 px-3 py-3"
-                          >
-                            <GameIcon
-                              type={
-                                s.icon as
-                                  | 'strength'
-                                  | 'agility'
-                                  | 'intelligence'
-                              }
-                              size={56}
-                            />
-                            <div>
-                              <div className="text-[10px] uppercase tracking-[0.2em] text-[#75685f]">
-                                {s.label}
-                              </div>
-                              <div className="font-cinzel text-lg text-[#d8c9be]">
-                                {s.value}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="mt-4 flex min-w-0 items-center gap-2 text-[13px] text-[#8e1f1f]">
-                        <GameIcon type="artifact" size={36} />
-                        <span className="min-w-0 truncate">
-                          {origin.inventory.map((a) => a.name).join(', ')}
-                        </span>
-                      </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: e.stats.str, value: selected.stats.strength, icon: 'strength' as const },
+                  { label: e.stats.agi, value: selected.stats.agility, icon: 'agility' as const },
+                  {
+                    label: e.stats.int,
+                    value: selected.stats.intelligence,
+                    icon: 'intelligence' as const,
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="flex flex-col items-center border border-[#2b2320] bg-black/35 px-2 py-3 text-center"
+                  >
+                    <GameIcon type={stat.icon} size={32} />
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.15em] text-[#75685f]">
+                      {stat.label}
                     </div>
+                    <div className="font-cinzel mt-1 text-xl text-[#d8c9be]">
+                      {stat.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                    <button
-                      type="button"
-                      onClick={() => setIndex(i)}
-                      className={`mt-auto w-full border-2 py-3 text-sm uppercase tracking-[0.25em] transition-all duration-300 ${
-                        i === index
-                          ? 'border-[#8e1f1f] bg-[#160909] text-[#d46060]'
-                          : 'border-[#2b2320] text-[#6d5d53] hover:border-[#5c1f1f] hover:text-[#d46060]'
-                      }`}
-                    >
-                      {i === index ? e.selected : e.select}
-                    </button>
+              <div className="flex items-start gap-3 border border-[#2b2320] bg-black/30 px-4 py-3">
+                <GameIcon type="artifact" size={36} />
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">
+                    {e.starterRelic}
+                  </div>
+                  <div className="mt-1 text-[14px] text-[#d8c9be]">
+                    {selected.inventory.map((item) => item.name).join(', ')}
                   </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="mt-6">
-          <div className="border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
-            <div className="flex items-center justify-between border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
-              <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
+      <div className="absolute inset-x-0 bottom-0 z-40 border-t border-[#2b2320]/90 bg-gradient-to-t from-black via-black/95 to-black/70 px-3 py-3 sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-4xl flex-col gap-3">
+          <div className="flex items-stretch justify-center gap-2 sm:gap-3">
+            {origins.map((origin, i) => {
+              const active = i === index
+
+              return (
+                <button
+                  key={origin.value}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 border px-2 py-2.5 transition sm:gap-2 sm:px-3 sm:py-3 ${
+                    active
+                      ? 'border-[#8e1f1f] bg-[#160909] text-[#d46060]'
+                      : 'border-[#2b2320] bg-[#0d0909]/80 text-[#9d8d82] hover:border-[#5c1f1f] hover:text-[#d8c9be]'
+                  }`}
+                >
+                  <GameIcon type={ORIGIN_ICON[origin.value]} size={36} />
+                  <span className="text-[10px] uppercase tracking-[0.1em] sm:text-[11px]">
+                    {origin.title}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-2 border border-[#2b2320] bg-[#0d0909]/90 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-[0.15em] text-[#75685f]">
                 {e.vesselName}
               </div>
-              <div className="flex items-center gap-2 text-[12px] text-[#6d5d53]">
-                <GameIcon type={ORIGIN_ICON_MAP[selected.value]} size={36} />
-                {selected.title}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6 px-6 py-5">
               <input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(event) => setName(event.target.value)}
                 placeholder={e.namePlaceholder}
                 maxLength={24}
-                className="font-cinzel flex-1 border-0 border-b-2 border-[#4a3a32] bg-transparent py-2 text-2xl uppercase tracking-[0.14em] text-[#f1e6dc] outline-none placeholder:text-[#5e544c] transition-colors duration-300 focus:border-[#8e1f1f]"
+                className="font-cinzel mt-1 w-full border-0 border-b border-[#3b2a2a] bg-transparent py-2 text-xl uppercase tracking-[0.1em] text-[#efe5dc] outline-none placeholder:text-[#5e544c] focus:border-[#8e1f1f]"
               />
-
-              <button
-                type="submit"
-                disabled={!name.trim()}
-                className="font-cinzel shrink-0 border-2 border-[#5c1f1f] bg-[#160909] px-8 py-3 text-sm uppercase tracking-[0.2em] text-[#d46060] transition-all duration-300 hover:bg-[#220d0d] hover:text-[#ff7b7b] hover:shadow-[0_0_30px_rgba(92,31,31,0.2)] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {e.beginDescent}
-              </button>
             </div>
-          </div>
-        </form>
-      </section>
-    </main>
+
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              className="font-cinzel shrink-0 border-2 border-[#5c1f1f] bg-[#160909] px-8 py-3 text-sm uppercase tracking-[0.15em] text-[#d46060] transition hover:bg-[#220d0d] disabled:opacity-40"
+            >
+              {e.beginDescent}
+            </button>
+          </form>
+        </div>
+      </div>
+    </GothicScreen>
   )
 }

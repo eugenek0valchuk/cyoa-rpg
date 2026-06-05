@@ -1,9 +1,12 @@
 'use client'
 
-import { RotateCcw, DoorOpen } from 'lucide-react'
+import { RotateCcw, DoorOpen, Skull } from 'lucide-react'
 
+import { GameIcon } from '@/components/game/ui/GameIcon'
 import { t } from '@/lib/i18n'
 import type { ExtractBlockReason } from '@/lib/game/extraction'
+import type { RaidModifierDef } from '@/lib/game/raidModifiers'
+import type { RaidZone } from '@/lib/game/zones'
 
 interface Props {
   isLoading: boolean
@@ -12,8 +15,11 @@ interface Props {
   hasSigil: boolean
   raidDepth: number
   minExtractDepth: number
+  raidZone: RaidZone
+  raidModifier: RaidModifierDef | null
   isEndingScene: boolean
   onExtract: () => void
+  onAbandon: () => void
   onReset: () => void
 }
 
@@ -53,12 +59,16 @@ export function GameHeader({
   hasSigil,
   raidDepth,
   minExtractDepth,
+  raidZone,
+  raidModifier,
   isEndingScene,
   onExtract,
+  onAbandon,
   onReset,
 }: Props) {
   const { game } = t.ui
   const { ui: hubText } = t.hub
+  const { ui: raidText } = t.raid
 
   const extractHint = getExtractHint(
     extractBlockReason,
@@ -68,55 +78,81 @@ export function GameHeader({
   )
 
   return (
-    <div className="mb-6 flex items-start justify-between gap-6">
-      <div className="flex-1 text-center">
-        <div className="text-[10px] uppercase tracking-[0.7em] text-[#6d5e55]">
-          {game.headerEyebrow}
-        </div>
-        <div className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#75685f]">
-          {hubText.bestDepth}: {raidDepth}
-        </div>
-        <div className="mx-auto mt-4 h-px w-40 bg-gradient-to-r from-transparent via-[#7a2222] to-transparent" />
+    <div className="mb-4 space-y-3">
+      <div className="text-[10px] uppercase tracking-[0.35em] text-[#6d5e55]">
+        {game.headerEyebrow}
       </div>
 
-      <div className="flex max-w-[240px] flex-col gap-2">
-        {!isEndingScene && (
-          <div className="flex flex-col gap-1.5">
-            <button
-              type="button"
-              onClick={onExtract}
-              disabled={isLoading || !extractAvailable}
-              className="group inline-flex items-center gap-2 border border-[#4a2323] bg-[#160909]/90 px-4 py-2 text-[9px] uppercase tracking-[0.32em] text-[#d46060] transition hover:bg-[#220d0d] disabled:opacity-40"
-            >
-              <DoorOpen className="h-3.5 w-3.5" />
-              <span>{hubText.extract}</span>
-            </button>
-
-            {extractHint && (
-              <p
-                className={
-                  extractAvailable
-                    ? 'text-[9px] leading-relaxed text-[#6a8f6a]'
-                    : 'text-[9px] leading-relaxed text-[#85776a]'
-                }
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center gap-1.5 border border-[#2b2320] bg-[#0d0909]/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] text-[#9d8d82]">
+              <GameIcon type="flag" size={24} noBlend />
+              {raidText.zones[raidZone]}
+            </span>
+            <span className="inline-flex items-center gap-1.5 border border-[#2b2320] bg-[#0d0909]/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] text-[#85776a]">
+              {hubText.bestDepth} {raidDepth}
+            </span>
+            {raidModifier && (
+              <span
+                className="inline-flex items-center gap-1.5 border border-[#4a2323] bg-[#160909]/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] text-[#d46060]"
+                title={raidModifier.hint}
               >
-                {extractHint}
-              </p>
+                <GameIcon type="corruption" size={24} noBlend />
+                {raidModifier.name}
+              </span>
             )}
           </div>
-        )}
+          <p className="mt-2 text-[11px] leading-relaxed text-[#75685f]">
+            {raidText.zoneHints[raidZone]}
+          </p>
+        </div>
 
-        <button
-          type="button"
-          onClick={onReset}
-          disabled={isLoading}
-          title={isEndingScene ? undefined : game.returnHint}
-          className="group inline-flex items-center gap-2 border border-[#241919] bg-[#0f0a0a]/80 px-4 py-2 text-[9px] uppercase tracking-[0.32em] text-[#6f6259] transition hover:border-[#4a2323] hover:text-[#d7c8bc] disabled:opacity-40"
-        >
-          <RotateCcw className="h-3.5 w-3.5 transition-transform duration-500 group-hover:-rotate-180" />
-          <span>{isEndingScene ? hubText.endingReturn : game.return}</span>
-        </button>
+        <div className="flex flex-wrap gap-1.5 lg:shrink-0 lg:justify-end">
+          {!isEndingScene && (
+            <>
+              <button
+                type="button"
+                onClick={onExtract}
+                disabled={isLoading || !extractAvailable}
+                title={extractHint ?? undefined}
+                className="inline-flex items-center gap-1.5 border border-[#4a2323] bg-[#160909]/90 px-3 py-2 text-[9px] uppercase tracking-[0.18em] text-[#d46060] transition hover:bg-[#220d0d] disabled:cursor-help disabled:opacity-45"
+              >
+                <DoorOpen className="h-3 w-3" />
+                {hubText.extract}
+              </button>
+              <button
+                type="button"
+                onClick={onAbandon}
+                disabled={isLoading}
+                title={hubText.abandonHint}
+                className="inline-flex items-center gap-1.5 border border-[#3b2a2a] bg-[#120909]/90 px-3 py-2 text-[9px] uppercase tracking-[0.16em] text-[#a08080] transition hover:border-[#5c1f1f] hover:text-[#d46060] disabled:opacity-40"
+              >
+                <Skull className="h-3 w-3" />
+                {hubText.abandon}
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={onReset}
+            disabled={isLoading}
+            title={isEndingScene ? undefined : game.returnHint}
+            className="inline-flex items-center gap-1.5 border border-[#241919] bg-[#0f0a0a]/80 px-3 py-2 text-[9px] uppercase tracking-[0.16em] text-[#6f6259] transition hover:border-[#4a2323] hover:text-[#d7c8bc] disabled:opacity-40"
+          >
+            <RotateCcw className="h-3 w-3" />
+            {isEndingScene ? hubText.endingReturn : game.return}
+          </button>
+        </div>
       </div>
+
+      {!isEndingScene && extractHint && !extractAvailable && (
+        <p className="border border-[#241919] bg-[#0a0808]/60 px-3 py-2 text-[10px] leading-relaxed text-[#85776a]">
+          {extractHint}
+        </p>
+      )}
+
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-[#7a2222]/50 to-transparent" />
     </div>
   )
 }
