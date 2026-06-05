@@ -15,6 +15,10 @@ export interface HubState {
   journalEntries: string[]
   /** Валюта камеры — за успешные извлечения */
   echo: number
+  /** Бонус рассудка на старт следующего спуска (лавка) */
+  nextRaidSanityBonus?: number
+  /** Одноразовые покупки у Бездыханного */
+  merchantPurchases?: string[]
   /** Приоритет встречи на следующий спуск (награда обета) */
   pendingEncounterBoost?: string | null
   /** Обет выполнен — награда ждёт сдачи у Писца */

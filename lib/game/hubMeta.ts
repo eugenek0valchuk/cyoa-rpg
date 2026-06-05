@@ -111,8 +111,9 @@ export function spendEcho(hub: HubState, amount: number): HubState | null {
 export function applyRaidStartSanity(
   sanity: number,
   roomMarks: string[],
+  bonus = 0,
 ): number {
-  const delta = getRaidStartSanityDelta(roomMarks)
+  const delta = getRaidStartSanityDelta(roomMarks) + bonus
   const adjusted = sanity + delta
   return Math.max(
     MIN_RAID_START_SANITY,

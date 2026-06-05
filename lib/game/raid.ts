@@ -43,12 +43,17 @@ export function startRaidFromHub(
       ...character,
       inventory: loadout.map((item) => ({ ...item })),
       flags: raidFlags,
-      sanity: applyRaidStartSanity(character.sanity, hub.roomMarks),
+      sanity: applyRaidStartSanity(
+        character.sanity,
+        hub.roomMarks,
+        hub.nextRaidSanityBonus ?? 0,
+      ),
     },
     hub: {
       ...hub,
       totalRaids: hub.totalRaids + 1,
       pendingEncounterBoost: null,
+      nextRaidSanityBonus: 0,
     },
     raid: {
       active: true,

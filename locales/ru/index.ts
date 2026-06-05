@@ -8,6 +8,7 @@ import { journalCatalog, journalUi } from './journal'
 import { raidModifierNames, raidUi } from './raid'
 import { worldLore } from './lore'
 import { loreCardUi, loreCards } from './loreCards'
+import { merchantUi, hubMerchantOffers } from './merchant'
 import { prologueUi } from './prologue'
 import {
   coreScenes,
@@ -34,6 +35,7 @@ export const ru = {
   lore: worldLore,
   loreCards: { ui: loreCardUi, catalog: loreCards },
   prologue: { ui: prologueUi },
+  merchant: { ui: merchantUi, offers: hubMerchantOffers },
   scenes: {
     ...coreScenes,
     ...eventScenes,

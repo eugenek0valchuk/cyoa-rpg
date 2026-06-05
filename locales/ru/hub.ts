@@ -48,6 +48,7 @@ export const hubUi = {
   bottomChronicle: 'Хроника',
   bottomScribe: 'Писец',
   bottomDescend: 'Спуск',
+  bottomMerchant: 'Телега',
   bottomArchives: 'Архивы',
   exitToMenu: 'В меню',
   exitToMenuHint: 'Сохранить и вернуться на главный экран',

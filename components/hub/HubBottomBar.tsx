@@ -4,20 +4,24 @@ import { GameIcon, type GameIconProps } from '@/components/game/ui/GameIcon'
 import type { Origin } from '@/lib/types/game'
 import type { HotspotId } from '@/lib/hub/roomHotspots'
 
+type HubBottomModalId = HotspotId | 'merchant'
+
 interface HubBottomBarProps {
   labels: {
     stash: string
     vessel: string
     chronicle: string
     scribe?: string
+    merchant?: string
     descend: string
     archives: string
   }
   origin: Origin
-  activeId: HotspotId | null
+  activeId: HubBottomModalId | null
   modalOpen: boolean
   showScribe?: boolean
-  onSelect: (id: HotspotId | null) => void
+  showMerchant?: boolean
+  onSelect: (id: HubBottomModalId | null) => void
   onArchives: () => void
 }
 
@@ -43,14 +47,19 @@ export function HubBottomBar({
   activeId,
   modalOpen,
   showScribe = false,
+  showMerchant = false,
   onSelect,
   onArchives,
 }: HubBottomBarProps) {
-  const handleSelect = (id: HotspotId) => {
+  const handleSelect = (id: HubBottomModalId) => {
     onSelect(activeId === id ? null : id)
   }
 
-  const barItems = [
+  const barItems: {
+    id: HubBottomModalId
+    key: keyof HubBottomBarProps['labels']
+    icon: GameIconProps['type']
+  }[] = [
     ...CORE_ITEMS.map((item) =>
       item.id === 'vessel'
         ? { ...item, icon: ORIGIN_ICON[origin] }
@@ -58,6 +67,9 @@ export function HubBottomBar({
     ),
     ...(showScribe && labels.scribe
       ? [{ id: 'scribe' as const, key: 'scribe' as const, icon: 'intelligence' as const }]
+      : []),
+    ...(showMerchant && labels.merchant
+      ? [{ id: 'merchant' as const, key: 'merchant' as const, icon: 'agility' as const }]
       : []),
     { id: 'threshold' as const, key: 'descend' as const, icon: 'corruption' as const },
   ]

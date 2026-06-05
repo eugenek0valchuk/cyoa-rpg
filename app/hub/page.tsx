@@ -7,6 +7,7 @@ import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
 import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
 import { HubContractClaim } from '@/components/hub/HubContractClaim'
+import { HubMerchantPanel } from '@/components/hub/HubMerchantPanel'
 import { HubScribePanel } from '@/components/hub/HubScribePanel'
 import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
 import { journalCatalog } from '@/locales/ru/journal'
@@ -40,7 +41,11 @@ import {
   pickOfferedContracts,
 } from '@/lib/game/contracts'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
+import { isHubMerchantUnlocked } from '@/lib/game/merchant'
+import { merchantUi } from '@/locales/ru/merchant'
 import { roomHotspotLayouts, type HotspotId } from '@/lib/hub/roomHotspots'
+
+type HubModalId = HotspotId | 'merchant'
 import { t } from '@/lib/i18n'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
@@ -66,7 +71,8 @@ export default function HubPage() {
   const resetGame = useGameStore((state) => state.resetGame)
   const setCurrentScene = useGameStore((state) => state.setCurrentScene)
 
-  const [activeModal, setActiveModal] = useState<HotspotId | null>(null)
+  const [activeModal, setActiveModal] = useState<HubModalId | null>(null)
+  const [merchantToast, setMerchantToast] = useState<string | null>(null)
   const [selectedLoadout, setSelectedLoadout] = useState<string[]>([])
   const [pendingModifier, setPendingModifier] = useState<RaidModifierId>(() =>
     pickRaidModifier(),
@@ -84,6 +90,7 @@ export default function HubPage() {
     : []
 
   const scribeUnlocked = hub ? isScribeUnlocked(hub) : false
+  const merchantUnlocked = hub ? isHubMerchantUnlocked(hub) : false
   const offeredContracts = useMemo(
     () => (hub ? pickOfferedContracts(hub) : []),
     [hub],
@@ -343,7 +350,7 @@ export default function HubPage() {
         labels={hotspots}
         badges={hotspotBadges}
         origin={character.origin}
-        activeId={activeModal}
+        activeId={activeModal === 'merchant' ? null : activeModal}
         onSelect={(id) =>
           setActiveModal((current) => (current === id ? null : id))
         }
@@ -395,11 +402,13 @@ export default function HubPage() {
       <HubBottomBar
         origin={character.origin}
         showScribe={scribeUnlocked}
+        showMerchant={merchantUnlocked}
         labels={{
           stash: hubText.bottomStash,
           vessel: hubText.bottomVessel,
           chronicle: hubText.bottomChronicle,
           scribe: hubText.bottomScribe,
+          merchant: hubText.bottomMerchant,
           descend: hubText.bottomDescend,
           archives: hubText.bottomArchives,
         }}
@@ -408,6 +417,39 @@ export default function HubPage() {
         modalOpen={activeModal !== null}
         onArchives={() => router.push('/archives')}
       />
+
+      <GothicModal
+        open={activeModal === 'merchant'}
+        onClose={closeModal}
+        icon="agility"
+        title={merchantUnlocked ? merchantUi.title : merchantUi.lockedTitle}
+        subtitle={
+          merchantUnlocked ? merchantUi.subtitle : merchantUi.lockedBody
+        }
+        maxWidth="lg"
+      >
+        {merchantUnlocked ? (
+          <>
+            {merchantToast && (
+              <p className="mb-4 border border-[#2a3d2a] bg-[#0a120a]/60 px-4 py-3 text-[13px] text-[#8fbc8f]">
+                {merchantToast}
+              </p>
+            )}
+            <HubMerchantPanel
+              hub={hub}
+              onHubChange={setHub}
+              onToast={(message) => {
+                setMerchantToast(message)
+                window.setTimeout(() => setMerchantToast(null), 3500)
+              }}
+            />
+          </>
+        ) : (
+          <p className="text-[14px] leading-relaxed text-[#85776a]">
+            {merchantUi.lockedBody}
+          </p>
+        )}
+      </GothicModal>
 
       <GothicModal
         open={activeModal === 'vessel'}
