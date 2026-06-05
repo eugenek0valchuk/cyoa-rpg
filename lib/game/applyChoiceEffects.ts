@@ -1,3 +1,4 @@
+import { applyArtifactPickupEffects } from './artifactEffects'
 import { clampStat } from './clampStat'
 import { softenSanityDelta } from './sanityPacing'
 
@@ -52,16 +53,15 @@ export function applyChoiceEffects({
       )
 
       if (!alreadyOwned) {
-        updatedCharacter.inventory.push(artifact)
-
-        updatedCharacter.sanity = clampStat(
-          updatedCharacter.sanity + (artifact.effects?.sanity ?? 0),
-        )
-
-        updatedCharacter.corruption = clampStat(
-          updatedCharacter.corruption + (artifact.effects?.corruption ?? 0),
-        )
-
+        const withItem: Character = {
+          ...updatedCharacter,
+          inventory: [...updatedCharacter.inventory, artifact],
+        }
+        const afterPickup = applyArtifactPickupEffects(withItem, artifact)
+        updatedCharacter.sanity = afterPickup.sanity
+        updatedCharacter.corruption = afterPickup.corruption
+        updatedCharacter.stats = afterPickup.stats
+        updatedCharacter.inventory = afterPickup.inventory
         revealedArtifact = artifact
       }
     }

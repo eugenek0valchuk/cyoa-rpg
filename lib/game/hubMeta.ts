@@ -80,6 +80,21 @@ export function hasDeepEchoDrain(roomMarks: string[]): boolean {
   return roomMarks.includes('deep_echo')
 }
 
+/** Эхо за провал — поражение как начало пути, не тупик */
+export function calcEchoFromFailure(depth: number, isFirstFailure: boolean): number {
+  let echo = Math.max(1, Math.floor(depth / 2) + 1)
+
+  if (depth >= 5) {
+    echo += 1
+  }
+
+  if (isFirstFailure) {
+    echo += 2
+  }
+
+  return echo
+}
+
 export function calcEchoFromExtraction(
   depth: number,
   newLootCount: number,

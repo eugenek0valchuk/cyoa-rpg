@@ -171,6 +171,16 @@ export const ui = {
     acceptRelic: 'Принять реликвию',
   },
 
+  artifactDetail: {
+    revealEyebrow: 'Реликвия поднята',
+    inspectEyebrow: 'Реликвия',
+    chronicle: 'Описание',
+    passiveTitle: 'Пока при тебе',
+    acquireTitle: 'При первом касании',
+    close: 'Закрыть',
+    inspectHint: 'Нажми, чтобы рассмотреть',
+  },
+
   rarity: {
     common: 'обычная',
     rare: 'редкая',

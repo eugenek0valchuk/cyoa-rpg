@@ -19,6 +19,8 @@ export interface RaidSummary {
   totalExtractionsAfter: number
   echoGain?: number
   echoAfter?: number
+  /** Первый провал — Машина записывает урок */
+  isFirstFailure?: boolean
   contractTitle?: string
   contractFulfilled?: boolean
   contractReward?: string

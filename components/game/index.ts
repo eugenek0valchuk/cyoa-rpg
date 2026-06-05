@@ -22,3 +22,4 @@ export * from './scene/DiceRollOverlay'
 export * from './shared/ChronicleCard'
 
 export * from './ArtifactReveal'
+export * from './ArtifactDetailModal'

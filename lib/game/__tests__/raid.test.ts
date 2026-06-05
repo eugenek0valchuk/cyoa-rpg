@@ -178,6 +178,8 @@ describe('raid system', () => {
     expect(result.hub.stash).toHaveLength(1)
     expect(result.hub.stash[0]?.id).toBe('ashen_faceless_mask')
     expect(result.hub.roomMarks).toContain('failure_stain')
+    expect(result.hub.echo).toBeGreaterThan(hub.echo ?? 0)
+    expect(result.character.flags).toContain('experienced_failure')
     expect(result.raid).toBeNull()
   })
 

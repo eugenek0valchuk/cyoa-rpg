@@ -29,8 +29,13 @@ export interface Artifact {
   lore?: string
   rarity: ArtifactRarity
   icon?: string
+  /** PNG в каталоге /artifacts/ */
+  imageSrc?: string
   whisper?: string[]
+  /** Постоянное влияние, пока реликвия в инвентаре */
   effects?: ArtifactEffect
+  /** Разовый удар при первом подборе в спуске */
+  onAcquire?: ArtifactEffect
   hidden?: boolean
 }
 export interface Character {

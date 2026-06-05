@@ -1,9 +1,12 @@
 import { getInitialScene } from './getInitialScene'
 import { getContractEncounterBoostFlag, resolveRaidContract, type ContractResult } from './contracts'
 import { appendRaidLog } from './raidLog'
+import { applyLoadoutPassiveEffects } from './artifactEffects'
+import { mergeJournalEntries } from './journal'
 import {
   applyRaidStartSanity,
   calcEchoFromExtraction,
+  calcEchoFromFailure,
   enableChamberRest,
   restVesselAfterEmergencyRaid,
   restVesselAfterFailedRaid,
@@ -72,17 +75,21 @@ export function startRaidFromHub(
   )
   const raidFlags = boostFlag ? [boostFlag] : []
 
+  const withStartSanity = {
+    ...character,
+    inventory: loadout.map((item) => ({ ...item })),
+    flags: raidFlags,
+    sanity: applyRaidStartSanity(
+      character.sanity,
+      hub.roomMarks,
+      hub.nextRaidSanityBonus ?? 0,
+    ),
+  }
+
+  const withLoadoutEffects = applyLoadoutPassiveEffects(withStartSanity, loadout)
+
   return {
-    character: {
-      ...character,
-      inventory: loadout.map((item) => ({ ...item })),
-      flags: raidFlags,
-      sanity: applyRaidStartSanity(
-        character.sanity,
-        hub.roomMarks,
-        hub.nextRaidSanityBonus ?? 0,
-      ),
-    },
+    character: withLoadoutEffects,
     hub: {
       ...hub,
       totalRaids: hub.totalRaids + 1,
@@ -269,9 +276,8 @@ export function failRaid(
   depth: number,
   outcome: 'failed' | 'abandoned' = 'failed',
 ): { character: Character; hub: HubState; raid: null } {
-  const keptLoadout = hub.stash.filter((item) =>
-    raid.inventoryAtStart.includes(item.id),
-  )
+  const isFirstFailure = !hub.roomMarks.includes('failure_stain')
+  const echoGain = calcEchoFromFailure(depth, isFirstFailure)
 
   const roomMarks = [...hub.roomMarks]
 
@@ -285,20 +291,32 @@ export function failRaid(
 
   const rested = restVesselAfterFailedRaid(character)
 
-  const hubAfter = enableChamberRest({
-    ...hub,
-    bestDepth: Math.max(hub.bestDepth, depth),
-    roomMarks,
-  })
+  const failureFlags = character.flags.includes('experienced_failure')
+    ? character.flags
+    : [...character.flags, 'experienced_failure']
+
+  let hubAfter = enableChamberRest(
+    syncHubProgression({
+      ...hub,
+      bestDepth: Math.max(hub.bestDepth, depth),
+      roomMarks,
+      echo: (hub.echo ?? 0) + echoGain,
+    }),
+  )
+
+  if (isFirstFailure) {
+    hubAfter = mergeJournalEntries(hubAfter, ['rite_descent_collapse'])
+  }
 
   return {
     character: {
       ...character,
       inventory: [],
+      flags: failureFlags,
       sanity: rested.sanity,
       corruption: rested.corruption,
     },
-    hub: appendRaidLog(hubAfter, { outcome, depth }),
+    hub: appendRaidLog(hubAfter, { outcome, depth, echoGain }),
     raid: null,
   }
 }
@@ -446,6 +464,9 @@ export function buildFailSummary(
   )
   const finalHub = hubAfterContract ?? result.hub
 
+  const isFirstFailure = !hubBefore.roomMarks.includes('failure_stain')
+  const echoGain = (finalHub.echo ?? 0) - (hubBefore.echo ?? 0)
+
   const summary: RaidSummary = {
     outcome: 'failed',
     depth,
@@ -457,6 +478,9 @@ export function buildFailSummary(
     roomLevelAfter: finalHub.roomLevel,
     bestDepthAfter: finalHub.bestDepth,
     totalExtractionsAfter: finalHub.totalExtractions,
+    echoGain: echoGain > 0 ? echoGain : undefined,
+    echoAfter: finalHub.echo ?? 0,
+    isFirstFailure,
   }
 
   return attachContractToSummary(

@@ -1,17 +1,34 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
+import { ArtifactDetailModal } from '@/components/game/ArtifactDetailModal'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { getRaidZone } from '@/lib/game/zones'
 import { t } from '@/lib/i18n'
+import type { Artifact } from '@/lib/types/game'
 import { useHubStore } from '@/lib/store/hubStore'
+
+function renderEmphasis(text: string) {
+  const parts = text.split(/\*\*(.*?)\*\*/g)
+
+  return parts.map((part, index) =>
+    index % 2 === 1 ? (
+      <strong key={index} className="font-medium text-[#e7ded7]">
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  )
+}
 
 export default function RaidSummaryPage() {
   const router = useRouter()
   const summary = useHubStore((state) => state.pendingSummary)
   const clearSummary = useHubStore((state) => state.setPendingSummary)
+  const [inspectArtifact, setInspectArtifact] = useState<Artifact | null>(null)
 
   const { raidSummary: text, roomMarks } = t.hub
   const { ui: raidText } = t.raid
@@ -33,6 +50,7 @@ export default function RaidSummaryPage() {
   const isExtracted = summary.outcome === 'extracted'
   const isEmergencyExtracted = summary.outcome === 'emergency_extracted'
   const isSuccessfulExtract = isExtracted || isEmergencyExtracted
+  const isFailed = summary.outcome === 'failed'
   const isAbandoned = summary.outcome === 'abandoned'
   const loot = isSuccessfulExtract
     ? summary.gainedArtifacts
@@ -55,6 +73,10 @@ export default function RaidSummaryPage() {
         : text.failedSubtitle
 
   const endZone = getRaidZone(summary.depth)
+  const showFailureEcho =
+    (isFailed || isAbandoned) &&
+    summary.echoGain != null &&
+    summary.echoGain > 0
 
   const handleReturn = () => {
     clearSummary(null)
@@ -92,6 +114,18 @@ export default function RaidSummaryPage() {
         </div>
 
         <div className="mt-12 space-y-4 border border-[#2b2320] bg-[#0d0909]/95 p-6 sm:p-8">
+          {(isFailed || isAbandoned) && (
+            <div className="border border-[#3a2a2a] bg-[#120a0a]/80 px-4 py-4">
+              <p className="text-[14px] leading-relaxed text-[#b8a89c]">
+                {renderEmphasis(
+                  summary.isFirstFailure
+                    ? text.failedLessonFirst
+                    : text.failedLesson,
+                )}
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2">
             <SummaryRow label={text.depthReached} value={String(summary.depth)} />
             <SummaryRow
@@ -110,12 +144,13 @@ export default function RaidSummaryPage() {
               label={text.roomLevel}
               value={String(summary.roomLevelAfter + 1)}
             />
-            {isSuccessfulExtract &&
-              summary.echoGain != null &&
-              summary.echoGain > 0 && (
+            {((isSuccessfulExtract && summary.echoGain != null && summary.echoGain > 0) ||
+              showFailureEcho) && (
               <>
                 <SummaryRow
-                  label={text.echoGained}
+                  label={
+                    showFailureEcho ? text.failedEchoHint : text.echoGained
+                  }
                   value={`+${summary.echoGain}`}
                 />
                 <SummaryRow
@@ -162,12 +197,15 @@ export default function RaidSummaryPage() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {loot.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center gap-3 border border-[#2b2320] bg-black/40 px-4 py-3"
-                  >
-                    <GameIcon type="artifact" size={36} />
-                    <span className="text-[15px] text-[#d8c9be]">{item.name}</span>
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => setInspectArtifact(item)}
+                      className="flex w-full items-center gap-3 border border-[#2b2320] bg-black/40 px-4 py-3 text-left transition hover:border-[#5c3a2a]"
+                    >
+                      <GameIcon type="artifact" size={36} />
+                      <span className="text-[15px] text-[#d8c9be]">{item.name}</span>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -179,14 +217,17 @@ export default function RaidSummaryPage() {
                 </div>
                 <ul className="mt-3 space-y-2">
                   {summary.lostArtifacts.map((item) => (
-                    <li
-                      key={item.id}
-                      className="flex items-center gap-3 border border-[#3a2a1a] bg-black/40 px-4 py-3"
-                    >
-                      <GameIcon type="artifact" size={36} />
-                      <span className="text-[15px] text-[#a89070]">
-                        {item.name}
-                      </span>
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        onClick={() => setInspectArtifact(item)}
+                        className="flex w-full items-center gap-3 border border-[#3a2a1a] bg-black/40 px-4 py-3 text-left transition hover:border-[#5c3a2a]"
+                      >
+                        <GameIcon type="artifact" size={36} />
+                        <span className="text-[15px] text-[#a89070]">
+                          {item.name}
+                        </span>
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -225,6 +266,13 @@ export default function RaidSummaryPage() {
           {text.returnToChamber}
         </button>
       </section>
+
+      <ArtifactDetailModal
+        artifact={inspectArtifact}
+        open={inspectArtifact != null}
+        onClose={() => setInspectArtifact(null)}
+        mode="inspect"
+      />
     </main>
   )
 }

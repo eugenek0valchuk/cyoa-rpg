@@ -29,7 +29,7 @@ describe('getEnding', () => {
     expect(result?.id).toBe('abyssal_ascension')
   })
 
-  it('returns madness when sanity <= 0', () => {
+  it('returns collapse-return when sanity <= 0', () => {
     const result = getEnding(makeCharacter({ sanity: 0 }), baseContext)
 
     expect(result?.id).toBe('madness')

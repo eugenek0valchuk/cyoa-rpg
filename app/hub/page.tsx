@@ -16,6 +16,7 @@ import {
   type HotspotBadges,
 } from '@/components/hub/RoomHotspotLayer'
 import { VesselStats } from '@/components/hub/VesselStats'
+import { ArtifactDetailModal } from '@/components/game/ArtifactDetailModal'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { saveCurrentGameState, getActiveSlotId } from '@/lib/persistence/saveStorage'
@@ -101,6 +102,7 @@ export default function HubPage() {
   )
   const [claimingContract, setClaimingContract] = useState(false)
   const [claimToast, setClaimToast] = useState<string | null>(null)
+  const [inspectArtifact, setInspectArtifact] = useState<Artifact | null>(null)
 
   const room = character ? rooms[character.origin] : null
   const hotspotRegions = character
@@ -571,21 +573,23 @@ export default function HubPage() {
         ) : (
           <ul className="space-y-2">
             {hub.stash.map((artifact) => (
-              <li
-                key={artifact.id}
-                className="flex items-start gap-3 border border-[#2b2320] bg-black/30 px-4 py-3"
-                title={artifact.description}
-              >
-                <GameIcon type="artifact" size={44} />
-                <div className="min-w-0">
-                  <div className="text-[15px] text-[#d8c9be]">{artifact.name}</div>
-                  <div className="mt-1 text-[13px] leading-relaxed text-[#85776a]">
-                    {artifact.description}
+              <li key={artifact.id}>
+                <button
+                  type="button"
+                  onClick={() => setInspectArtifact(artifact)}
+                  className="flex w-full items-start gap-3 border border-[#2b2320] bg-black/30 px-4 py-3 text-left transition hover:border-[#5c3a2a] hover:bg-[#120c0c]"
+                >
+                  <GameIcon type="artifact" size={44} />
+                  <div className="min-w-0">
+                    <div className="text-[15px] text-[#d8c9be]">{artifact.name}</div>
+                    <div className="mt-1 text-[13px] leading-relaxed text-[#85776a]">
+                      {artifact.description}
+                    </div>
+                    <div className="mt-2 text-[11px] uppercase tracking-[0.1em] text-[#6f6259]">
+                      {artifact.rarity}
+                    </div>
                   </div>
-                  <div className="mt-2 text-[11px] uppercase tracking-[0.1em] text-[#6f6259]">
-                    {artifact.rarity}
-                  </div>
-                </div>
+                </button>
               </li>
             ))}
           </ul>
@@ -773,26 +777,38 @@ export default function HubPage() {
                     !selected && selectedLoadout.length >= hub.loadoutSlots
 
                   return (
-                    <button
+                    <div
                       key={artifact.id}
-                      type="button"
-                      disabled={slotsFull}
-                      onClick={() => toggleLoadout(artifact.id)}
-                      title={artifact.description}
-                      className={`flex w-full items-center gap-3 border px-4 py-3 text-left transition disabled:opacity-40 ${
+                      className={`flex items-center gap-2 border px-2 py-2 transition disabled:opacity-40 ${
                         selected
                           ? 'border-[#8e1f1f] bg-[#160909]'
-                          : 'border-[#2b2320] bg-black/30 hover:border-[#5c1f1f]'
+                          : 'border-[#2b2320] bg-black/30'
                       }`}
                     >
-                      <GameIcon type="artifact" size={40} />
-                      <span className="text-[15px] text-[#d8c9be]">{artifact.name}</span>
-                      {selected && (
-                        <span className="ml-auto text-[11px] uppercase text-[#d46060]">
-                          ✓
-                        </span>
-                      )}
-                    </button>
+                      <button
+                        type="button"
+                        disabled={slotsFull}
+                        onClick={() => toggleLoadout(artifact.id)}
+                        title={artifact.description}
+                        className="flex min-w-0 flex-1 items-center gap-3 px-2 py-1 text-left transition hover:opacity-90 disabled:opacity-40"
+                      >
+                        <GameIcon type="artifact" size={40} />
+                        <span className="text-[15px] text-[#d8c9be]">{artifact.name}</span>
+                        {selected && (
+                          <span className="ml-auto text-[11px] uppercase text-[#d46060]">
+                            ✓
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setInspectArtifact(artifact)}
+                        className="shrink-0 border border-[#2b2320] px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-[#85776a] transition hover:border-[#5c3a2a] hover:text-[#d8c9be]"
+                        title={t.ui.artifactDetail.inspectHint}
+                      >
+                        …
+                      </button>
+                    </div>
                   )
                 })}
               </div>
@@ -800,6 +816,13 @@ export default function HubPage() {
           </div>
         </div>
       </GothicModal>
+
+      <ArtifactDetailModal
+        artifact={inspectArtifact}
+        open={inspectArtifact != null}
+        onClose={() => setInspectArtifact(null)}
+        mode="inspect"
+      />
     </main>
   )
 }
