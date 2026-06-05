@@ -37,6 +37,8 @@ export interface RaidState {
   modifierId?: RaidModifierId | null
   /** Обет, принятый у Писца перед спуском */
   contractId?: string | null
+  /** Пролог спуска уже показан — не повторять при выходе в меню */
+  prologueSeen?: boolean
 }
 
 export const MIN_EXTRACT_DEPTH = 2

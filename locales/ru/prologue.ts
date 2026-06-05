@@ -3,6 +3,7 @@ export const prologueUi = {
   skip: 'Пропустить',
   next: 'Дальше',
   begin: 'На дорогу',
+  modifierIntro: 'Проклятие этого спуска:',
   chamberTitle: 'Камера',
   chamberBody:
     'Машина отпускает сосуд. Стены помнят прошлые спуски — или делают вид, что помнят.',

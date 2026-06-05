@@ -61,6 +61,7 @@ export function startRaidFromHub(
       inventoryAtStart: loadout.map((item) => item.id),
       modifierId,
       contractId,
+      prologueSeen: false,
     },
   }
 }
