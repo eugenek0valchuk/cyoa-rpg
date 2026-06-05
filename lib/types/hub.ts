@@ -57,6 +57,8 @@ export interface HubState {
   folioPuzzleSolved?: boolean
   /** Собранные страницы фолианта — folio_a, folio_b, folio_c */
   folioFragments?: string[]
+  /** Прочитанные карточки лора во вкладке «Лор» */
+  loreReadIds?: string[]
 }
 
 export interface RaidState {

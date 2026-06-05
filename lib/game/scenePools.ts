@@ -10,6 +10,7 @@ export const choicePools: Record<string, string[]> = {
   mouth: withAct1Scenes([
     'encounter_wax_pilgrim',
     'encounter_chamber_keeper',
+    'encounter_procession_herald',
     'mouth',
     'descent_echoes',
     'descent_reliquary',
@@ -19,6 +20,8 @@ export const choicePools: Record<string, string[]> = {
       'encounter_bell_wretch',
       'encounter_void_elder',
       'encounter_chamber_keeper',
+      'encounter_mirror_nun',
+      'encounter_ash_weaver',
       'monastery',
       'whispers_parlor',
       'whispers_mirror',
@@ -26,12 +29,18 @@ export const choicePools: Record<string, string[]> = {
     ['loot_folio_shelf'],
   ),
   merchant: withAct1Scenes(
-    ['encounter_synod_acolyte', 'merchant', 'descent_reliquary'],
+    [
+      'encounter_synod_acolyte',
+      'encounter_procession_herald',
+      'merchant',
+      'descent_reliquary',
+    ],
     ['loot_wax_bundle'],
   ),
   descent: withAct1Scenes(
     [
       'encounter_wax_pilgrim',
+      'encounter_iron_keeper',
       'descent',
       'fracture_stairs',
       'iron_passage',
@@ -45,6 +54,8 @@ export const choicePools: Record<string, string[]> = {
   catacombs: withAct1Scenes(
     [
       'encounter_choir_remnant',
+      'encounter_ash_weaver',
+      'encounter_vein_prophet',
       'catacombs',
       'whispers_mirror',
       'read_writings',

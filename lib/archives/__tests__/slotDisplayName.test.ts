@@ -22,7 +22,11 @@ describe('getSlotDisplayName', () => {
 
   it('falls back when name is missing or blank', () => {
     expect(
-      getSlotDisplayName({ name: undefined } as Parameters<typeof getSlotDisplayName>[0], empty, unnamed),
+      getSlotDisplayName(
+        { name: undefined } as unknown as Parameters<typeof getSlotDisplayName>[0],
+        empty,
+        unnamed,
+      ),
     ).toBe(unnamed)
     expect(
       getSlotDisplayName({ name: '   ' } as Parameters<typeof getSlotDisplayName>[0], empty, unnamed),

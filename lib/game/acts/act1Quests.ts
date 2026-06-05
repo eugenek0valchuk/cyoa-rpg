@@ -412,6 +412,280 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     revealAfterStepId: 'o_main_1',
     reward: { echo: 4 },
   },
+
+  // ——— Свидетель: дополнительные опциональные ———
+  {
+    id: 'w_opt_choir',
+    origin: 'witness',
+    type: 'optional',
+    order: 13,
+    titleHidden: 'Хор',
+    titleRevealed: 'Третий голос',
+    hint: 'В Расколотом нефе слушать голос, который не левый и не правый.',
+    revealMessage:
+      'Свидетель смотрит — и это тоже нота. Хор ждёт взгляд, не молитву.',
+    completeMessage:
+      'Третий голос принял твой взгляд. Погребённый хор запомнил свидетеля — не как певца, как **смотрящего**.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_opt_choir' },
+    boostSceneId: 'act1_witness_opt_choir',
+    revealAfterStepId: 'w_main_3',
+    reward: { echo: 2, flags: ['choir_witness'] },
+  },
+  {
+    id: 'w_opt_mirror',
+    origin: 'witness',
+    type: 'optional',
+    order: 14,
+    titleHidden: 'Зеркало',
+    titleRevealed: 'Зеркальная запись',
+    hint: 'В парлоре шёпотов принять отражение долга.',
+    revealMessage:
+      'Зеркало не показывает лицо — показывает того, кого ты видел. Запиши, пока Синод не стёр.',
+    completeMessage:
+      'Отражение принято. Синод назовёт это ересью учёта — камера запомнит честнее.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_opt_mirror' },
+    boostSceneId: 'act1_witness_opt_mirror',
+    revealAfterStepId: 'w_main_2',
+    reward: { journalEntries: ['act1_witness_mirror'] },
+  },
+  {
+    id: 'w_opt_herald',
+    origin: 'witness',
+    type: 'optional',
+    order: 15,
+    titleHidden: 'Обочина',
+    titleRevealed: 'Вестник Шествия',
+    hint: 'Встретить паломника с обочины — не из строя.',
+    revealMessage:
+      'Шествие ушло в трещину. Обочина помнит тех, кто смотрел, но не пошёл.',
+    completeMessage:
+      'Вестник записал разницу между шагом и взглядом. Долг свидетеля стал **точнее**.',
+    completeWhen: { kind: 'scene', sceneId: 'encounter_procession_herald' },
+    boostSceneId: 'encounter_procession_herald',
+    revealAfterStepId: 'w_main_1',
+    reward: { materials: { wax_seal: 1 }, journalEntries: ['npc_procession'] },
+  },
+  {
+    id: 'w_opt_raids',
+    origin: 'witness',
+    type: 'optional',
+    order: 16,
+    titleHidden: 'Трижды',
+    titleRevealed: 'Три круга',
+    hint: 'Три спуска и запись хрониста о живых возвратах.',
+    revealMessage:
+      'Три насечки на стене камеры — редкость для свидетеля, который не только смотрит, но и **возвращается**.',
+    completeMessage:
+      'Треугольник пепла замкнут. Машина приняла третий круг как доказательство, не упрямство.',
+    completeWhen: {
+      kind: 'all',
+      conditions: [
+        { kind: 'scene', sceneId: 'act1_witness_opt_raids' },
+        { kind: 'raids', min: 3 },
+      ],
+    },
+    boostSceneId: 'act1_witness_opt_raids',
+    scenePrerequisites: [{ kind: 'raids', min: 3 }],
+    revealAfterStepId: 'w_main_2',
+    reward: { echo: 3 },
+  },
+  {
+    id: 'w_opt_iron',
+    origin: 'witness',
+    type: 'optional',
+    order: 17,
+    titleHidden: 'Железо',
+    titleRevealed: 'Железный хранитель',
+    hint: 'На третьем ярусе записать чужое имя в железную книгу.',
+    revealMessage:
+      'Металл помнит имена — не голоса. Свидетель обязан дописать учёт на глубине.',
+    completeMessage:
+      'Железный хранитель принял строку. Глубина знает свидетеля — Синод допишет позже.',
+    completeWhen: { kind: 'scene', sceneId: 'encounter_iron_keeper' },
+    boostSceneId: 'encounter_iron_keeper',
+    scenePrerequisites: [{ kind: 'best_depth', min: 3 }],
+    revealAfterStepId: 'w_main_4',
+    reward: { materials: { iron_shard: 2 }, echo: 1 },
+  },
+
+  // ——— Еретик: дополнительные опциональные ———
+  {
+    id: 'h_opt_mirror',
+    origin: 'heretic',
+    type: 'optional',
+    order: 13,
+    titleHidden: 'Отражение',
+    titleRevealed: 'Формула в зеркале',
+    hint: 'Переписать стёртую строку из отражения.',
+    revealMessage:
+      'Синод стирает стены — зеркало помнит. Еретик переписывает, не молится.',
+    completeMessage:
+      'Формула в отражении принята. Катакомбы получат строку, которую Синод не услышит.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_opt_mirror' },
+    boostSceneId: 'act1_heretic_opt_mirror',
+    revealAfterStepId: 'h_main_3',
+    reward: { materials: { folio_page: 1 }, flags: ['read_the_writings'] },
+  },
+  {
+    id: 'h_opt_choir',
+    origin: 'heretic',
+    type: 'optional',
+    order: 14,
+    titleHidden: 'Гимн',
+    titleRevealed: 'Петь без Синода',
+    hint: 'Произнести формулу в такт Погребённому хору.',
+    revealMessage:
+      'Третий голос считает, не поёт. Еретик должен **допеть** формулу в нефе.',
+    completeMessage:
+      'Гимн сбился — Машина записала. Синод отстаёт на полтона.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_opt_choir' },
+    boostSceneId: 'act1_heretic_opt_choir',
+    revealAfterStepId: 'h_main_3',
+    reward: { echo: 2, flags: ['choir_heretic'] },
+  },
+  {
+    id: 'h_opt_ash',
+    origin: 'heretic',
+    type: 'optional',
+    order: 15,
+    titleHidden: 'Пепел',
+    titleRevealed: 'Пепельница',
+    hint: 'Встретить ту, кто шьёт обрывки памяти камеры.',
+    revealMessage:
+      'Память рвётся между спусками. Пепельница шьёт — не для Синода.',
+    completeMessage:
+      'Шов принят. Обрывок прошлого спуска снова держит форму — ценой формулы.',
+    completeWhen: { kind: 'scene', sceneId: 'encounter_ash_weaver' },
+    boostSceneId: 'encounter_ash_weaver',
+    revealAfterStepId: 'h_main_2',
+    reward: { materials: { wax_seal: 2 }, journalEntries: ['npc_ash_weaver'] },
+  },
+  {
+    id: 'h_opt_memory',
+    origin: 'heretic',
+    type: 'optional',
+    order: 16,
+    titleHidden: 'Обмен',
+    titleRevealed: 'Память за слух',
+    hint: 'Отдать Бездыханному обрывок памяти — принять слух.',
+    revealMessage:
+      'Телега помнит еретиков. Бездыханный торгует слухами, которые Синод не купит.',
+    completeMessage:
+      'Память ушла — формула пришла. Счёт телеги и камеры снова не совпадают.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_opt_memory' },
+    boostSceneId: 'act1_heretic_opt_memory',
+    scenePrerequisites: [{ kind: 'flag', flag: 'met_breathless' }],
+    revealAfterStepId: 'h_main_2',
+    reward: { echo: 3, flags: ['merchant_memory_trade'] },
+  },
+  {
+    id: 'h_opt_vein',
+    origin: 'heretic',
+    type: 'optional',
+    order: 17,
+    titleHidden: 'Жила',
+    titleRevealed: 'Пророк жилы',
+    hint: 'На четвёртом ярусе услышать то, что дышит внутрь.',
+    revealMessage:
+      'Уста дышат не вниз — внутрь. Жила спросит, что останется после формулы.',
+    completeMessage:
+      'Жила ответила. Еретик знает цену точности на Пороге Распада.',
+    completeWhen: { kind: 'scene', sceneId: 'encounter_vein_prophet' },
+    boostSceneId: 'encounter_vein_prophet',
+    scenePrerequisites: [{ kind: 'best_depth', min: 4 }],
+    revealAfterStepId: 'h_main_4',
+    reward: { echo: 4, journalEntries: ['npc_vein_prophet'] },
+  },
+
+  // ——— Пустой: дополнительные опциональные ———
+  {
+    id: 'o_opt_mirror_nun',
+    origin: 'hollow',
+    type: 'optional',
+    order: 13,
+    titleHidden: 'Зеркало',
+    titleRevealed: 'Монахиня зеркала',
+    hint: 'В монастыре Полых Святых принять форму без лица.',
+    revealMessage:
+      'Они вырезали лишнее. Пустой родился лишним — зеркало это **понимает**.',
+    completeMessage:
+      'Монахиня кивнула в бронзе. Форма без имени — не ошибка, а **обряд**.',
+    completeWhen: { kind: 'scene', sceneId: 'encounter_mirror_nun' },
+    boostSceneId: 'encounter_mirror_nun',
+    revealAfterStepId: 'o_main_2',
+    reward: { journalEntries: ['npc_mirror_nun'], flags: ['mirror_nun_met'] },
+  },
+  {
+    id: 'o_opt_chapel',
+    origin: 'hollow',
+    type: 'optional',
+    order: 14,
+    titleHidden: 'Часовня',
+    titleRevealed: 'Второй визит',
+    hint: 'Вернуться в часовню без имён второй раз.',
+    revealMessage:
+      'Часовня помнит силуэт лучше камеры. Второй визит — плотнее первого.',
+    completeMessage:
+      'Стены приняли форму снова. Пустота здесь — признание, не проклятие.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_opt_chapel_return' },
+    boostSceneId: 'act1_hollow_opt_chapel_return',
+    scenePrerequisites: [{ kind: 'extractions', min: 2 }],
+    revealAfterStepId: 'o_main_1',
+    reward: { echo: 2 },
+  },
+  {
+    id: 'o_opt_mask_trade',
+    origin: 'hollow',
+    type: 'optional',
+    order: 15,
+    titleHidden: 'Весы',
+    titleRevealed: 'Маска на вес',
+    hint: 'Отвесить маску у Бездыханного — или унести к Устам.',
+    revealMessage:
+      'Синод ведёт учёт маской. Пустой должен решить: товар или **честь**.',
+    completeMessage:
+      'Счёт записан. Отсутствие звенит — как Синод и хотел.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_opt_mask_trade' },
+    boostSceneId: 'act1_hollow_opt_mask_trade',
+    scenePrerequisites: [{ kind: 'flag', flag: 'claimed_mask' }],
+    revealAfterStepId: 'o_main_3',
+    reward: { materials: { choir_splinter: 1 }, flags: ['mask_traded'] },
+  },
+  {
+    id: 'o_opt_ash_path',
+    origin: 'hollow',
+    type: 'optional',
+    order: 16,
+    titleHidden: 'Тропа',
+    titleRevealed: 'Пепельная тропа',
+    hint: 'Идти боком, туда, где Шествие не считает.',
+    revealMessage:
+      'Синод не ходит боком. Пепельная тропа — для тех, у кого нет имени в книге.',
+    completeMessage:
+      'Тропа приняла пустоту. Колокол ударил — эха не было. Так и должно быть.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_opt_ash_path' },
+    boostSceneId: 'act1_hollow_opt_ash_path',
+    revealAfterStepId: 'o_main_3',
+    reward: { echo: 3, flags: ['ash_path_walked'] },
+  },
+  {
+    id: 'o_opt_iron',
+    origin: 'hollow',
+    type: 'optional',
+    order: 17,
+    titleHidden: 'Ноль',
+    titleRevealed: 'Железный ноль',
+    hint: 'Записать ноль в железную книгу на глубине.',
+    revealMessage:
+      'Железный хранитель ждёт строку. У пустого — **ноль**, не имя.',
+    completeMessage:
+      'Ноль записан. Металл принял отсутствие как честную строку учёта.',
+    completeWhen: { kind: 'scene', sceneId: 'encounter_iron_keeper' },
+    boostSceneId: 'encounter_iron_keeper',
+    scenePrerequisites: [{ kind: 'best_depth', min: 3 }],
+    revealAfterStepId: 'o_main_4',
+    reward: { materials: { iron_shard: 1 }, echo: 2 },
+  },
 ]
 
 export function stepsForOrigin(origin: string): ActQuestStepDef[] {

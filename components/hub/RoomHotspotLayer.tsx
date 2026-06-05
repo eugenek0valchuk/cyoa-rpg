@@ -8,6 +8,8 @@ import {
   type HotspotRegion,
 } from '@/lib/hub/roomHotspots'
 
+export type HotspotBadgeTone = 'alert' | 'lore' | 'neutral'
+
 export interface HotspotBadges {
   stash?: string
   vessel?: string
@@ -16,10 +18,21 @@ export interface HotspotBadges {
   threshold?: string
 }
 
+export type HotspotBadgeTones = Partial<Record<HotspotId, HotspotBadgeTone>>
+
+const badgeToneClass: Record<HotspotBadgeTone, string> = {
+  alert:
+    'border-[#5c1f1f] bg-[#160909] text-[#d46060] shadow-[0_0_12px_rgba(212,96,96,0.35)]',
+  lore: 'border-[#8a6020] bg-[#1a1008] text-[#d4a850] shadow-[0_0_12px_rgba(212,168,80,0.25)]',
+  neutral:
+    'border-[#5c1f1f] bg-[#160909] text-[#d46060] shadow-[0_0_12px_rgba(212,96,96,0.35)]',
+}
+
 interface RoomHotspotLayerProps {
   hotspots: HotspotRegion[]
   labels: Record<HotspotId, { label: string; hint: string }>
   badges?: HotspotBadges
+  badgeTones?: HotspotBadgeTones
   origin: Origin
   activeId: HotspotId | null
   onSelect: (id: HotspotId) => void
@@ -29,6 +42,7 @@ export function RoomHotspotLayer({
   hotspots,
   labels,
   badges,
+  badgeTones,
   origin,
   activeId,
   onSelect,
@@ -39,6 +53,7 @@ export function RoomHotspotLayer({
         const meta = labels[spot.id]
         const icon = getHotspotIcon(spot.id, origin)
         const badge = badges?.[spot.id]
+        const badgeTone = badgeTones?.[spot.id] ?? 'neutral'
         const isActive = activeId === spot.id
 
         return (
@@ -96,7 +111,9 @@ export function RoomHotspotLayer({
                 </span>
 
                 {badge && (
-                  <span className="font-cinzel absolute -right-1 -top-1 min-w-[22px] rounded-full border border-[#5c1f1f] bg-[#160909] px-1.5 py-0.5 text-center text-[10px] leading-none text-[#d46060] shadow-[0_0_12px_rgba(212,96,96,0.35)]">
+                  <span
+                    className={`font-cinzel absolute -right-1 -top-1 min-w-[22px] rounded-full border px-1.5 py-0.5 text-center text-[10px] leading-none ${badgeToneClass[badgeTone]}`}
+                  >
                     {badge}
                   </span>
                 )}

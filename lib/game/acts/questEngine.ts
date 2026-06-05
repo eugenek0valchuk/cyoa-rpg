@@ -1,4 +1,4 @@
-import { applyActQuestReward } from '@/lib/game/acts/act1Rewards'
+import { hasActQuestReward } from '@/lib/game/acts/act1RewardClaims'
 import {
   ACT1_FINALE_SCENES,
   ACT1_QUEST_STEPS,
@@ -35,6 +35,8 @@ export function conditionMet(
   switch (condition.kind) {
     case 'extractions':
       return (hub.totalExtractions ?? 0) >= condition.min
+    case 'raids':
+      return (hub.totalRaids ?? 0) >= condition.min
     case 'flag':
       return characterFlags.includes(condition.flag)
     case 'journal':
@@ -113,6 +115,7 @@ export function evaluateAct1ProgressWithEvents(
   const prevRevealed = new Set(act1.revealedStepIds)
   const completed = new Set(act1.completedStepIds)
   const revealed = new Set(act1.revealedStepIds)
+  const pendingRewards = [...(act1.pendingRewardStepIds ?? [])]
 
   for (const step of steps) {
     if (shouldRevealStep(step, completed) && !revealed.has(step.id)) {
@@ -126,11 +129,9 @@ export function evaluateAct1ProgressWithEvents(
       completed.add(step.id)
       events.push({ kind: 'step_completed', stepId: step.id })
 
-      const rewarded = applyActQuestReward(nextHub, nextCharacter, step.reward)
-      nextHub = rewarded.hub
-      nextCharacter = rewarded.character
-      ctx.hub = nextHub
-      ctx.characterFlags = nextCharacter.flags ?? []
+      if (hasActQuestReward(step.reward) && !pendingRewards.includes(step.id)) {
+        pendingRewards.push(step.id)
+      }
     }
   }
 
@@ -159,8 +160,10 @@ export function evaluateAct1ProgressWithEvents(
       ...nextHub,
       journalEntries,
       act1: {
+        ...act1,
         completedStepIds: [...completed],
         revealedStepIds: [...revealed],
+        pendingRewardStepIds: pendingRewards,
         finaleSeen,
         actComplete,
       },
@@ -176,6 +179,41 @@ export function evaluateAct1Progress(
   visitedSceneIds: Iterable<string> = [],
 ): HubState {
   return evaluateAct1ProgressWithEvents(hub, character, visitedSceneIds).hub
+}
+
+export type Act1DescentHint = {
+  stepId: string
+  title: string
+  hint: string
+  boostSceneId?: string
+}
+
+export function getAct1DescentHint(
+  hub: HubState,
+  character: Character,
+): Act1DescentHint | null {
+  if (!character.origin || hub.act1?.actComplete) {
+    return null
+  }
+
+  const views = getAct1StepViews(hub, character)
+  const mainIncomplete = [...views]
+    .filter((step) => step.type === 'main' && !step.completed)
+    .sort((a, b) => a.order - b.order)
+
+  const next =
+    mainIncomplete.find((step) => step.revealed) ?? mainIncomplete[0]
+
+  if (!next) {
+    return null
+  }
+
+  return {
+    stepId: next.id,
+    title: next.revealed ? next.titleRevealed : next.titleHidden,
+    hint: next.hint,
+    boostSceneId: next.boostSceneId,
+  }
 }
 
 export function getAct1StepViews(

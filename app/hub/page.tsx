@@ -10,10 +10,17 @@ import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
 import { HubMerchantOverlay } from '@/components/hub/HubMerchantOverlay'
 import { HubScribeOverlay } from '@/components/hub/HubScribeOverlay'
 import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
+import {
+  countPendingRewardSteps,
+  syncAct1PendingRewards,
+} from '@/lib/game/acts/act1RewardClaims'
+import { countUnreadLoreCards } from '@/lib/game/loreCards'
+import { getAct1DescentHint } from '@/lib/game/acts/questEngine'
 import { getJournalCatalogForOrigin } from '@/lib/game/journal'
 import { contractById, scribeUi } from '@/locales/ru/contracts'
 import {
   RoomHotspotLayer,
+  type HotspotBadgeTones,
   type HotspotBadges,
 } from '@/components/hub/RoomHotspotLayer'
 import { VesselStats } from '@/components/hub/VesselStats'
@@ -202,6 +209,17 @@ export default function HubPage() {
       setHub(synced)
     }
   }, [hub, merchantUnlocked, setHub])
+
+  useEffect(() => {
+    if (!hub) {
+      return
+    }
+
+    const synced = syncAct1PendingRewards(hub, character ?? undefined)
+    if (synced.act1 !== hub.act1) {
+      setHub(synced)
+    }
+  }, [hub, character, setHub])
 
   useEffect(() => {
     if (!character || !hub) {
@@ -394,16 +412,24 @@ export default function HubPage() {
   const unlockedJournalCount = (hub.journalEntries ?? []).filter((id) =>
     visibleJournalIds.has(id),
   ).length
+  const pendingActRewards = countPendingRewardSteps(hub)
+  const unreadLore = countUnreadLoreCards(hub, character)
+  const act1Copy = t.acts.act1
+  const act1DescentHint = getAct1DescentHint(hub, character)
 
   const hotspotBadges: HotspotBadges = {
     stash: hub.stash.length > 0 ? String(hub.stash.length) : undefined,
     vessel: String(character.sanity),
     chronicle:
-      unlockedJournalCount > 0
-        ? `${unlockedJournalCount}/${visibleJournal.length}`
-        : hub.roomMarks.length > 0
-          ? String(hub.roomMarks.length)
-          : undefined,
+      pendingActRewards > 0
+        ? `!${pendingActRewards}`
+        : unreadLore > 0
+          ? `!${unreadLore}`
+          : unlockedJournalCount > 0
+          ? `${unlockedJournalCount}/${visibleJournal.length}`
+          : hub.roomMarks.length > 0
+            ? String(hub.roomMarks.length)
+            : undefined,
     threshold: selectedContract ? '◆' : '↓',
     scribe: hub.pendingContractClaim
       ? '!'
@@ -412,6 +438,11 @@ export default function HubPage() {
         : scribeUnlocked
           ? '?'
           : undefined,
+  }
+
+  const hotspotBadgeTones: HotspotBadgeTones = {
+    chronicle:
+      pendingActRewards > 0 ? 'alert' : unreadLore > 0 ? 'lore' : 'neutral',
   }
 
   const closeModal = () => {
@@ -433,8 +464,13 @@ export default function HubPage() {
     }
   }
 
-  const openChronicle = (tab?: 'chamber' | 'magazine' | 'marks' | 'lore') => {
-    setChronicleTab(tab)
+  const openChronicle = (
+    tab?: 'chamber' | 'magazine' | 'marks' | 'lore' | 'act' | 'workshop' | 'puzzle',
+  ) => {
+    setChronicleTab(
+      tab ??
+        (pendingActRewards > 0 ? 'act' : unreadLore > 0 ? 'lore' : undefined),
+    )
     setActiveModal('chronicle')
   }
 
@@ -453,6 +489,7 @@ export default function HubPage() {
         hotspots={visibleHotspots}
         labels={hotspots}
         badges={hotspotBadges}
+        badgeTones={hotspotBadgeTones}
         origin={character.origin}
         activeId={activeModal === 'merchant' ? null : activeModal}
         onSelect={(id) => {
@@ -481,6 +518,36 @@ export default function HubPage() {
             </button>
           </div>
         )}
+        {pendingActRewards > 0 && activeModal === null && (
+          <div className="mb-4 border border-[#4a6a4a]/80 bg-[#0a120a]/70 px-4 py-3 text-[13px] leading-relaxed text-[#9aab92]">
+            {renderHubEmphasis(act1Copy.shelfBanner)}
+            <button
+              type="button"
+              onClick={() => openChronicle('act')}
+              className="mt-2 block text-[11px] uppercase tracking-[0.12em] text-[#b4c27d] hover:underline"
+            >
+              {act1Copy.shelfBannerAction}
+            </button>
+          </div>
+        )}
+        {act1DescentHint &&
+          pendingActRewards === 0 &&
+          activeModal === null && (
+            <div className="mb-4 border border-[#4a3a28]/80 bg-[#120e08]/70 px-4 py-3 text-[13px] leading-relaxed text-[#b8a99e]">
+              {renderHubEmphasis(
+                act1Copy.descentBanner
+                  .replace('{title}', act1DescentHint.title)
+                  .replace('{hint}', act1DescentHint.hint),
+              )}
+              <button
+                type="button"
+                onClick={() => openChronicle('act')}
+                className="mt-2 block text-[11px] uppercase tracking-[0.12em] text-[#d4a850] hover:underline"
+              >
+                {act1Copy.descentBannerAction}
+              </button>
+            </div>
+          )}
         {hub.roomMarks.includes('failure_stain') && activeModal === null && (
           <div className="mb-4 border border-[#4a2323] bg-[#160909]/70 px-4 py-3 text-[13px] leading-relaxed text-[#c09090]">
             {renderHubEmphasis(hubText.failureStainBanner)}
@@ -668,6 +735,7 @@ export default function HubPage() {
           roomTitle={room.title}
           initialTab={chronicleTab}
           onHubUpdate={setHub}
+          onCharacterUpdate={setCharacter}
           onNotify={(title, body, tone) => {
             setHubToasts((current) => [
               ...current,

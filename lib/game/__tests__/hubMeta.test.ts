@@ -121,7 +121,7 @@ describe('hubMeta', () => {
           id: 'buried_choir_candle',
           name: 'Candle',
           description: 'd',
-          rarity: 'rare',
+          rarity: 'rare' as const,
         },
       ],
     }

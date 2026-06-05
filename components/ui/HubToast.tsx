@@ -9,7 +9,7 @@ export type HubToastItem = {
   id: string
   title: string
   body: string
-  tone?: 'quest' | 'material' | 'building' | 'puzzle'
+  tone?: 'quest' | 'material' | 'building' | 'puzzle' | 'lore'
 }
 
 interface HubToastStackProps {
@@ -22,6 +22,7 @@ const toneStyles: Record<NonNullable<HubToastItem['tone']>, string> = {
   material: 'border-[#4a5c4a] bg-[#0d120d]/95',
   building: 'border-[#5c4a30] bg-[#121008]/95',
   puzzle: 'border-[#4a3a5c] bg-[#100d14]/95',
+  lore: 'border-[#6a5020] bg-[#1a1008]/95',
 }
 
 export function HubToastStack({ items, onDismiss }: HubToastStackProps) {

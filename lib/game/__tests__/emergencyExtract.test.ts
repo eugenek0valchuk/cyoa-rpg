@@ -91,7 +91,7 @@ describe('emergency extract', () => {
         id: 'cursed_rosary',
         name: 'Rosary',
         description: 'd',
-        rarity: 'cursed' as const,
+        rarity: 'mythic' as const,
       },
       {
         id: 'hollow_lantern',
@@ -132,19 +132,19 @@ describe('emergency extract', () => {
           id: 'buried_choir_candle',
           name: 'Candle',
           description: 'd',
-          rarity: 'rare',
+          rarity: 'rare' as const,
         },
         {
           id: 'cursed_rosary',
           name: 'Rosary',
           description: 'd',
-          rarity: 'cursed',
+          rarity: 'mythic' as const,
         },
         {
           id: 'hollow_lantern',
           name: 'Lantern',
           description: 'd',
-          rarity: 'common',
+          rarity: 'common' as const,
         },
       ],
     }

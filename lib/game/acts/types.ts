@@ -18,6 +18,7 @@ export type ActQuestReward = {
 
 export type QuestCondition =
   | { kind: 'extractions'; min: number }
+  | { kind: 'raids'; min: number }
   | { kind: 'flag'; flag: string }
   | { kind: 'journal'; entryId: string }
   | { kind: 'best_depth'; min: number }
@@ -52,6 +53,10 @@ export type Act1Progress = {
   revealedStepIds: string[]
   finaleSeen: boolean
   actComplete: boolean
+  /** Награды, ждущие забора у хрониста */
+  pendingRewardStepIds?: string[]
+  /** Уже забранные награды */
+  claimedRewardStepIds?: string[]
 }
 
 export type ActQuestStepView = ActQuestStepDef & {

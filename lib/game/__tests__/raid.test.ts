@@ -130,7 +130,7 @@ describe('raid system', () => {
           id: 'buried_choir_candle',
           name: 'Candle',
           description: 'd',
-          rarity: 'rare',
+          rarity: 'rare' as const,
         },
       ],
     }
@@ -167,7 +167,7 @@ describe('raid system', () => {
           id: 'buried_choir_candle',
           name: 'Candle',
           description: 'd',
-          rarity: 'rare',
+          rarity: 'rare' as const,
         },
       ],
       sanity: 0,
@@ -193,7 +193,7 @@ describe('raid system', () => {
           id: 'buried_choir_candle',
           name: 'Candle',
           description: 'd',
-          rarity: 'rare',
+          rarity: 'rare' as const,
         },
       ],
     }

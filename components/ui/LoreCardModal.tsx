@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import Image from 'next/image'
 
-import type { LoreCardDef } from '@/locales/ru/loreCards'
+import type { LoreCardCategory, LoreCardDef } from '@/locales/ru/loreCards'
 import { zLayers } from '@/lib/ui/layers'
 import { loreCardUi } from '@/locales/ru/loreCards'
 
@@ -32,6 +32,8 @@ export function LoreCardModal({ open, card, onClose }: LoreCardModalProps) {
     return null
   }
 
+  const sectionLabel = loreCardUi.sections[card.category as LoreCardCategory]
+
   return (
     <AnimatePresence>
       {open && (
@@ -45,6 +47,7 @@ export function LoreCardModal({ open, card, onClose }: LoreCardModalProps) {
           <motion.article
             role="dialog"
             aria-labelledby="lore-card-title"
+            data-testid="lore-card-modal"
             className="w-full max-w-lg overflow-hidden border border-[#6a5020]/70 bg-[#0d0909] shadow-[0_0_48px_rgba(106,80,32,0.18)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -52,21 +55,30 @@ export function LoreCardModal({ open, card, onClose }: LoreCardModalProps) {
             onClick={(event) => event.stopPropagation()}
           >
             {card.imageSrc && (
-              <div className="relative h-40 w-full border-b border-[#241919] bg-[#120d0d]">
+              <div className="relative h-48 w-full border-b border-[#241919] bg-[#120d0d] sm:h-52">
                 <Image
                   src={card.imageSrc}
                   alt=""
                   fill
-                  className="object-cover opacity-70"
+                  className="object-cover object-top"
                   sizes="(max-width: 512px) 100vw, 512px"
+                  priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0d0909] via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0d0909] via-[#0d0909]/25 to-transparent" />
+                {card.subtitle && (
+                  <p className="absolute left-4 top-4 border border-[#3b2f28]/90 bg-black/60 px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-[#d4a850]">
+                    {card.subtitle}
+                  </p>
+                )}
               </div>
             )}
 
             <div className="px-5 py-4">
-              {card.subtitle && (
-                <p className="text-[10px] uppercase tracking-[0.2em] text-[#a08040]">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#6f6259]">
+                {sectionLabel}
+              </p>
+              {!card.imageSrc && card.subtitle && (
+                <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-[#a08040]">
                   {card.subtitle}
                 </p>
               )}

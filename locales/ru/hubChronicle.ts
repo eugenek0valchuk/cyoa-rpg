@@ -3,6 +3,7 @@ export const hubChronicleUi = {
   tabMagazine: 'Журнал',
   tabMarks: 'Следы',
   tabLore: 'Лор',
+  loreProgress: 'Открыто записей',
   tabAct: 'Акт I',
   magazineCover: 'Журнал камеры',
   magazineIssue: 'Выпуск сосуда',

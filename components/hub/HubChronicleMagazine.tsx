@@ -7,14 +7,25 @@ import { GameIcon } from '@/components/game/ui/GameIcon'
 import { getJournalCatalogForOrigin } from '@/lib/game/journal'
 import { journalUi } from '@/locales/ru/journal'
 import { LoreCardModal } from '@/components/ui/LoreCardModal'
-import { getLoreCard } from '@/lib/game/loreCards'
+import type { HubToastItem } from '@/components/ui/HubToast'
+import { HubLorePanel } from '@/components/hub/HubLorePanel'
+import {
+  countUnreadLoreCards,
+  countUnlockedLoreCards,
+  getLoreCard,
+  markLoreCardRead,
+} from '@/lib/game/loreCards'
 import { raidOutcomeLabel } from '@/lib/game/raidLog'
 import { Act1QuestPanel } from '@/components/hub/Act1QuestPanel'
 import { HubFolioPuzzlePanel } from '@/components/hub/HubFolioPuzzlePanel'
 import { HubWorkshopPanel } from '@/components/hub/HubWorkshopPanel'
+import {
+  getPendingRewardSteps,
+  syncAct1PendingRewards,
+} from '@/lib/game/acts/act1RewardClaims'
 import { syncFolioFragments } from '@/lib/game/hubWorkshop'
+import { loreUnlockToasts } from '@/lib/game/loreNotifications'
 import { getAct1StepViews } from '@/lib/game/acts/questEngine'
-import { hubChronicleUi } from '@/locales/ru/hubChronicle'
 import { t } from '@/lib/i18n'
 import type { Character } from '@/lib/types/game'
 import type { HubState } from '@/lib/types/hub'
@@ -36,7 +47,13 @@ interface HubChronicleMagazineProps {
   roomTitle: string
   initialTab?: TabId
   onHubUpdate?: (hub: HubState) => void
-  onNotify?: (title: string, body: string, tone?: 'building' | 'puzzle') => void
+  onCharacterUpdate?: (character: Character) => void
+  onNotify?: (
+    title: string,
+    body: string,
+    tone?: HubToastItem['tone'],
+  ) => void
+  onChronicleTabChange?: (tab: TabId) => void
 }
 
 function renderEmphasis(text: string) {
@@ -61,12 +78,22 @@ export function HubChronicleMagazine({
   roomTitle,
   initialTab,
   onHubUpdate,
+  onCharacterUpdate,
   onNotify,
+  onChronicleTabChange,
 }: HubChronicleMagazineProps) {
   const { ui: hubText, roomMarks: roomMarkLabels, roomMarkEffects } = t.hub
   const workshopCopy = t.hubWorkshop
-  const worldLore = t.lore
-  const copy = hubChronicleUi
+  const copy = t.hub.chronicle
+  const loreTotal = t.loreCards.catalog.length
+  const loreUnlocked = useMemo(
+    () => countUnlockedLoreCards(hub, character),
+    [hub, character],
+  )
+  const loreUnread = useMemo(
+    () => countUnreadLoreCards(hub, character),
+    [hub, character],
+  )
 
   const [tab, setTab] = useState<TabId>(initialTab ?? 'magazine')
   const [pageIndex, setPageIndex] = useState(0)
@@ -88,6 +115,17 @@ export function HubChronicleMagazine({
       onHubUpdate(synced)
     }
   }, [tab, hub, onHubUpdate])
+
+  useEffect(() => {
+    if (tab !== 'act' || !onHubUpdate) {
+      return
+    }
+
+    const synced = syncAct1PendingRewards(hub, character)
+    if (synced.act1 !== hub.act1) {
+      onHubUpdate(synced)
+    }
+  }, [tab, hub, character, onHubUpdate])
 
   const unlockedSet = useMemo(
     () => new Set(hub.journalEntries ?? []),
@@ -121,16 +159,36 @@ export function HubChronicleMagazine({
   const actMainSteps = actSteps.filter((step) => step.type === 'main')
   const actMainDone = actMainSteps.filter((step) => step.completed).length
   const actMainTotal = actMainSteps.length
+  const pendingActRewards = getPendingRewardSteps(hub).length
 
-  const tabs: { id: TabId; label: string; badge?: string }[] = [
-    { id: 'magazine', label: copy.tabMagazine, badge: `${unlockedCount}/${totalPages}` },
+  const tabBadgeToneClass = {
+    alert: 'border-[#5c1f1f]/60 bg-[#160909] text-[#d46060]',
+    lore: 'border-[#8a6020]/60 bg-[#1a1008] text-[#d4a850]',
+    neutral: 'border-[#3a3a4a]/60 bg-[#101018] text-[#a8a8c8]',
+  } as const
+
+  const tabs: {
+    id: TabId
+    label: string
+    badge?: string
+    badgeTone?: keyof typeof tabBadgeToneClass
+  }[] = [
+    {
+      id: 'magazine',
+      label: copy.tabMagazine,
+      badge: `${unlockedCount}/${totalPages}`,
+      badgeTone: 'neutral',
+    },
     {
       id: 'act',
       label: copy.tabAct,
       badge:
-        actMainTotal > 0
-          ? `${actMainDone ?? 0}/${actMainTotal}`
-          : undefined,
+        pendingActRewards > 0
+          ? `!${pendingActRewards}`
+          : actMainTotal > 0
+            ? `${actMainDone ?? 0}/${actMainTotal}`
+            : undefined,
+      badgeTone: pendingActRewards > 0 ? 'alert' : 'neutral',
     },
     { id: 'workshop', label: workshopCopy.tabWorkshop },
     {
@@ -141,12 +199,23 @@ export function HubChronicleMagazine({
           ? `${Math.min(hub.materials?.folio_page ?? 0, 3)}/3`
           : undefined,
     },
-    { id: 'lore', label: copy.tabLore },
+    {
+      id: 'lore',
+      label: copy.tabLore,
+      badge:
+        loreUnread > 0
+          ? `!${loreUnread}`
+          : loreTotal > 0
+            ? `${loreUnlocked}/${loreTotal}`
+            : undefined,
+      badgeTone: loreUnread > 0 ? 'lore' : 'neutral',
+    },
     { id: 'chamber', label: copy.tabChamber },
     {
       id: 'marks',
       label: copy.tabMarks,
       badge: hub.roomMarks.length > 0 ? String(hub.roomMarks.length) : undefined,
+      badgeTone: 'neutral',
     },
   ]
 
@@ -170,7 +239,11 @@ export function HubChronicleMagazine({
           >
             {item.label}
             {item.badge && (
-              <span className="border border-[#3a3a4a]/60 bg-[#101018] px-1.5 py-0.5 text-[9px] text-[#a8a8c8]">
+              <span
+                className={`border px-1.5 py-0.5 text-[9px] ${
+                  tabBadgeToneClass[item.badgeTone ?? 'neutral']
+                }`}
+              >
                 {item.badge}
               </span>
             )}
@@ -396,7 +469,27 @@ export function HubChronicleMagazine({
 
       {tab === 'act' && (
         <div className="mt-5 min-h-0 flex-1">
-          <Act1QuestPanel hub={hub} character={character} />
+          <Act1QuestPanel
+            hub={hub}
+            character={character}
+            onClaimReward={(nextHub, nextCharacter) => {
+              const loreToasts = loreUnlockToasts(
+                hub,
+                nextHub,
+                character,
+                nextCharacter,
+              )
+              onHubUpdate?.(nextHub)
+              onCharacterUpdate?.(nextCharacter)
+              for (const toast of loreToasts) {
+                onNotify?.(toast.title, toast.body, toast.tone)
+              }
+            }}
+            onOpenWorkshop={() => {
+              setTab('workshop')
+              onChronicleTabChange?.('workshop')
+            }}
+          />
         </div>
       )}
 
@@ -429,37 +522,17 @@ export function HubChronicleMagazine({
       )}
 
       {tab === 'lore' && (
-        <div className="mt-5 space-y-4">
-          <div>
-            <div className="text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
-              {hubText.worldLore}
-            </div>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#9d8d82]">
-              {worldLore.intro}
-            </p>
-          </div>
-          <ul className="space-y-2">
-            {worldLore.factions.map((faction) => (
-              <li key={faction.id}>
-                <button
-                  type="button"
-                  onClick={() => setLoreCardId(faction.id)}
-                  className="w-full border border-[#2b2320] bg-black/20 px-4 py-3 text-left transition hover:border-[#6a5020]/60 hover:bg-[#1a1408]/40"
-                >
-                  <span className="font-cinzel text-[14px] uppercase tracking-[0.06em] text-[#c4b5aa]">
-                    {faction.name}
-                  </span>
-                  <span className="mt-1 block text-[13px] text-[#85776a]">
-                    {faction.blurb}
-                  </span>
-                  <span className="mt-2 block text-[10px] uppercase tracking-[0.12em] text-[#a08040]">
-                    {t.loreCards.ui.effectLabel} →
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <HubLorePanel
+          hub={hub}
+          character={character}
+          onOpenCard={(cardId) => {
+            setLoreCardId(cardId)
+            const next = markLoreCardRead(hub, cardId)
+            if (next.loreReadIds !== hub.loreReadIds) {
+              onHubUpdate?.(next)
+            }
+          }}
+        />
       )}
 
       {tab === 'marks' && (

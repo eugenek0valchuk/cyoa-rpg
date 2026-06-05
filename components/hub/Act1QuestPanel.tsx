@@ -1,11 +1,12 @@
 'use client'
 
-import { Check, Circle, Lock } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Circle, Lock } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { renderNarrativeEmphasis } from '@/components/game/shared/NarrativeText'
+import { Act1RewardShelf } from '@/components/hub/Act1RewardShelf'
+import { isStepRewardPending } from '@/lib/game/acts/act1RewardClaims'
 import { getVisibleKeeperLines } from '@/lib/game/acts/act1Keeper'
-import { formatQuestReward } from '@/lib/game/acts/formatQuestReward'
 import { getAct1StepViews } from '@/lib/game/acts/questEngine'
 import { t } from '@/lib/i18n'
 import type { Character } from '@/lib/types/game'
@@ -14,20 +15,24 @@ import type { HubState } from '@/lib/types/hub'
 interface Act1QuestPanelProps {
   hub: HubState
   character: Character
+  onClaimReward?: (hub: HubState, character: Character) => void
+  onOpenWorkshop?: () => void
 }
 
 function StepRow({
   title,
   hint,
   doneText,
-  rewardText,
+  onShelf,
+  active,
   revealed,
   completed,
 }: {
   title: string
   hint: string
   doneText?: string
-  rewardText?: string | null
+  onShelf?: boolean
+  active?: boolean
   revealed: boolean
   completed: boolean
 }) {
@@ -36,11 +41,13 @@ function StepRow({
   return (
     <li
       className={`border px-4 py-3 ${
-        completed
-          ? 'border-[#3a4a3a] bg-[#0d120d]/80'
-          : revealed
-            ? 'border-[#3b2f28] bg-[#14100e]'
-            : 'border-[#2b2320]/80 bg-black/20'
+        active
+          ? 'border-[#5c1f1f]/70 bg-[#160909]/50 shadow-[inset_0_0_0_1px_rgba(212,96,96,0.15)]'
+          : completed
+            ? 'border-[#3a4a3a] bg-[#0d120d]/80'
+            : revealed
+              ? 'border-[#3b2f28] bg-[#14100e]'
+              : 'border-[#2b2320]/80 bg-black/20'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -58,18 +65,16 @@ function StepRow({
             {revealed ? title : copy.hidden}
           </div>
           {revealed && !completed && (
-            <>
-              <p className="mt-1 text-[12px] leading-relaxed text-[#9d8d82]">
-                {renderNarrativeEmphasis(hint)}
-              </p>
-              {rewardText && (
-                <p className="mt-2 text-[10px] uppercase tracking-[0.1em] text-[#6f8570]">
-                  {copy.rewardLabel}: {rewardText}
-                </p>
-              )}
-            </>
+            <p className="mt-1 text-[12px] leading-relaxed text-[#9d8d82]">
+              {renderNarrativeEmphasis(hint)}
+            </p>
           )}
-          {completed && (
+          {completed && onShelf && (
+            <p className="mt-1 text-[12px] leading-relaxed text-[#a08040]">
+              {copy.onShelf}
+            </p>
+          )}
+          {completed && !onShelf && (
             <p className="mt-1 text-[12px] leading-relaxed text-[#9d8d82]">
               {renderNarrativeEmphasis(doneText ?? copy.completed)}
             </p>
@@ -80,9 +85,15 @@ function StepRow({
   )
 }
 
-export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
+export function Act1QuestPanel({
+  hub,
+  character,
+  onClaimReward,
+  onOpenWorkshop,
+}: Act1QuestPanelProps) {
   const copy = t.acts.act1
   const [keeperLineId, setKeeperLineId] = useState<string | null>(null)
+  const [optionalOpen, setOptionalOpen] = useState(false)
   const steps = useMemo(() => getAct1StepViews(hub, character), [hub, character])
   const keeperLines = useMemo(
     () => getVisibleKeeperLines(hub, character),
@@ -93,7 +104,13 @@ export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
   const mainSteps = steps.filter((step) => step.type === 'main')
   const optionalSteps = steps.filter((step) => step.type === 'optional')
   const mainDone = mainSteps.filter((step) => step.completed).length
+  const optDone = optionalSteps.filter((step) => step.completed).length
+  const activeMainStepId = mainSteps.find(
+    (step) => step.revealed && !step.completed,
+  )?.id
   const actComplete = hub.act1?.actComplete ?? false
+  const mainPct =
+    mainSteps.length > 0 ? Math.round((mainDone / mainSteps.length) * 100) : 0
 
   if (!character.origin) {
     return (
@@ -124,11 +141,29 @@ export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
             .replace('{total}', String(mainSteps.length))}
           {actComplete ? ` · ${copy.actComplete}` : ` · ${copy.actIncomplete}`}
         </p>
+        <div className="mt-2 h-1.5 w-full overflow-hidden border border-[#2b2320] bg-black/40">
+          <div
+            className="h-full bg-gradient-to-r from-[#5c1f1f] to-[#d46060] transition-all duration-500"
+            style={{ width: `${mainPct}%` }}
+          />
+        </div>
       </div>
+
+      {onClaimReward && (
+        <Act1RewardShelf
+          hub={hub}
+          character={character}
+          onClaim={onClaimReward}
+          onOpenWorkshop={onOpenWorkshop}
+        />
+      )}
 
       <section>
         <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#d46060]">
           {copy.mainLine}
+          {activeMainStepId && (
+            <span className="ml-2 text-[#85776a]">· {copy.nextStep}</span>
+          )}
         </h4>
         <ul className="mt-3 space-y-2">
           {mainSteps.map((step) => (
@@ -137,7 +172,8 @@ export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
               title={step.titleRevealed}
               hint={step.hint}
               doneText={step.completeMessage}
-              rewardText={formatQuestReward(step.reward)}
+              onShelf={isStepRewardPending(hub, step.id)}
+              active={step.id === activeMainStepId}
               revealed={step.revealed}
               completed={step.completed}
             />
@@ -181,23 +217,46 @@ export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
       </section>
 
       {optionalSteps.length > 0 && (
-        <section>
-          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#75685f]">
-            {copy.optional}
-          </h4>
-          <ul className="mt-3 space-y-2">
-            {optionalSteps.map((step) => (
-              <StepRow
-                key={step.id}
-                title={step.titleRevealed}
-                hint={step.hint}
-                doneText={step.completeMessage}
-                rewardText={formatQuestReward(step.reward)}
-                revealed={step.revealed}
-                completed={step.completed}
-              />
-            ))}
-          </ul>
+        <section className="border border-[#2b2320]/80 bg-black/15 px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setOptionalOpen((open) => !open)}
+            className="flex w-full items-center justify-between gap-2 text-left"
+          >
+            <div>
+              <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#75685f]">
+                {copy.optional}
+              </h4>
+              <p className="mt-1 text-[11px] text-[#6f6259]">
+                {copy.optionalProgress
+                  .replace('{done}', String(optDone))
+                  .replace('{total}', String(optionalSteps.length))}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.1em] text-[#85776a]">
+              {optionalOpen ? copy.optionalCollapse : copy.optionalExpand}
+              {optionalOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </span>
+          </button>
+          {optionalOpen && (
+            <ul className="mt-3 space-y-2 border-t border-[#241919] pt-3">
+              {optionalSteps.map((step) => (
+                <StepRow
+                  key={step.id}
+                  title={step.titleRevealed}
+                  hint={step.hint}
+                  doneText={step.completeMessage}
+                  onShelf={isStepRewardPending(hub, step.id)}
+                  revealed={step.revealed}
+                  completed={step.completed}
+                />
+              ))}
+            </ul>
+          )}
         </section>
       )}
     </div>

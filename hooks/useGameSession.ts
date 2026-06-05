@@ -23,6 +23,7 @@ import {
 import { applyPostChoiceHubUpdates } from '@/lib/game/applyPostChoiceHub'
 import { evaluateAct1ProgressWithEvents } from '@/lib/game/acts/questEngine'
 import { act1EventsToToasts } from '@/lib/game/acts/questNotifications'
+import { loreUnlockToasts } from '@/lib/game/loreNotifications'
 import { syncMerchantStock } from '@/lib/game/merchant'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { applyRaidModifierTick } from '@/lib/game/raidModifiers'
@@ -213,7 +214,15 @@ export function useGameSession() {
         nextCharacter,
         sceneIds,
       )
-      const returnToasts = act1EventsToToasts(evaluation.events)
+      const returnToasts = [
+        ...act1EventsToToasts(evaluation.events),
+        ...loreUnlockToasts(
+          hubWithStock,
+          evaluation.hub,
+          nextCharacter,
+          evaluation.character,
+        ),
+      ]
       if (returnToasts.length > 0) {
         pushPendingToasts(returnToasts)
       }
