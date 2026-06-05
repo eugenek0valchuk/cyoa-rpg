@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { GothicScreen } from '@/components/ui/GothicScreen'
 import { restoreActiveSlot } from '@/hooks/useAutoSave'
+import { getSlotDisplayName } from '@/lib/archives/slotDisplayName'
 import {
   getActiveSlotId,
   listSaveSlots,
@@ -22,15 +23,19 @@ export default function HomePage() {
   const { home } = t.ui
   const router = useRouter()
   const [previewSlot, setPreviewSlot] = useState<SaveSlot | null>(null)
+  const [slotsReady, setSlotsReady] = useState(false)
+  const [hasAnySave, setHasAnySave] = useState(false)
 
   useEffect(() => {
     listSaveSlots().then((slots) => {
       const activeId = getActiveSlotId()
       const preferred = slots[activeId]
       const fallback = slots.find(slotHasProgress)
+      setHasAnySave(slots.some(slotHasProgress))
       setPreviewSlot(
         preferred && slotHasProgress(preferred) ? preferred : fallback ?? null,
       )
+      setSlotsReady(true)
     })
   }, [])
 
@@ -45,6 +50,11 @@ export default function HomePage() {
       router.push(result.raidActive ? '/game' : '/hub')
     }
   }
+
+  const beginHref =
+    slotsReady && !hasAnySave ? '/editor?slot=0' : '/archives'
+  const beginSub =
+    slotsReady && !hasAnySave ? home.beginSubNew : home.beginSub
 
   return (
     <GothicScreen imageClassName="opacity-55">
@@ -70,7 +80,7 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-4xl gap-4 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-3">
               <Link
-                href="/archives"
+                href={beginHref}
                 className="group flex items-center gap-4 border border-[#3b2a2a] bg-[#0d0909]/88 px-5 py-5 no-underline transition hover:border-[#8e1f1f] hover:bg-[#160909]"
               >
                 <GameIcon type="corruption" size={40} />
@@ -79,7 +89,7 @@ export default function HomePage() {
                     {home.begin}
                   </div>
                   <div className="mt-1 text-[11px] uppercase tracking-[0.18em] text-[#75685f]">
-                    {home.beginSub}
+                    {beginSub}
                   </div>
                 </div>
               </Link>
@@ -108,7 +118,11 @@ export default function HomePage() {
               {previewSlot?.character ? (
                 <>
                   <h2 className="font-cinzel mt-3 text-3xl uppercase tracking-[0.08em] text-[#efe5dc]">
-                    {previewSlot.character.name}
+                    {getSlotDisplayName(
+                      previewSlot.character,
+                      t.ui.archives.emptyVessel,
+                      t.ui.archives.unnamedVessel,
+                    )}
                   </h2>
                   <p className="mt-2 text-[13px] text-[#85776a]">
                     {previewSlot.raid?.active

@@ -71,7 +71,7 @@ export function HubBottomBar({
       ...(showMerchant && labels.merchant
       ? [{ id: 'merchant' as const, key: 'merchant' as const, icon: 'merchant' as const }]
       : []),
-    { id: 'threshold' as const, key: 'descend' as const, icon: 'corruption' as const },
+    { id: 'threshold' as const, key: 'descend' as const, icon: 'flag' as const },
   ]
 
   return (

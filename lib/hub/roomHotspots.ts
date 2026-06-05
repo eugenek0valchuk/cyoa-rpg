@@ -18,7 +18,7 @@ export const HOTSPOT_ICONS: Record<
   stash: 'artifact',
   chronicle: 'flag',
   scribe: 'intelligence',
-  threshold: 'corruption',
+  threshold: 'flag',
 }
 
 export function getVesselHotspotIcon(origin: Origin): GameIconProps['type'] {

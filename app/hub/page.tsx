@@ -41,8 +41,6 @@ import {
   pickOfferedContracts,
 } from '@/lib/game/contracts'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
-import { useAmbientAudio } from '@/hooks/useAmbientAudio'
-import { resolveAmbientTense } from '@/lib/audio/AmbientController'
 import { isHubMerchantUnlocked } from '@/lib/game/merchant'
 import { roomHotspotLayouts, type HotspotId } from '@/lib/hub/roomHotspots'
 import { t } from '@/lib/i18n'
@@ -109,19 +107,6 @@ export default function HubPage() {
 
   const scribeUnlocked = hub ? isScribeUnlocked(hub) : false
   const merchantUnlocked = hub ? isHubMerchantUnlocked(hub) : false
-
-  useAmbientAudio({
-    mode: 'hub',
-    enabled: !!character && !!hub,
-    tense: resolveAmbientTense({
-      thresholdOpen: activeModal === 'threshold',
-      modalOpen:
-        activeModal === 'merchant' ||
-        activeModal === 'threshold' ||
-        activeModal === 'scribe',
-      failureStain: hub?.roomMarks.includes('failure_stain') ?? false,
-    }),
-  })
 
   const offeredContracts = useMemo(
     () => (hub ? pickOfferedContracts(hub) : []),
@@ -633,7 +618,7 @@ export default function HubPage() {
       <GothicModal
         open={activeModal === 'threshold'}
         onClose={closeModal}
-        icon="corruption"
+        icon="flag"
         title={raidText.prepareTitle}
         subtitle={
           isFirstBriefing
