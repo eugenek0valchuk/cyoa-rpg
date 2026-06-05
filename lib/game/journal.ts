@@ -1,6 +1,17 @@
 import { journalById, journalCatalog } from '@/locales/ru/journal'
 
+import type { Origin } from '@/lib/types/game'
 import type { HubState } from '@/lib/types/hub'
+
+export function getJournalCatalogForOrigin(origin?: Origin | null) {
+  return journalCatalog.filter((entry) => {
+    if (!entry.originOnly) {
+      return true
+    }
+
+    return origin === entry.originOnly
+  })
+}
 
 export type JournalDiscoveryContext = {
   flags: string[]
@@ -67,10 +78,14 @@ export function getJournalEntry(entryId: string) {
   return journalById[entryId]
 }
 
-export function sortJournalEntries(entryIds: string[]): string[] {
-  const order = new Map(journalCatalog.map((entry, index) => [entry.id, index]))
+export function sortJournalEntries(
+  entryIds: string[],
+  origin?: Origin | null,
+): string[] {
+  const catalog = getJournalCatalogForOrigin(origin)
+  const order = new Map(catalog.map((entry, index) => [entry.id, index]))
 
-  return [...entryIds].sort(
-    (a, b) => (order.get(a) ?? 999) - (order.get(b) ?? 999),
-  )
+  return [...entryIds]
+    .filter((id) => order.has(id))
+    .sort((a, b) => (order.get(a) ?? 999) - (order.get(b) ?? 999))
 }

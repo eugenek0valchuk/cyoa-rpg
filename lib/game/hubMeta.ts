@@ -1,3 +1,5 @@
+import { getEffectiveLoadoutSlots } from '@/lib/game/hubWorkshop'
+
 import type { Character } from '@/lib/types/game'
 import type { HubState } from '@/lib/types/hub'
 
@@ -62,7 +64,7 @@ export function getLoadoutSlotsForRoomLevel(roomLevel: number): number {
 export function syncHubProgression(hub: HubState): HubState {
   return {
     ...hub,
-    loadoutSlots: getLoadoutSlotsForRoomLevel(hub.roomLevel),
+    loadoutSlots: getEffectiveLoadoutSlots(hub),
   }
 }
 

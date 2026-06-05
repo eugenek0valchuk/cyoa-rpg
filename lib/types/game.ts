@@ -77,6 +77,10 @@ export interface Choice {
     /** Additional flags applied with addFlag in one choice */
     addFlags?: string[]
     addArtifact?: string
+    /** Материалы в камеру (мастерская) */
+    addMaterials?: Partial<
+      Record<'iron_shard' | 'wax_seal' | 'choir_splinter' | 'folio_page', number>
+    >
   } | null
   requirements?: ChoiceRequirements | null
 }

@@ -8,6 +8,13 @@ export const originTitles: Record<Origin, string> = {
   witness: 'СВИДЕТЕЛЬ',
 }
 
+/** Имя происхождения в тексте журнала и квестов (не капс). */
+export const originDisplayNames: Record<Origin, string> = {
+  hollow: 'Пустой',
+  heretic: 'Еретик',
+  witness: 'Свидетель',
+}
+
 export type OriginCard = {
   value: Origin
   title: string

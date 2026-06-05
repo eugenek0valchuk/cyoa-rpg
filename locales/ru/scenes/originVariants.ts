@@ -310,6 +310,14 @@ export const originSceneVariants: Partial<
     },
   },
 
+  whispers_mirror_shattered: {
+    hollow: {
+      appendDescription: `
+В осколках нет лица — только пустота, которая **узнаёт** коридор. Отражение больше не спорит.
+      `.trim(),
+    },
+  },
+
   descent_echoes: {
     hollow: {
       appendDescription: `

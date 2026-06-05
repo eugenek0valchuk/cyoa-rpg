@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import { applyJournalDiscovery } from '../applyJournalDiscovery'
-import { discoverJournalEntries } from '../journal'
+import { discoverJournalEntries, getJournalCatalogForOrigin } from '../journal'
 import { createInitialHubState } from '@/lib/types/hub'
 
 describe('journal discovery', () => {
@@ -39,6 +39,15 @@ describe('journal discovery', () => {
 
     expect(second.newEntries).toHaveLength(0)
     expect(second.hub.journalEntries.filter((id) => id === 'npc_synod')).toHaveLength(1)
+  })
+
+  it('hides other origins act I entries for hollow', () => {
+    const catalog = getJournalCatalogForOrigin('hollow')
+    const ids = catalog.map((entry) => entry.id)
+
+    expect(ids).not.toContain('act1_witness')
+    expect(ids).not.toContain('act1_heretic')
+    expect(ids).toContain('act1_hollow')
   })
 
   it('unlocks ending entry', () => {

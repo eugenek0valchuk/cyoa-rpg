@@ -32,6 +32,9 @@ describe('hub merchant', () => {
       ...createInitialHubState(),
       echo: 5,
       journalEntries: ['npc_breathless'],
+      totalExtractions: 1,
+      merchantStockIds: ['offer_candle'],
+      merchantStockCycle: 0,
     }
 
     const result = purchaseHubMerchantOffer(hub, 'offer_candle')
@@ -49,7 +52,11 @@ describe('hub merchant', () => {
       journalEntries: ['npc_breathless', 'npc_synod'],
     }
 
-    const offers = getHubMerchantOffers(hub)
+    const offers = getHubMerchantOffers({
+      ...hub,
+      merchantStockIds: ['offer_synod_rumor'],
+      merchantStockCycle: 0,
+    })
     const rumor = offers.find((offer) => offer.id === 'offer_synod_rumor')
 
     expect(rumor?.status).toBe('owned')
@@ -60,12 +67,14 @@ describe('hub merchant', () => {
       ...createInitialHubState(),
       echo: 5,
       journalEntries: ['npc_breathless'],
+      merchantStockIds: ['offer_sanity_balm'],
+      merchantStockCycle: 0,
     }
 
     const result = purchaseHubMerchantOffer(hub, 'offer_sanity_balm')
 
     expect(result?.hub.nextRaidSanityBonus).toBe(5)
-    expect(result?.hub.merchantPurchases).toContain('offer_sanity_balm')
+    expect(result?.hub.merchantPurchases ?? []).not.toContain('offer_sanity_balm')
   })
 
   it('picks breathless dialogue by hub state', () => {

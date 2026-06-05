@@ -1,8 +1,12 @@
+import { ACT1_SCENE_IDS } from '@/locales/ru/scenes/act1'
+import { boostPoolForActQuest } from '@/lib/game/acts/questEngine'
+
 import { buildDirectorState } from './director'
 import { choicePools, phasePools } from './scenePools'
 import { cloneScene, getSceneById, sceneRegistry } from './sceneRegistry'
 
 import type { Character, Choice, Scene, SceneHistoryEntry } from '../types/game'
+import type { HubState } from '../types/hub'
 
 interface PickSceneParams {
   pool: string[]
@@ -167,6 +171,26 @@ function boostPoolForContractFlags(
 interface PickSceneParamsWithEncounters extends PickSceneParams {
   encountersSeen?: Set<string>
   npcFlags?: string[]
+  hub?: HubState
+}
+
+function filterInactiveAct1Scenes(
+  pool: string[],
+  hub: HubState | undefined,
+  character: Character,
+  visitedSceneIds: Set<string>,
+): string[] {
+  const activeAct1 = new Set(
+    boostPoolForActQuest(pool, hub, character, visitedSceneIds),
+  )
+
+  return pool.filter((sceneId) => {
+    if (!ACT1_SCENE_IDS.includes(sceneId)) {
+      return true
+    }
+
+    return activeAct1.has(sceneId)
+  })
 }
 
 function pickFromPool({
@@ -178,8 +202,20 @@ function pickFromPool({
   journalEntries,
   encountersSeen = new Set<string>(),
   npcFlags = [],
+  hub,
 }: PickSceneParamsWithEncounters): Scene | null {
-  const eligiblePool = filterSeenEncounters(pool, encountersSeen)
+  const eligiblePool = filterInactiveAct1Scenes(
+    filterSeenEncounters(pool, encountersSeen),
+    hub,
+    character,
+    visitedSceneIds,
+  )
+  const actBoosted = boostPoolForActQuest(
+    eligiblePool,
+    hub,
+    character,
+    visitedSceneIds,
+  )
   const flagBoosted = boostPoolForFlags(eligiblePool, character, visitedSceneIds)
   const originBoosted = boostPoolForOrigin(
     eligiblePool,
@@ -202,21 +238,27 @@ function pickFromPool({
     visitedSceneIds,
   )
   const boosted = [
-    ...flagBoosted,
+    ...actBoosted,
+    ...flagBoosted.filter((id) => !actBoosted.includes(id)),
     ...originBoosted.filter(
-      (id) => !flagBoosted.includes(id),
+      (id) => !actBoosted.includes(id) && !flagBoosted.includes(id),
     ),
     ...npcBoosted.filter(
-      (id) => !flagBoosted.includes(id) && !originBoosted.includes(id),
+      (id) =>
+        !actBoosted.includes(id) &&
+        !flagBoosted.includes(id) &&
+        !originBoosted.includes(id),
     ),
     ...journalBoosted.filter(
       (id) =>
+        !actBoosted.includes(id) &&
         !flagBoosted.includes(id) &&
         !originBoosted.includes(id) &&
         !npcBoosted.includes(id),
     ),
     ...contractBoosted.filter(
       (id) =>
+        !actBoosted.includes(id) &&
         !flagBoosted.includes(id) &&
         !originBoosted.includes(id) &&
         !npcBoosted.includes(id) &&
@@ -292,6 +334,7 @@ export function resolveDirectedScene(
   journalEntries: string[] = [],
   encountersSeen: string[] = [],
   npcFlags: string[] = [],
+  hub?: HubState,
 ): Scene {
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
   const encountersSeenSet = new Set(encountersSeen)
@@ -333,6 +376,7 @@ export function resolveDirectedScene(
       journalEntries,
       encountersSeen: encountersSeenSet,
       npcFlags,
+      hub,
     })
 
     if (pooled) {
@@ -357,6 +401,7 @@ export function resolveDirectedScene(
     journalEntries,
     encountersSeen: encountersSeenSet,
     npcFlags,
+    hub,
   })
 
   if (phaseScene) {

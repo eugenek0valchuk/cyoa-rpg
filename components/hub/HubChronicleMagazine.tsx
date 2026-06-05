@@ -4,22 +4,39 @@ import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
-import { journalCatalog, journalUi } from '@/locales/ru/journal'
+import { getJournalCatalogForOrigin } from '@/lib/game/journal'
+import { journalUi } from '@/locales/ru/journal'
 import { LoreCardModal } from '@/components/ui/LoreCardModal'
 import { getLoreCard } from '@/lib/game/loreCards'
 import { raidOutcomeLabel } from '@/lib/game/raidLog'
+import { Act1QuestPanel } from '@/components/hub/Act1QuestPanel'
+import { HubFolioPuzzlePanel } from '@/components/hub/HubFolioPuzzlePanel'
+import { HubWorkshopPanel } from '@/components/hub/HubWorkshopPanel'
+import { syncFolioFragments } from '@/lib/game/hubWorkshop'
+import { getAct1StepViews } from '@/lib/game/acts/questEngine'
 import { hubChronicleUi } from '@/locales/ru/hubChronicle'
 import { t } from '@/lib/i18n'
+import type { Character } from '@/lib/types/game'
 import type { HubState } from '@/lib/types/hub'
 
-type TabId = 'chamber' | 'magazine' | 'marks' | 'lore'
+type TabId =
+  | 'chamber'
+  | 'magazine'
+  | 'marks'
+  | 'lore'
+  | 'act'
+  | 'workshop'
+  | 'puzzle'
 
 interface HubChronicleMagazineProps {
   hub: HubState
+  character: Character
   vesselName: string
   evolvedText: string
   roomTitle: string
   initialTab?: TabId
+  onHubUpdate?: (hub: HubState) => void
+  onNotify?: (title: string, body: string, tone?: 'building' | 'puzzle') => void
 }
 
 function renderEmphasis(text: string) {
@@ -38,12 +55,16 @@ function renderEmphasis(text: string) {
 
 export function HubChronicleMagazine({
   hub,
+  character,
   vesselName,
   evolvedText,
   roomTitle,
   initialTab,
+  onHubUpdate,
+  onNotify,
 }: HubChronicleMagazineProps) {
   const { ui: hubText, roomMarks: roomMarkLabels, roomMarkEffects } = t.hub
+  const workshopCopy = t.hubWorkshop
   const worldLore = t.lore
   const copy = hubChronicleUi
 
@@ -57,21 +78,69 @@ export function HubChronicleMagazine({
     }
   }, [initialTab])
 
+  useEffect(() => {
+    if (tab !== 'puzzle' || !onHubUpdate) {
+      return
+    }
+
+    const synced = syncFolioFragments(hub)
+    if (synced.folioFragments !== hub.folioFragments) {
+      onHubUpdate(synced)
+    }
+  }, [tab, hub, onHubUpdate])
+
   const unlockedSet = useMemo(
     () => new Set(hub.journalEntries ?? []),
     [hub.journalEntries],
   )
 
-  const totalPages = journalCatalog.length
-  const currentEntry = journalCatalog[pageIndex]
+  const visibleCatalog = useMemo(
+    () => getJournalCatalogForOrigin(character.origin),
+    [character.origin],
+  )
+
+  const totalPages = visibleCatalog.length
+  const currentEntry = visibleCatalog[pageIndex]
   const currentUnlocked = currentEntry
     ? unlockedSet.has(currentEntry.id)
     : false
 
-  const unlockedCount = hub.journalEntries?.length ?? 0
+  const unlockedCount = useMemo(
+    () => visibleCatalog.filter((entry) => unlockedSet.has(entry.id)).length,
+    [visibleCatalog, unlockedSet],
+  )
+
+  useEffect(() => {
+    setPageIndex((value) => Math.min(value, Math.max(0, totalPages - 1)))
+  }, [totalPages])
+
+  const actSteps = useMemo(
+    () => getAct1StepViews(hub, character),
+    [hub, character],
+  )
+  const actMainSteps = actSteps.filter((step) => step.type === 'main')
+  const actMainDone = actMainSteps.filter((step) => step.completed).length
+  const actMainTotal = actMainSteps.length
 
   const tabs: { id: TabId; label: string; badge?: string }[] = [
     { id: 'magazine', label: copy.tabMagazine, badge: `${unlockedCount}/${totalPages}` },
+    {
+      id: 'act',
+      label: copy.tabAct,
+      badge:
+        actMainTotal > 0
+          ? `${actMainDone ?? 0}/${actMainTotal}`
+          : undefined,
+    },
+    { id: 'workshop', label: workshopCopy.tabWorkshop },
+    {
+      id: 'puzzle',
+      label: workshopCopy.tabPuzzle,
+      badge:
+        (hub.materials?.folio_page ?? 0) > 0
+          ? `${Math.min(hub.materials?.folio_page ?? 0, 3)}/3`
+          : undefined,
+    },
     { id: 'lore', label: copy.tabLore },
     { id: 'chamber', label: copy.tabChamber },
     {
@@ -116,7 +185,7 @@ export function HubChronicleMagazine({
               {copy.jumpToPage}
             </div>
             <ul className="mt-2 max-h-[340px] space-y-1 overflow-y-auto chronicle-scrollbar">
-              {journalCatalog.map((entry, index) => {
+              {visibleCatalog.map((entry, index) => {
                 const open = unlockedSet.has(entry.id)
 
                 return (
@@ -219,7 +288,7 @@ export function HubChronicleMagazine({
               </button>
 
               <div className="flex flex-wrap justify-center gap-1">
-                {journalCatalog.map((entry, index) => (
+                {visibleCatalog.map((entry, index) => (
                   <button
                     key={entry.id}
                     type="button"
@@ -322,6 +391,40 @@ export function HubChronicleMagazine({
               {hubText.worldLoreHint}
             </p>
           </div>
+        </div>
+      )}
+
+      {tab === 'act' && (
+        <div className="mt-5 min-h-0 flex-1">
+          <Act1QuestPanel hub={hub} character={character} />
+        </div>
+      )}
+
+      {tab === 'workshop' && (
+        <div className="mt-5 min-h-0 flex-1 overflow-y-auto chronicle-scrollbar">
+          <HubWorkshopPanel
+            hub={hub}
+            onUpgrade={(nextHub, message) => {
+              onHubUpdate?.(nextHub)
+              onNotify?.(workshopCopy.toastBuilding, message, 'building')
+            }}
+          />
+        </div>
+      )}
+
+      {tab === 'puzzle' && (
+        <div className="mt-5 min-h-0 flex-1 overflow-y-auto chronicle-scrollbar">
+          <HubFolioPuzzlePanel
+            hub={hub}
+            onSolve={(nextHub, message, correct) => {
+              onHubUpdate?.(nextHub)
+              onNotify?.(
+                correct ? workshopCopy.puzzleTitle : workshopCopy.tabPuzzle,
+                message,
+                'puzzle',
+              )
+            }}
+          />
         </div>
       )}
 

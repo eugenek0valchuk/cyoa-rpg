@@ -3,6 +3,7 @@ import { getContractEncounterBoostFlag, resolveRaidContract, type ContractResult
 import { appendRaidLog } from './raidLog'
 import { applyLoadoutPassiveEffects } from './artifactEffects'
 import { mergeJournalEntries } from './journal'
+import { getWorkshopSanityBonus } from '@/lib/game/hubWorkshop'
 import {
   applyRaidStartSanity,
   calcEchoFromExtraction,
@@ -82,7 +83,7 @@ export function startRaidFromHub(
     sanity: applyRaidStartSanity(
       character.sanity,
       hub.roomMarks,
-      hub.nextRaidSanityBonus ?? 0,
+      (hub.nextRaidSanityBonus ?? 0) + getWorkshopSanityBonus(hub),
     ),
   }
 

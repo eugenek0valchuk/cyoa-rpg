@@ -5,6 +5,7 @@ export const zLayers = {
   keyChoice: 'z-[100]',
   diceRoll: 'z-[100]',
   gothicModal: 'z-[200]',
+  artifactInspect: 'z-[220]',
   hubMerchant: 'z-[210]',
   loreCard: 'z-[210]',
   tooltip: 'z-[400]',

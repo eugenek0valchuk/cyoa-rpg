@@ -1,6 +1,7 @@
 import { resolveDirectedScene } from './sceneDirector'
 
 import type { Choice, Character, Scene, SceneHistoryEntry } from '../types/game'
+import type { HubState } from '../types/hub'
 
 interface ResolveNextSceneParams {
   currentScene: Scene
@@ -10,6 +11,7 @@ interface ResolveNextSceneParams {
   journalEntries?: string[]
   encountersSeen?: string[]
   npcFlags?: string[]
+  hub?: HubState
 }
 
 export function resolveNextScene({
@@ -20,6 +22,7 @@ export function resolveNextScene({
   journalEntries = [],
   encountersSeen = [],
   npcFlags = [],
+  hub,
 }: ResolveNextSceneParams): Scene {
   return resolveDirectedScene(
     currentScene,
@@ -29,5 +32,6 @@ export function resolveNextScene({
     journalEntries,
     encountersSeen,
     npcFlags,
+    hub,
   )
 }

@@ -19,6 +19,7 @@ import {
 } from '@/components/game'
 import { DiceRollOverlay } from '@/components/game/scene/DiceRollOverlay'
 import { NpcEncounterModal } from '@/components/game/scene/NpcEncounterModal'
+import { HubToastStack } from '@/components/ui/HubToast'
 import { KeyChoiceConfirm } from '@/components/game/scene/KeyChoiceConfirm'
 import { RaidPrologueModal } from '@/components/game/scene/RaidPrologueModal'
 import { buildPrologueSlides } from '@/lib/game/prologue'
@@ -71,6 +72,9 @@ export default function GamePage() {
     handleKeyChoiceConfirm,
     handleKeyChoiceCancel,
     diceRoll,
+    npcEncounterReset,
+    liveToasts,
+    dismissLiveToast,
     handleDiceComplete,
     handleExtract,
     handleEmergencyExtract,
@@ -307,6 +311,7 @@ export default function GamePage() {
         roomMarks={hub?.roomMarks ?? []}
         isLoading={isLoading}
         pendingKeyChoice={pendingKeyChoice}
+        encounterResetKey={npcEncounterReset}
         onChoice={handleNpcChoice}
         onRiskChoice={handleNpcRiskChoice}
       />
@@ -334,6 +339,7 @@ export default function GamePage() {
         flags={character.flags}
         journalEntries={hub?.journalEntries ?? []}
         raidDepth={raidDepth}
+        origin={character.origin}
       />
 
       <GothicModal
@@ -438,6 +444,8 @@ export default function GamePage() {
           {hubText.abandonHint}
         </p>
       </GothicModal>
+
+      <HubToastStack items={liveToasts} onDismiss={dismissLiveToast} />
     </GameLayout>
   )
 }

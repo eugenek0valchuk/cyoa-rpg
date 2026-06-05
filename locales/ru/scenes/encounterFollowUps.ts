@@ -2,6 +2,30 @@ import type { Scene } from '@/lib/types/game'
 
 /** Промежуточные сцены после выбора в NPC-встречах — не телепорт сразу в локацию. */
 export const encounterFollowUpScenes: Record<string, Scene> = {
+  whispers_mirror_shattered: {
+    id: 'whispers_mirror_shattered',
+    title: 'Осколки и Эхо',
+    description: `
+Зеркало рвётся **без звука** — стекло падает в воду, а отражение остаётся на коленях ещё миг, будто не заметило удара.
+
+В трещинах — те же координаты, но теперь их можно прочесть и без отражения. Коридор впереди дышит катакомбами. Сзади — железный проход, куда шепчут без зеркал.
+    `.trim(),
+    options: [
+      {
+        id: 'catacombs',
+        text: 'Идти в катакомбы — по координатам из осколков',
+        targetSceneId: 'catacombs',
+        effects: { sanity: -3, corruption: 1 },
+      },
+      {
+        id: 'iron_passage',
+        text: 'Свернуть в железный проход',
+        targetSceneId: 'iron_passage',
+        effects: { sanity: -2 },
+      },
+    ],
+  },
+
   encounter_wax_pull_away: {
     id: 'encounter_wax_pull_away',
     title: 'Рука Отступает',
@@ -398,6 +422,33 @@ export const encounterFollowUpScenes: Record<string, Scene> = {
         text: 'Отступить в монастырь — не смотреть в яму',
         targetSceneId: 'monastery',
         effects: { sanity: -3 },
+      },
+    ],
+  },
+
+  encounter_heretic_fail_cog: {
+    id: 'encounter_heretic_fail_cog',
+    title: 'Зубья Скользят',
+    description: `
+Пальцы **срываются** с металла — шестерня крутится быстрее, будто смеётся.
+
+Чаша не принимает вопрос. Жар остаётся на коже, а зубья **холоднеют** снова.
+
+Трансепт не рушится — он **терпелив**. Отступить в неф или ответить шёпотом — единственные честные выходы.
+    `.trim(),
+    options: [
+      {
+        id: 'monastery',
+        text: 'Отступить в неф — руки ещё дрожат',
+        targetSceneId: 'monastery',
+        effects: { sanity: -6 },
+      },
+      {
+        id: 'heretic_whisper_pit',
+        text: 'Шепнуть ответ — раз силой не взять',
+        requirements: { requiredOrigin: 'heretic' },
+        targetSceneId: 'encounter_heretic_whisper',
+        effects: { corruption: 4, sanity: -5, addFlag: 'heretic_answered' },
       },
     ],
   },

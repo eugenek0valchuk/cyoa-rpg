@@ -1,3 +1,4 @@
+import type { Act1Progress } from '@/lib/game/acts/types'
 import type { Artifact } from './game'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import type { RaidOutcome } from './raidSummary'
@@ -25,8 +26,12 @@ export interface HubState {
   echo: number
   /** Бонус рассудка на старт следующего спуска (лавка) */
   nextRaidSanityBonus?: number
-  /** Одноразовые покупки у Бездыханного */
+  /** Покупки у Бездыханного в текущей витрине */
   merchantPurchases?: string[]
+  /** id офферов в текущей витрине телеги */
+  merchantStockIds?: string[]
+  /** Номер обновления витрины (длина raidLog при смене товара) */
+  merchantStockCycle?: number
   /** Приоритет встречи на следующий спуск (награда обета) */
   pendingEncounterBoost?: string | null
   /** Обет выполнен — награда ждёт сдачи у Писца */
@@ -40,6 +45,18 @@ export interface HubState {
   raidLog?: HubRaidLogEntry[]
   /** Отдых в камере уже использован до следующего возвращения из спуска */
   chamberRestUsed?: boolean
+  /** Прогресс Акта I — главная линия и опциональные задачи */
+  act1?: Act1Progress
+  /** Детали из спусков для мастерской */
+  materials?: Record<string, number>
+  /** Уровни построек в камере */
+  buildings?: Record<string, number>
+  /** Бонус рассудка от лампы мастерской */
+  workshopSanityBonus?: number
+  /** Головоломка фолианта решена */
+  folioPuzzleSolved?: boolean
+  /** Собранные страницы фолианта — folio_a, folio_b, folio_c */
+  folioFragments?: string[]
 }
 
 export interface RaidState {

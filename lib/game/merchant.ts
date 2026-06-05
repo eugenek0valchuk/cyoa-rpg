@@ -2,11 +2,17 @@ import { artifacts } from '@/lib/game/artifacts'
 import { mergeJournalEntries } from '@/lib/game/journal'
 import { spendEcho } from '@/lib/game/hubMeta'
 import {
+  getActiveMerchantStockIds,
+  syncMerchantStock,
+} from '@/lib/game/merchantStock'
+import {
   hubMerchantOffers,
   merchantUi,
   type HubMerchantOfferDef,
 } from '@/locales/ru/merchant'
 import type { HubState } from '@/lib/types/hub'
+
+export { syncMerchantStock } from '@/lib/game/merchantStock'
 
 export type MerchantOfferStatus =
   | 'available'
@@ -29,6 +35,11 @@ export function isHubMerchantUnlocked(hub: HubState): boolean {
 export function getBreathlessHubLine(hub: HubState): string {
   if (hub.roomMarks.includes('failure_stain')) {
     return merchantUi.lineStain
+  }
+
+  const cycle = hub.raidLog?.length ?? 0
+  if (hub.merchantStockCycle === cycle && (hub.merchantPurchases ?? []).length === 0) {
+    return merchantUi.lineFreshStock
   }
 
   if ((hub.merchantPurchases ?? []).length > 0) {
@@ -56,7 +67,7 @@ export function getMerchantOfferStatus(
 ): MerchantOfferStatus {
   const purchases = hub.merchantPurchases ?? []
 
-  if (offer.once && purchases.includes(offer.id)) {
+  if (!offer.repeatable && purchases.includes(offer.id)) {
     return 'purchased'
   }
 
@@ -94,35 +105,48 @@ export function getMerchantOfferStatus(
 }
 
 export function getHubMerchantOffers(hub: HubState): MerchantOfferView[] {
-  return hubMerchantOffers.map((offer) => ({
-    ...offer,
-    status: getMerchantOfferStatus(hub, offer),
-  }))
+  const synced = syncMerchantStock(hub)
+  const stockIds = new Set(getActiveMerchantStockIds(synced))
+
+  return hubMerchantOffers
+    .filter((offer) => stockIds.has(offer.id))
+    .map((offer) => ({
+      ...offer,
+      status: getMerchantOfferStatus(synced, offer),
+    }))
 }
 
 export function purchaseHubMerchantOffer(
   hub: HubState,
   offerId: string,
 ): { hub: HubState; message: string } | null {
+  const synced = syncMerchantStock(hub)
   const offer = hubMerchantOffers.find((entry) => entry.id === offerId)
 
   if (!offer) {
     return null
   }
 
-  if (getMerchantOfferStatus(hub, offer) !== 'available') {
+  if (!getActiveMerchantStockIds(synced).includes(offerId)) {
     return null
   }
 
-  const spent = spendEcho(hub, offer.cost)
+  if (getMerchantOfferStatus(synced, offer) !== 'available') {
+    return null
+  }
+
+  const spent = spendEcho(synced, offer.cost)
 
   if (!spent) {
     return null
   }
 
+  const purchases = spent.merchantPurchases ?? []
   let nextHub: HubState = {
     ...spent,
-    merchantPurchases: [...(spent.merchantPurchases ?? []), offer.id],
+    merchantPurchases: offer.repeatable
+      ? purchases
+      : [...purchases, offer.id],
   }
 
   switch (offer.kind) {

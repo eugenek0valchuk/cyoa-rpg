@@ -87,7 +87,8 @@ export const phaseScenes: Record<string, Scene> = {
       {
         id: 'catacombs',
         text: 'Разбить зеркало',
-        effects: { sanity: -6, corruption: 2 },
+        targetSceneId: 'whispers_mirror_shattered',
+        effects: { sanity: -6, corruption: 2, addFlag: 'mirror_shattered' },
       },
       {
         id: 'iron_passage',

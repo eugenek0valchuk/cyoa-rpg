@@ -23,6 +23,7 @@ import type {
   Scene,
   SceneHistoryEntry,
 } from '../types/game'
+import type { HubState } from '../types/hub'
 
 interface HandleChoiceParams {
   currentScene: Scene
@@ -40,6 +41,7 @@ interface HandleChoiceParams {
   revealArtifact: (artifact: Artifact) => Promise<void>
   journalEntries?: string[]
   roomMarks?: string[]
+  hub?: HubState
   contractId?: string | null
   encountersSeen?: string[]
   npcFlags?: string[]
@@ -82,6 +84,7 @@ export async function handleGameChoice({
   revealArtifact,
   journalEntries = [],
   roomMarks = [],
+  hub,
   contractId = null,
   encountersSeen = [],
   npcFlags = [],
@@ -158,6 +161,7 @@ export async function handleGameChoice({
     journalEntries,
     encountersSeen,
     npcFlags,
+    hub,
   })
 
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))

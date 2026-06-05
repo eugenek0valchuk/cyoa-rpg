@@ -8,6 +8,7 @@ import { GameIcon } from '@/components/game/ui/GameIcon'
 import { getRaidZone } from '@/lib/game/zones'
 import { t } from '@/lib/i18n'
 import type { Artifact } from '@/lib/types/game'
+import { HubToastStack, type HubToastItem } from '@/components/ui/HubToast'
 import { useHubStore } from '@/lib/store/hubStore'
 
 function renderEmphasis(text: string) {
@@ -29,6 +30,8 @@ export default function RaidSummaryPage() {
   const summary = useHubStore((state) => state.pendingSummary)
   const clearSummary = useHubStore((state) => state.setPendingSummary)
   const [inspectArtifact, setInspectArtifact] = useState<Artifact | null>(null)
+  const [summaryToasts, setSummaryToasts] = useState<HubToastItem[]>([])
+  const shiftPendingToasts = useHubStore((state) => state.shiftPendingToasts)
 
   const { raidSummary: text, roomMarks } = t.hub
   const { ui: raidText } = t.raid
@@ -38,6 +41,13 @@ export default function RaidSummaryPage() {
       router.replace('/hub')
     }
   }, [summary, router])
+
+  useEffect(() => {
+    const pending = shiftPendingToasts()
+    if (pending.length > 0) {
+      setSummaryToasts(pending)
+    }
+  }, [shiftPendingToasts])
 
   if (!summary) {
     return (
@@ -272,6 +282,13 @@ export default function RaidSummaryPage() {
         open={inspectArtifact != null}
         onClose={() => setInspectArtifact(null)}
         mode="inspect"
+      />
+
+      <HubToastStack
+        items={summaryToasts}
+        onDismiss={(id) =>
+          setSummaryToasts((current) => current.filter((item) => item.id !== id))
+        }
       />
     </main>
   )

@@ -3,9 +3,14 @@
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { getRaidFlagEntry, getRaidFlagIds } from '@/lib/game/raidChronicle'
-import { getJournalEntry, sortJournalEntries } from '@/lib/game/journal'
-import { journalCatalog, journalUi } from '@/locales/ru/journal'
+import {
+  getJournalCatalogForOrigin,
+  getJournalEntry,
+  sortJournalEntries,
+} from '@/lib/game/journal'
+import { journalUi } from '@/locales/ru/journal'
 import { t } from '@/lib/i18n'
+import type { Origin } from '@/lib/types/game'
 
 interface RaidChronicleModalProps {
   open: boolean
@@ -13,6 +18,7 @@ interface RaidChronicleModalProps {
   flags: string[]
   journalEntries: string[]
   raidDepth: number
+  origin?: Origin | null
 }
 
 export function RaidChronicleModal({
@@ -21,11 +27,13 @@ export function RaidChronicleModal({
   flags,
   journalEntries,
   raidDepth,
+  origin,
 }: RaidChronicleModalProps) {
   const { ui: runText, flags: flagLabels } = t.raidChronicle
   const flagIds = getRaidFlagIds(flags)
   const unlockedSet = new Set(journalEntries)
-  const sortedUnlocked = sortJournalEntries(journalEntries)
+  const visibleCatalog = getJournalCatalogForOrigin(origin)
+  const sortedUnlocked = sortJournalEntries(journalEntries, origin)
 
   return (
     <GothicModal
@@ -52,7 +60,7 @@ export function RaidChronicleModal({
             {journalUi.persistent}
           </div>
           <div className="font-cinzel mt-1 text-2xl text-[#b4c27d]">
-            {sortedUnlocked.length}/{journalCatalog.length}
+            {sortedUnlocked.length}/{visibleCatalog.length}
           </div>
         </div>
       </div>
@@ -62,7 +70,7 @@ export function RaidChronicleModal({
           {journalUi.persistent}
         </div>
         <ul className="mt-3 space-y-2">
-          {journalCatalog.map((entry) => {
+          {visibleCatalog.map((entry) => {
             const unlocked = unlockedSet.has(entry.id)
             const def = getJournalEntry(entry.id) ?? entry
 

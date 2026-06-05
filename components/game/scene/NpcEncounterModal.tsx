@@ -29,6 +29,8 @@ interface NpcEncounterModalProps {
   roomMarks?: string[]
   isLoading: boolean
   pendingKeyChoice?: number | null
+  /** Сброс после провала проверки без смены сцены */
+  encounterResetKey?: number
   onChoice: (choiceIndex: number) => void
   onRiskChoice?: (choiceIndex: number) => void
 }
@@ -49,9 +51,15 @@ function DialogueTurnView({ turn }: { turn: NpcDialogueTurn }) {
     )
   }
 
+  const trimmed = turn.text.trim()
+  const inner =
+    trimmed.startsWith('«') && trimmed.endsWith('»')
+      ? trimmed.slice(1, -1).trim()
+      : trimmed
+
   return (
     <blockquote className="border-l-2 border-[#8e1f1f]/70 pl-3 text-[14px] leading-relaxed text-[#cfc2b8]">
-      «{renderNarrativeEmphasis(turn.text)}»
+      «{renderNarrativeEmphasis(inner)}»
     </blockquote>
   )
 }
@@ -66,10 +74,12 @@ export function NpcEncounterModal({
   roomMarks = [],
   isLoading,
   pendingKeyChoice = null,
+  encounterResetKey = 0,
   onChoice,
   onRiskChoice,
 }: NpcEncounterModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [imageFailed, setImageFailed] = useState(false)
 
   const encounter = useMemo(
     () =>
@@ -94,7 +104,20 @@ export function NpcEncounterModal({
     setPendingChoiceIndex(null)
     setReplyStep(0)
     setReplyTurns([])
+    setImageFailed(false)
   }, [scene.id])
+
+  useEffect(() => {
+    if (encounterResetKey <= 0) {
+      return
+    }
+
+    setStep(Math.max(0, lines.length - 1))
+    setPhase('choices')
+    setPendingChoiceIndex(null)
+    setReplyStep(0)
+    setReplyTurns([])
+  }, [encounterResetKey, lines.length])
 
   useEffect(() => {
     if (!open) {
@@ -285,14 +308,21 @@ export function NpcEncounterModal({
 
       <div className="relative z-10 flex h-[min(92vh,760px)] w-full max-w-7xl flex-col overflow-hidden border-2 border-[#4a3030] bg-[#0a0707] shadow-[0_0_80px_rgba(92,31,31,0.35)] lg:flex-row">
         <div className="relative flex min-h-[min(42vh,340px)] w-full shrink-0 items-center justify-center bg-[#080606] lg:min-h-0 lg:min-w-0 lg:flex-1">
-          <Image
-            src={def.imageSrc}
-            alt=""
-            fill
-            className="object-contain object-center p-1 sm:p-2"
-            sizes="(max-width: 1024px) 100vw, 70vw"
-            priority
-          />
+          {!imageFailed ? (
+            <Image
+              src={def.imageSrc}
+              alt=""
+              fill
+              className="object-contain object-center p-1 sm:p-2"
+              sizes="(max-width: 1024px) 100vw, 70vw"
+              priority
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <GameIcon type={def.icon} size={120} />
+            </div>
+          )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0707] via-transparent to-black/25" />
           <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[#0a0707]/90 to-transparent lg:block" />
 

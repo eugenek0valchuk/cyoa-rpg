@@ -124,4 +124,27 @@ describe('npcEncounter', () => {
 
     expect(dialogue.lines[0]).toContain('Паломник')
   })
+
+  it('returns heretic cog art path', () => {
+    const dialogue = buildNpcEncounterDialogue(
+      'encounter_heretic_cog',
+      [],
+      new Set(),
+    )
+
+    expect(dialogue.def?.imageSrc).toBe('/encounters/npc-heretic-cog.png')
+  })
+
+  it('registers heretic cog risk-fail follow-up', () => {
+    expect(isNpcEncounterScene('encounter_heretic_fail_cog')).toBe(true)
+
+    const dialogue = buildNpcEncounterDialogue(
+      'encounter_heretic_fail_cog',
+      [],
+      new Set(),
+    )
+
+    expect(dialogue.def?.baseSceneId).toBe('encounter_heretic_cog')
+    expect(dialogue.lines[0]).toContain('режут')
+  })
 })

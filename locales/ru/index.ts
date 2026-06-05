@@ -10,6 +10,8 @@ import { worldLore } from './lore'
 import { loreCardUi, loreCards } from './loreCards'
 import { merchantUi, hubMerchantOffers } from './merchant'
 import { prologueUi } from './prologue'
+import { act1Ui } from './acts/act1Ui'
+import { hubWorkshopUi } from './hubWorkshop'
 import {
   coreScenes,
   encounterScenes,
@@ -17,6 +19,8 @@ import {
   originBeatScenes,
   phaseScenes,
 } from './scenes'
+import { act1Scenes } from './scenes/act1'
+import { hubLootScenes } from './scenes/hubLoot'
 import { encounterFollowUpScenes } from './scenes/encounterFollowUps'
 import { repeatFollowUpScenes } from './scenes/repeatVariants'
 import { system } from './system'
@@ -37,12 +41,16 @@ export const ru = {
   loreCards: { ui: loreCardUi, catalog: loreCards },
   prologue: { ui: prologueUi },
   merchant: { ui: merchantUi, offers: hubMerchantOffers },
+  acts: { act1: act1Ui },
+  hubWorkshop: hubWorkshopUi,
   scenes: {
     ...coreScenes,
     ...eventScenes,
     ...phaseScenes,
     ...encounterScenes,
     ...originBeatScenes,
+    ...act1Scenes,
+    ...hubLootScenes,
     ...repeatFollowUpScenes,
     ...encounterFollowUpScenes,
   },

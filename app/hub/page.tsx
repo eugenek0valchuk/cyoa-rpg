@@ -4,12 +4,13 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
 import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
+import { HubToastStack, type HubToastItem } from '@/components/ui/HubToast'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
 import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
 import { HubMerchantOverlay } from '@/components/hub/HubMerchantOverlay'
 import { HubScribeOverlay } from '@/components/hub/HubScribeOverlay'
 import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
-import { journalCatalog } from '@/locales/ru/journal'
+import { getJournalCatalogForOrigin } from '@/lib/game/journal'
 import { contractById, scribeUi } from '@/locales/ru/contracts'
 import {
   RoomHotspotLayer,
@@ -44,7 +45,7 @@ import {
   pickOfferedContracts,
 } from '@/lib/game/contracts'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
-import { isHubMerchantUnlocked } from '@/lib/game/merchant'
+import { isHubMerchantUnlocked, syncMerchantStock } from '@/lib/game/merchant'
 import { roomHotspotLayouts, type HotspotId } from '@/lib/hub/roomHotspots'
 import { t } from '@/lib/i18n'
 import { useCharacterStore } from '@/lib/store/characterStore'
@@ -90,8 +91,17 @@ export default function HubPage() {
   const [activeModal, setActiveModal] = useState<HubModalId | null>(null)
   const [merchantToast, setMerchantToast] = useState<string | null>(null)
   const [chronicleTab, setChronicleTab] = useState<
-    'chamber' | 'magazine' | 'marks' | 'lore' | undefined
+    | 'chamber'
+    | 'magazine'
+    | 'marks'
+    | 'lore'
+    | 'act'
+    | 'workshop'
+    | 'puzzle'
+    | undefined
   >(undefined)
+  const [hubToasts, setHubToasts] = useState<HubToastItem[]>([])
+  const shiftPendingToasts = useHubStore((state) => state.shiftPendingToasts)
   const [selectedLoadout, setSelectedLoadout] = useState<string[]>([])
   const [pendingModifier, setPendingModifier] = useState<RaidModifierId>(() =>
     pickRaidModifier(),
@@ -103,6 +113,16 @@ export default function HubPage() {
   const [claimingContract, setClaimingContract] = useState(false)
   const [claimToast, setClaimToast] = useState<string | null>(null)
   const [inspectArtifact, setInspectArtifact] = useState<Artifact | null>(null)
+  const [inspectReturnModal, setInspectReturnModal] = useState<HubModalId | null>(
+    null,
+  )
+
+  useEffect(() => {
+    const pending = shiftPendingToasts()
+    if (pending.length > 0) {
+      setHubToasts((current) => [...current, ...pending])
+    }
+  }, [shiftPendingToasts])
 
   const room = character ? rooms[character.origin] : null
   const hotspotRegions = character
@@ -167,6 +187,21 @@ export default function HubPage() {
       setFreeRerollUsed(false)
     }
   }, [activeModal, hub])
+
+  useEffect(() => {
+    if (!hub || !merchantUnlocked) {
+      return
+    }
+
+    const synced = syncMerchantStock(hub)
+
+    if (
+      synced.merchantStockCycle !== hub.merchantStockCycle ||
+      synced.merchantStockIds?.join(',') !== hub.merchantStockIds?.join(',')
+    ) {
+      setHub(synced)
+    }
+  }, [hub, merchantUnlocked, setHub])
 
   useEffect(() => {
     if (!character || !hub) {
@@ -353,12 +388,18 @@ export default function HubPage() {
         )
       : raidText.prepareModifierRoll
 
+  const visibleJournal = getJournalCatalogForOrigin(character.origin)
+  const visibleJournalIds = new Set(visibleJournal.map((entry) => entry.id))
+  const unlockedJournalCount = (hub.journalEntries ?? []).filter((id) =>
+    visibleJournalIds.has(id),
+  ).length
+
   const hotspotBadges: HotspotBadges = {
     stash: hub.stash.length > 0 ? String(hub.stash.length) : undefined,
     vessel: String(character.sanity),
     chronicle:
-      (hub.journalEntries?.length ?? 0) > 0
-        ? `${hub.journalEntries.length}/${journalCatalog.length}`
+      unlockedJournalCount > 0
+        ? `${unlockedJournalCount}/${visibleJournal.length}`
         : hub.roomMarks.length > 0
           ? String(hub.roomMarks.length)
           : undefined,
@@ -375,6 +416,20 @@ export default function HubPage() {
   const closeModal = () => {
     setActiveModal(null)
     setChronicleTab(undefined)
+  }
+
+  const openArtifactInspect = (artifact: Artifact) => {
+    setInspectReturnModal(activeModal)
+    setActiveModal(null)
+    setInspectArtifact(artifact)
+  }
+
+  const closeArtifactInspect = () => {
+    setInspectArtifact(null)
+    if (inspectReturnModal) {
+      setActiveModal(inspectReturnModal)
+      setInspectReturnModal(null)
+    }
   }
 
   const openChronicle = (tab?: 'chamber' | 'magazine' | 'marks' | 'lore') => {
@@ -576,7 +631,7 @@ export default function HubPage() {
               <li key={artifact.id}>
                 <button
                   type="button"
-                  onClick={() => setInspectArtifact(artifact)}
+                  onClick={() => openArtifactInspect(artifact)}
                   className="flex w-full items-start gap-3 border border-[#2b2320] bg-black/30 px-4 py-3 text-left transition hover:border-[#5c3a2a] hover:bg-[#120c0c]"
                 >
                   <GameIcon type="artifact" size={44} />
@@ -606,10 +661,23 @@ export default function HubPage() {
       >
         <HubChronicleMagazine
           hub={hub}
+          character={character}
           vesselName={character.name}
           evolvedText={evolvedText}
           roomTitle={room.title}
           initialTab={chronicleTab}
+          onHubUpdate={setHub}
+          onNotify={(title, body, tone) => {
+            setHubToasts((current) => [
+              ...current,
+              {
+                id: `hub-notify-${Date.now()}-${Math.random()}`,
+                title,
+                body,
+                tone,
+              },
+            ])
+          }}
         />
       </GothicModal>
 
@@ -802,7 +870,7 @@ export default function HubPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setInspectArtifact(artifact)}
+                        onClick={() => openArtifactInspect(artifact)}
                         className="shrink-0 border border-[#2b2320] px-3 py-2 text-[10px] uppercase tracking-[0.12em] text-[#85776a] transition hover:border-[#5c3a2a] hover:text-[#d8c9be]"
                         title={t.ui.artifactDetail.inspectHint}
                       >
@@ -820,8 +888,15 @@ export default function HubPage() {
       <ArtifactDetailModal
         artifact={inspectArtifact}
         open={inspectArtifact != null}
-        onClose={() => setInspectArtifact(null)}
+        onClose={closeArtifactInspect}
         mode="inspect"
+      />
+
+      <HubToastStack
+        items={hubToasts}
+        onDismiss={(id) =>
+          setHubToasts((current) => current.filter((item) => item.id !== id))
+        }
       />
     </main>
   )

@@ -1,3 +1,7 @@
+import type { Origin } from '@/lib/types/game'
+
+import { originDisplayNames } from './origins'
+
 export type JournalCategory = 'npc' | 'place' | 'rite' | 'mystery' | 'ending'
 
 export type JournalEntryDef = {
@@ -8,6 +12,8 @@ export type JournalEntryDef = {
   body: string
   /** Что открывает запись в игре — честно, без пустых обещаний */
   effect: string
+  /** Только для этого происхождения — другие не видят запись в журнале */
+  originOnly?: Origin
   unlock: {
     flag?: string
     scene?: string
@@ -198,6 +204,45 @@ export const journalCatalog: JournalEntryDef[] = [
     body: 'Машина **вытягивает** сосуд, когда рассудок рвётся. Добыча гибнет — но камера **помнит** глубину и оставляет **эхо**. Каждый следующий спуск начинается с пятна на стене.',
     effect: 'Провал даёт эхо. Пятно провала влияет на старт рассудка и проклятия спуска.',
     unlock: { flag: 'experienced_failure' },
+  },
+  {
+    id: 'act1_witness',
+    category: 'mystery',
+    originOnly: 'witness',
+    title: `Акт I — ${originDisplayNames.witness}`,
+    teaser: 'Имя в металле записано. Петля закрыта…',
+    body: 'Ты назвал то, что видел на обочине Шествия. Камера приняла долг свидетеля — **первый круг** завершён. Второй акт ждёт за порогом, где Синод ведёт учёт строже.',
+    effect: 'Открывает Акт II (в разработке). Главная линия свидетеля закрыта.',
+    unlock: { flag: 'witness_act1_named' },
+  },
+  {
+    id: 'act1_heretic',
+    category: 'mystery',
+    originOnly: 'heretic',
+    title: `Акт I — ${originDisplayNames.heretic}`,
+    teaser: 'Формула произнесена. Синод отстаёт…',
+    body: 'Ответ без молитвы записан у Уст. Машина услышала **напрямую** — первый акт еретика закрыт. Дальше — вопросы, на которые Синод отвечает силой.',
+    effect: 'Открывает Акт II (в разработке). Главная линия еретика закрыта.',
+    unlock: { flag: 'heretic_act1_formula' },
+  },
+  {
+    id: 'mystery_folio',
+    category: 'mystery',
+    title: 'Фолиант трёх страниц',
+    teaser: 'Синод стёр книгу — но страницы помнят петлю…',
+    body: '**Машина** помнит тех, кто смотрел вниз. Камера — не храм, а **сосуд** между спусками. Синод ведёт учёт имён; Машина ведёт учёт **взглядов**. Сложив три страницы, ты понял, кто владеет петлёй.',
+    effect: 'Раскрывает, кто владеет петлёй — Машина или Синод.',
+    unlock: { scene: 'loot_folio_shelf' },
+  },
+  {
+    id: 'act1_hollow',
+    category: 'mystery',
+    originOnly: 'hollow',
+    title: `Акт I — ${originDisplayNames.hollow}`,
+    teaser: 'Имя отсутствует — и это честно…',
+    body: 'Пустота принята как форма. Камера записала **отсутствие** — первый акт пустого закрыт. Второй круг спросит, чем ты заполнишь дыру.',
+    effect: 'Открывает Акт II (в разработке). Главная линия пустого закрыта.',
+    unlock: { flag: 'hollow_act1_named' },
   },
 ]
 

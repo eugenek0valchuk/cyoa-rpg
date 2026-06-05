@@ -16,29 +16,33 @@ export type HubMerchantOfferDef = {
   sanityBonus?: number
   requiresJournal?: string
   requiresMark?: string
-  once?: boolean
+  /** Можно купить несколько раз за одну витрину */
+  repeatable?: boolean
 }
 
 export const merchantUi = {
   title: 'Телега Бездыханного',
-  subtitle: 'Плати эхом — или слухами, которые камера уже записала',
+  subtitle: 'Плати эхом — товар меняется после каждого спуска',
   lockedTitle: 'Телега в тумане',
   lockedBody:
     'Бездыханный откроет лавку после первой встречи на дороге — или когда камера запомнит его в журнале.',
   npcName: 'Бездыханный',
   npcTitle: 'Купец у телеги',
   shopTitle: 'Товар',
+  stockRefreshed: 'Телега сменила товар — выбирай, пока эхо не остыло',
   close: 'Закрыть',
   lineDefault: 'Плати зубами — или слухами. Синод всегда помнит.',
   lineReturn: 'Телега ещё тёплая от твоего шага. Эхо честнее зубов.',
   lineRepeat: 'Синод не смотрит сюда. Пока. Выбирай — я не дышу, пока смотришь.',
   lineStain: 'Пятно на стене пахнет провалом. Могу помочь смыло — не подарком.',
   lineRich: 'Камера полна эха. Хороший знак — или приглашение спуститься снова.',
+  lineFreshStock:
+    'Товар сменился с прошлого спуска. То, что не купил — ушло в туман.',
   echoLabel: 'Эхо',
   buy: 'Купить',
-  owned: 'Уже есть',
+  owned: 'Уже в сокровищнице',
   unavailable: 'Недоступно',
-  purchased: 'Куплено',
+  purchased: 'Куплено в этой витрине',
   notEnoughEcho: 'Не хватает эха',
   purchaseDone: 'Сделка закрыта',
 } as const
@@ -48,22 +52,40 @@ export const hubMerchantOffers: HubMerchantOfferDef[] = [
     id: 'offer_candle',
     title: 'Свеча из телеги',
     description:
-      'Холодное пламя, снятое с паломника, который ещё не понял, что остановился. В сокровищницу — на следующий спуск.',
+      'Холодное пламя, снятое с паломника. В сокровищницу — на следующий спуск.',
     cost: 3,
     kind: 'stash_artifact',
     artifactId: 'buried_choir_candle',
-    once: true,
+  },
+  {
+    id: 'offer_bell_shard',
+    title: 'Осколок из затона',
+    description:
+      'Кусок утонувшего колокола — Бездыханный поднял его до того, как вода забыла имя.',
+    cost: 4,
+    kind: 'stash_artifact',
+    artifactId: 'drowned_bell_fragment',
+    requiresJournal: 'npc_breathless',
+  },
+  {
+    id: 'offer_inverted_rosary',
+    title: 'Перевёртыш с телеги',
+    description:
+      'Чётки с символами внутрь. Еретики платили за них рассудком — ты платишь эхом.',
+    cost: 6,
+    kind: 'stash_artifact',
+    artifactId: 'inverted_rosary',
+    requiresJournal: 'npc_breathless',
   },
   {
     id: 'offer_synod_rumor',
     title: 'Слух Синода',
     description:
-      'Бездыханный шепчет то, что адепт сказал бы за sanity. Запись о Синоде появится в журнале — если её ещё нет.',
+      'Бездыханный шепчет то, что адепт сказал бы за sanity. Запись о Синоде в журнале.',
     cost: 2,
     kind: 'journal_entry',
     journalId: 'npc_synod',
     requiresJournal: 'npc_breathless',
-    once: true,
   },
   {
     id: 'offer_cleanse_stain',
@@ -74,16 +96,35 @@ export const hubMerchantOffers: HubMerchantOfferDef[] = [
     kind: 'remove_mark',
     markId: 'failure_stain',
     requiresMark: 'failure_stain',
-    once: true,
   },
   {
     id: 'offer_sanity_balm',
     title: 'Настойка тишины',
-    description:
-      '+5 рассудка на старте следующего спуска. Одна склянка — один раз.',
+    description: '+5 рассудка на старт следующего спуска. Можно купить несколько — эффект суммируется.',
     cost: 2,
     kind: 'sanity_bonus',
     sanityBonus: 5,
-    once: true,
+    repeatable: true,
+  },
+  {
+    id: 'offer_deep_balm',
+    title: 'Настой глубины',
+    description:
+      '+8 рассудка на старт спуска. Появляется, когда камера помнит глубокий след.',
+    cost: 4,
+    kind: 'sanity_bonus',
+    sanityBonus: 8,
+    repeatable: true,
+    requiresMark: 'deep_echo',
+  },
+  {
+    id: 'offer_wax_hint',
+    title: 'Слух о воске',
+    description:
+      'Запись о паломнике в журнале — если ещё не встречал его на дороге.',
+    cost: 2,
+    kind: 'journal_entry',
+    journalId: 'npc_wax',
+    requiresJournal: 'npc_breathless',
   },
 ]

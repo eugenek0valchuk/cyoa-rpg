@@ -190,6 +190,7 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'jump_pit',
         text: 'Сорвать шестерню и бросить в чашу',
         requirements: { strength: 7 },
+        riskFailSceneId: 'encounter_heretic_fail_cog',
         targetSceneId: 'encounter_heretic_cog_torn',
         effects: { corruption: 6, sanity: -7 },
       },

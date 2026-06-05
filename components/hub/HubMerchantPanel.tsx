@@ -4,6 +4,7 @@ import { GameIcon, type GameIconProps } from '@/components/game/ui/GameIcon'
 import {
   getHubMerchantOffers,
   purchaseHubMerchantOffer,
+  syncMerchantStock,
   type MerchantOfferView,
 } from '@/lib/game/merchant'
 import { merchantUi } from '@/locales/ru/merchant'
@@ -50,10 +51,11 @@ export function HubMerchantPanel({
   onToast,
   variant = 'default',
 }: HubMerchantPanelProps) {
-  const offers = getHubMerchantOffers(hub)
+  const syncedHub = syncMerchantStock(hub)
+  const offers = getHubMerchantOffers(syncedHub)
 
   const handleBuy = (offerId: string) => {
-    const result = purchaseHubMerchantOffer(hub, offerId)
+    const result = purchaseHubMerchantOffer(syncedHub, offerId)
 
     if (!result) {
       return

@@ -20,6 +20,10 @@ import {
   type RiskOffer,
   type RiskRollResult,
 } from '@/lib/game/riskCheck'
+import { applyPostChoiceHubUpdates } from '@/lib/game/applyPostChoiceHub'
+import { evaluateAct1ProgressWithEvents } from '@/lib/game/acts/questEngine'
+import { act1EventsToToasts } from '@/lib/game/acts/questNotifications'
+import { syncMerchantStock } from '@/lib/game/merchant'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { applyRaidModifierTick } from '@/lib/game/raidModifiers'
 import { hasReturnSigil, isAtExtractionSite } from '@/lib/game/extraction'
@@ -90,6 +94,11 @@ export function useGameSession() {
     offer: RiskOffer
     choiceIndex: number
   } | null>(null)
+  const [npcEncounterReset, setNpcEncounterReset] = useState(0)
+  const [liveToasts, setLiveToasts] = useState<
+    import('@/components/ui/HubToast').HubToastItem[]
+  >([])
+  const pushPendingToasts = useHubStore((state) => state.pushPendingToasts)
   const [pendingKeyChoice, setPendingKeyChoice] = useState<number | null>(null)
 
   const syncJournal = useCallback(
@@ -197,8 +206,20 @@ export function useGameSession() {
         return
       }
 
+      const hubWithStock = syncMerchantStock(nextHub)
+      const sceneIds = useGameStore.getState().sceneHistory.map((entry) => entry.id)
+      const evaluation = evaluateAct1ProgressWithEvents(
+        hubWithStock,
+        nextCharacter,
+        sceneIds,
+      )
+      const returnToasts = act1EventsToToasts(evaluation.events)
+      if (returnToasts.length > 0) {
+        pushPendingToasts(returnToasts)
+      }
+
       setCharacter(nextCharacter)
-      setHub(nextHub)
+      setHub(evaluation.hub)
       setRaid(nextRaid)
       setPendingSummary(summary)
       resetGame()
@@ -208,7 +229,7 @@ export function useGameSession() {
         currentScene: null,
         history: [],
         sceneHistory: [],
-        hub: nextHub,
+        hub: evaluation.hub,
         raid: null,
       })
 
@@ -435,6 +456,7 @@ export function useGameSession() {
           revealArtifact,
           journalEntries: hub?.journalEntries ?? [],
           roomMarks: hub?.roomMarks ?? [],
+          hub: hub ?? undefined,
         })
 
         const flagsAfter =
@@ -465,10 +487,31 @@ export function useGameSession() {
         syncJournal()
 
         const afterCharacter = useCharacterStore.getState().character
-        if (afterCharacter) {
+        const activeHub = useHubStore.getState().hub
+
+        if (afterCharacter && activeHub) {
+          const sceneIds = useGameStore
+            .getState()
+            .sceneHistory.map((entry) => entry.id)
+          const { hub: updatedHub, toasts } = applyPostChoiceHubUpdates(
+            activeHub,
+            afterCharacter,
+            choice,
+            sceneIds,
+          )
+
+          if (toasts.length > 0) {
+            setLiveToasts((current) => [...current, ...toasts])
+          }
+
+          setHub(updatedHub)
+        }
+
+        const afterCharacterForFlash = useCharacterStore.getState().character
+        if (afterCharacterForFlash) {
           setStatFlash({
-            sanity: afterCharacter.sanity - sanityBefore,
-            corruption: afterCharacter.corruption - corruptionBefore,
+            sanity: afterCharacterForFlash.sanity - sanityBefore,
+            corruption: afterCharacterForFlash.corruption - corruptionBefore,
           })
           window.setTimeout(() => setStatFlash(null), 2800)
         }
@@ -607,7 +650,7 @@ export function useGameSession() {
     })
     window.setTimeout(() => setStatFlash(null), 2800)
 
-    if (
+    const navigatedFail =
       choice &&
       navigateRiskFailScene({
         currentScene,
@@ -632,12 +675,14 @@ export function useGameSession() {
           })
         },
       })
-    ) {
+
+    if (navigatedFail) {
       await new Promise((resolve) => setTimeout(resolve, 350))
       setShowChoices(true)
       return
     }
 
+    setNpcEncounterReset((value) => value + 1)
     setShowChoices(true)
   }, [
     character,
@@ -706,6 +751,10 @@ export function useGameSession() {
     setChronicleOpen(false)
   }, [])
 
+  const dismissLiveToast = useCallback((id: string) => {
+    setLiveToasts((current) => current.filter((item) => item.id !== id))
+  }, [])
+
   return {
     character,
     hub,
@@ -737,6 +786,9 @@ export function useGameSession() {
     handleKeyChoiceConfirm,
     handleKeyChoiceCancel,
     diceRoll,
+    npcEncounterReset,
+    liveToasts,
+    dismissLiveToast,
     handleDiceComplete,
     handleExtract,
     handleEmergencyExtract,

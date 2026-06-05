@@ -320,6 +320,19 @@ export const npcEncounterByScene: Record<string, NpcEncounterDef> = {
       'Неф или галерея. Тишина **платная**.',
     ],
   },
+
+  encounter_heretic_fail_cog: {
+    npcName: 'Шестерня',
+    npcTitle: 'Зубья не поддались',
+    imageSrc: '/encounters/npc-heretic-cog.png',
+    icon: 'heretic',
+    baseSceneId: 'encounter_heretic_cog',
+    lines: [
+      'Металл **скользит** — чаша **пуста**, как твоя хватка.',
+      '«Сила… **не**… ответ… — **жестокость**… **тоже**… **учится**…»',
+      '«Неф… **или**… шёпот… — **выбирай**… **быстрее**… чем… Синод…»',
+    ],
+  },
 }
 
 /** Сцены-переходы наследуют портрет и имя родительской встречи. */
@@ -342,6 +355,7 @@ const FOLLOW_UP_PARENT: Record<string, string> = {
   encounter_heretic_whisper: 'encounter_heretic_cog',
   encounter_heretic_cog_torn: 'encounter_heretic_cog',
   encounter_heretic_retreat: 'encounter_heretic_cog',
+  encounter_heretic_fail_cog: 'encounter_heretic_cog',
   merchant_reunion_mouth_path: 'merchant',
   take_mask: 'merchant',
   leave_cart: 'merchant',
