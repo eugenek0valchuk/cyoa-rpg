@@ -9,6 +9,7 @@ import {
   GameViewport,
   GameSceneView,
   ArtifactReveal,
+  RaidChronicleModal,
 } from '@/components/game'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
@@ -19,6 +20,7 @@ export default function GamePage() {
 
   const {
     character,
+    hub,
     currentScene,
     artifact,
     artifactOpen,
@@ -32,6 +34,12 @@ export default function GamePage() {
     raidZone,
     raidModifier,
     minExtractDepth,
+    chronicleOpen,
+    showNewFlagHint,
+    flagCount,
+    journalCount,
+    handleOpenChronicle,
+    handleCloseChronicle,
     handleChoice,
     handleExtract,
     handleAbandonRaid,
@@ -68,6 +76,10 @@ export default function GamePage() {
         raidZone={raidZone}
         raidModifier={raidModifier}
         isEndingScene={isEndingScene}
+        flagCount={flagCount}
+        journalCount={journalCount}
+        showNewFlagHint={showNewFlagHint}
+        onOpenChronicle={handleOpenChronicle}
         onExtract={handleExtract}
         onAbandon={() => setAbandonOpen(true)}
         onReset={handleExitToMenu}
@@ -81,11 +93,13 @@ export default function GamePage() {
         <GameSceneView
           scene={currentScene}
           character={character}
+          journalEntries={hub?.journalEntries ?? []}
           isLoading={isLoading}
           showChoices={showChoices}
           extractAvailable={extractAvailable && !isEndingScene}
           onExtract={handleExtract}
           onChoice={handleChoice}
+          onReturnToChamber={handleExitToMenu}
         />
       </GameViewport>
 
@@ -93,6 +107,14 @@ export default function GamePage() {
         artifact={artifact}
         open={artifactOpen}
         onClose={closeArtifactReveal}
+      />
+
+      <RaidChronicleModal
+        open={chronicleOpen}
+        onClose={handleCloseChronicle}
+        flags={character.flags}
+        journalEntries={hub?.journalEntries ?? []}
+        raidDepth={raidDepth}
       />
 
       <GothicModal

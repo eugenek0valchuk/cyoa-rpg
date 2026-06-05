@@ -5,17 +5,16 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { GothicScreen } from '@/components/ui/GothicScreen'
-import { restoreActiveSlot } from '@/hooks/useAutoSave'
+import { restoreActiveSlot, clearSessionMemory } from '@/hooks/useAutoSave'
 import { t } from '@/lib/i18n'
 import {
   deleteSaveSlot,
   getActiveSlotId,
   listSaveSlots,
+  loadSaveSlot,
   setActiveSlotId,
   type SaveSlot,
 } from '@/lib/persistence/saveStorage'
-import { useCharacterStore } from '@/lib/store/characterStore'
-import { useHubStore } from '@/lib/store/hubStore'
 import type { Origin } from '@/lib/types/game'
 
 function formatSavedAt(timestamp: number): string {
@@ -42,9 +41,6 @@ export default function ArchivesPage() {
   const [slots, setSlots] = useState<SaveSlot[]>([])
   const [loading, setLoading] = useState(true)
 
-  const character = useCharacterStore((state) => state.character)
-  const hub = useHubStore((state) => state.hub)
-
   useEffect(() => {
     listSaveSlots()
       .then(setSlots)
@@ -64,6 +60,10 @@ export default function ArchivesPage() {
   }
 
   const handleDelete = async (slotId: number) => {
+    if (slotId === getActiveSlotId()) {
+      clearSessionMemory()
+    }
+
     await deleteSaveSlot(slotId)
     refreshSlots()
   }
@@ -74,13 +74,8 @@ export default function ArchivesPage() {
   }
 
   const handleBack = useCallback(async () => {
-    if (character && hub) {
-      router.push('/hub')
-      return
-    }
-
     const slotId = getActiveSlotId()
-    const slot = slots[slotId]
+    const slot = await loadSaveSlot(slotId)
 
     if (slot && slotHasProgress(slot)) {
       const result = await restoreActiveSlot(slotId)
@@ -91,8 +86,9 @@ export default function ArchivesPage() {
       }
     }
 
+    clearSessionMemory()
     router.push('/')
-  }, [character, hub, router, slots])
+  }, [router])
 
   return (
     <GothicScreen>

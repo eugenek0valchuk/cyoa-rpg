@@ -68,13 +68,15 @@ export const eventScenes: Record<string, Scene> = {
     `.trim(),
     options: [
       {
-        id: 'catacombs',
+        id: 'catacombs_retreat',
         text: 'Перестать читать и отступить',
+        targetSceneId: 'catacombs',
         effects: { sanity: -2 },
       },
       {
-        id: 'catacombs',
+        id: 'carve_return_sigil',
         text: 'Вырезать печать возврата из камня',
+        targetSceneId: 'catacombs',
         requirements: { intelligence: 5 },
         effects: {
           sanity: -8,

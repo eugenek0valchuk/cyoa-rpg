@@ -84,8 +84,15 @@ export async function restoreActiveSlot(slotId: number): Promise<{
   }
 
   if (slot.currentScene) {
+    const { personalizeScene } = await import('@/lib/game/personalizeScene')
+    const { cloneScene } = await import('@/lib/game/sceneRegistry')
+
     useGameStore.setState({
-      currentScene: slot.currentScene,
+      currentScene: personalizeScene(cloneScene(slot.currentScene), {
+        character: slot.character,
+        journalEntries: slot.hub?.journalEntries ?? [],
+        visitedSceneIds: new Set(slot.sceneHistory.map((entry) => entry.id)),
+      }),
       history: slot.history,
       sceneHistory: slot.sceneHistory,
     })
@@ -120,13 +127,18 @@ export async function flushCurrentSave(): Promise<boolean> {
   return true
 }
 
+/** Drop in-memory session without touching IndexedDB. */
+export function clearSessionMemory(): void {
+  useCharacterStore.getState().resetCharacter()
+  useHubStore.getState().resetHub()
+  useGameStore.getState().resetGame()
+}
+
 /** Save progress, clear session memory, return to title screen. */
 export async function exitToMainMenu(): Promise<void> {
   await flushCurrentSave()
 
-  useCharacterStore.getState().resetCharacter()
-  useHubStore.getState().resetHub()
-  useGameStore.getState().resetGame()
+  clearSessionMemory()
 }
 
 export async function clearActiveSlotSave(): Promise<void> {

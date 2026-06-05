@@ -18,6 +18,10 @@ interface Props {
   raidZone: RaidZone
   raidModifier: RaidModifierDef | null
   isEndingScene: boolean
+  flagCount: number
+  journalCount?: number
+  showNewFlagHint: boolean
+  onOpenChronicle: () => void
   onExtract: () => void
   onAbandon: () => void
   onReset: () => void
@@ -62,6 +66,10 @@ export function GameHeader({
   raidZone,
   raidModifier,
   isEndingScene,
+  flagCount,
+  journalCount = 0,
+  showNewFlagHint,
+  onOpenChronicle,
   onExtract,
   onAbandon,
   onReset,
@@ -69,6 +77,8 @@ export function GameHeader({
   const { game } = t.ui
   const { ui: hubText } = t.hub
   const { ui: raidText } = t.raid
+  const { ui: chronicleText } = t.raidChronicle
+  const { ui: diaryText } = t.journal
 
   const extractHint = getExtractHint(
     extractBlockReason,
@@ -109,6 +119,30 @@ export function GameHeader({
         </div>
 
         <div className="flex flex-wrap gap-1.5 lg:shrink-0 lg:justify-end">
+          <button
+            type="button"
+            onClick={onOpenChronicle}
+            disabled={isLoading}
+            title={chronicleText.openHint}
+            className={`relative inline-flex items-center gap-1.5 border px-3 py-2 text-[9px] uppercase tracking-[0.16em] transition disabled:opacity-40 ${
+              showNewFlagHint
+                ? 'animate-pulse border-[#4a5c4a] bg-[#0d120d]/90 text-[#b4c27d] shadow-[0_0_16px_rgba(120,160,100,0.15)]'
+                : 'border-[#2b3528] bg-[#0a0d0a]/90 text-[#8a9a82] hover:border-[#4a5c4a] hover:text-[#b4c27d]'
+            }`}
+          >
+            <GameIcon type="flag" size={24} noBlend />
+            {chronicleText.openChronicle}
+                {flagCount > 0 && (
+                  <span className="ml-0.5 inline-flex min-w-[1.1rem] items-center justify-center border border-[#4a5c4a]/60 bg-[#121812] px-1 text-[9px] text-[#b4c27d]">
+                    {flagCount}
+                  </span>
+                )}
+                {journalCount > 0 && (
+                  <span className="ml-0.5 inline-flex min-w-[1.1rem] items-center justify-center border border-[#3a3a4a]/60 bg-[#101018] px-1 text-[9px] text-[#a8a8c8]">
+                    {journalCount}
+                  </span>
+                )}
+          </button>
           {!isEndingScene && (
             <>
               <button
@@ -137,14 +171,28 @@ export function GameHeader({
             type="button"
             onClick={onReset}
             disabled={isLoading}
-            title={isEndingScene ? undefined : game.returnHint}
-            className="inline-flex items-center gap-1.5 border border-[#241919] bg-[#0f0a0a]/80 px-3 py-2 text-[9px] uppercase tracking-[0.16em] text-[#6f6259] transition hover:border-[#4a2323] hover:text-[#d7c8bc] disabled:opacity-40"
+            title={isEndingScene ? game.endingReturnHint : game.returnHint}
+            className={`inline-flex items-center gap-1.5 border px-3 py-2 text-[9px] uppercase tracking-[0.16em] transition disabled:opacity-40 ${
+              isEndingScene
+                ? 'border-2 border-[#5c1f1f] bg-[#160909] text-[#d46060] hover:bg-[#220d0d]'
+                : 'border-[#241919] bg-[#0f0a0a]/80 text-[#6f6259] hover:border-[#4a2323] hover:text-[#d7c8bc]'
+            }`}
           >
             <RotateCcw className="h-3 w-3" />
             {isEndingScene ? hubText.endingReturn : game.return}
           </button>
         </div>
       </div>
+
+      {!isEndingScene && showNewFlagHint && (
+        <button
+          type="button"
+          onClick={onOpenChronicle}
+          className="w-full border border-[#3a4a3a]/80 bg-[#0d120d]/70 px-3 py-2 text-left text-[11px] leading-relaxed text-[#9aab92] transition hover:border-[#4a5c4a] hover:text-[#b4c27d]"
+        >
+          {diaryText.newEntryBanner}
+        </button>
+      )}
 
       {!isEndingScene && extractHint && !extractAvailable && (
         <p className="border border-[#241919] bg-[#0a0808]/60 px-3 py-2 text-[10px] leading-relaxed text-[#85776a]">

@@ -5,6 +5,7 @@ export * from './ui/RitualSymbol'
 export * from './character/CharacterPanel'
 
 export * from './chronicle/Chronicle'
+export * from './chronicle/RaidChronicleModal'
 export * from './chronicle/SceneChronicle'
 
 export * from './layout/GameHeader'

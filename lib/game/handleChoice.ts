@@ -28,6 +28,7 @@ interface HandleChoiceParams {
   pushSceneHistory: (scene: SceneHistoryEntry) => void
   pushHistory: (sceneId: string) => void
   revealArtifact: (artifact: Artifact) => Promise<void>
+  journalEntries?: string[]
 }
 
 export async function handleGameChoice({
@@ -42,6 +43,7 @@ export async function handleGameChoice({
   pushSceneHistory,
   pushHistory,
   revealArtifact,
+  journalEntries = [],
 }: HandleChoiceParams) {
   const { updatedCharacter, revealedArtifact } = applyChoiceEffects({
     character,
@@ -90,6 +92,7 @@ export async function handleGameChoice({
     choice,
     character: updatedCharacter,
     sceneHistory,
+    journalEntries,
   })
 
   setCurrentScene(nextScene)

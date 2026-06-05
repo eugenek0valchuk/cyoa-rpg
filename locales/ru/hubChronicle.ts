@@ -1,0 +1,18 @@
+export const hubChronicleUi = {
+  tabChamber: 'Камера',
+  tabMagazine: 'Журнал',
+  tabMarks: 'Следы',
+  magazineCover: 'Журнал камеры',
+  magazineIssue: 'Выпуск сосуда',
+  pageLabel: 'Страница',
+  pageOf: '{page} / {total}',
+  prevPage: 'Назад',
+  nextPage: 'Дальше',
+  lockedPage: 'Запечатано',
+  lockedHint: 'Спустись — и страница откроется сама, когда мир запишет след.',
+  progress: 'Записано страниц',
+  chamberEvolution: 'Состояние камеры',
+  statsTitle: 'Счёт спусков',
+  emptyMarks: 'Стены пока чисты. Провалы и извлечения оставят след.',
+  jumpToPage: 'Оглавление',
+} as const

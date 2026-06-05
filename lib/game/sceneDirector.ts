@@ -9,6 +9,70 @@ interface PickSceneParams {
   visitedSceneIds: Set<string>
   visitedTitles: Set<string>
   seed: number
+  character: Character
+  journalEntries: string[]
+}
+
+function sceneContext(
+  character: Character,
+  journalEntries: string[],
+  visitedSceneIds: Set<string>,
+) {
+  return { character, journalEntries, visitedSceneIds }
+}
+
+function boostPoolForFlags(
+  pool: string[],
+  character: Character,
+  visitedSceneIds: Set<string>,
+): string[] {
+  const boosted: string[] = []
+
+  const tryBoost = (sceneId: string, flag: string) => {
+    if (
+      character.flags.includes(flag) &&
+      pool.includes(sceneId) &&
+      !visitedSceneIds.has(sceneId) &&
+      !boosted.includes(sceneId)
+    ) {
+      boosted.push(sceneId)
+    }
+  }
+
+  tryBoost('encounter_synod_acolyte', 'synod_mark')
+  tryBoost('encounter_wax_pilgrim', 'wax_offered')
+  tryBoost('encounter_choir_remnant', 'choir_split')
+
+  return boosted
+}
+
+function boostPoolForJournal(
+  pool: string[],
+  journalEntries: string[],
+  visitedSceneIds: Set<string>,
+): string[] {
+  const journalBoosts: Record<string, string> = {
+    npc_wax: 'encounter_wax_pilgrim',
+    npc_bell_wretch: 'encounter_bell_wretch',
+    npc_choir: 'encounter_choir_remnant',
+    npc_synod: 'encounter_synod_acolyte',
+    npc_breathless: 'merchant',
+  }
+
+  const boosted: string[] = []
+
+  for (const [journalId, sceneId] of Object.entries(journalBoosts)) {
+    if (
+      journalEntries.includes(journalId) &&
+      pool.includes(sceneId) &&
+      !visitedSceneIds.has(sceneId) &&
+      !boosted.includes(sceneId)
+    ) {
+      boosted.push(sceneId)
+    }
+  }
+
+  return boosted
 }
 
 function pickFromPool({
@@ -16,7 +80,27 @@ function pickFromPool({
   visitedSceneIds,
   visitedTitles,
   seed,
+  character,
+  journalEntries,
 }: PickSceneParams): Scene | null {
+  const flagBoosted = boostPoolForFlags(pool, character, visitedSceneIds)
+  const journalBoosted = boostPoolForJournal(
+    pool,
+    journalEntries,
+    visitedSceneIds,
+  )
+  const boosted = [...flagBoosted, ...journalBoosted.filter((id) => !flagBoosted.includes(id))]
+
+  if (boosted.length > 0) {
+    const sceneId = boosted[Math.abs(seed) % boosted.length]!
+    return (
+      getSceneById(
+        sceneId,
+        sceneContext(character, journalEntries, visitedSceneIds),
+      ) ?? null
+    )
+  }
+
   const available = pool.filter((sceneId) => {
     const scene = sceneRegistry[sceneId]
 
@@ -39,7 +123,12 @@ function pickFromPool({
   const index = Math.abs(seed) % candidates.length
   const sceneId = candidates[index]
 
-  return sceneId ? getSceneById(sceneId) ?? null : null
+  return sceneId
+    ? getSceneById(
+        sceneId,
+        sceneContext(character, journalEntries, visitedSceneIds),
+      ) ?? null
+    : null
 }
 
 function buildSeed(parts: string[]): number {
@@ -58,18 +147,26 @@ function wasSceneVisited(
   )
 }
 
+function getChoiceRouteId(choice: Choice): string {
+  return choice.targetSceneId ?? choice.id
+}
+
 export function resolveDirectedScene(
   currentScene: Scene,
   choice: Choice,
   character: Character,
   sceneHistory: SceneHistoryEntry[],
+  journalEntries: string[] = [],
 ): Scene {
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
   const visitedTitles = new Set(
     sceneHistory.map((entry) => entry.title.toLowerCase()),
   )
 
-  const directScene = getSceneById(choice.id)
+  const ctx = sceneContext(character, journalEntries, visitedSceneIds)
+
+  const routeId = getChoiceRouteId(choice)
+  const directScene = getSceneById(routeId, ctx)
 
   if (
     directScene &&
@@ -83,7 +180,7 @@ export function resolveDirectedScene(
     return directScene
   }
 
-  const choicePool = choicePools[choice.id]
+  const choicePool = choicePools[routeId] ?? choicePools[choice.id]
 
   if (choicePool) {
     const pooled = pickFromPool({
@@ -96,6 +193,8 @@ export function resolveDirectedScene(
         character.name,
         String(sceneHistory.length),
       ]),
+      character,
+      journalEntries,
     })
 
     if (pooled) {
@@ -116,13 +215,16 @@ export function resolveDirectedScene(
       currentScene.id,
       String(character.corruption),
     ]),
+    character,
+    journalEntries,
   })
 
   if (phaseScene) {
     return phaseScene
   }
 
-  const fallback = getSceneById('descent_echoes') ?? getSceneById('mouth')
+  const fallback =
+    getSceneById('descent_echoes', ctx) ?? getSceneById('mouth', ctx)
 
   if (!fallback) {
     throw new Error(`No scene found for choice "${choice.id}"`)

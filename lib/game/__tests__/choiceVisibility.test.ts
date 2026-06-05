@@ -117,4 +117,44 @@ describe('isChoiceVisible', () => {
       isChoiceVisible(makeChoice({}, { requiredArtifact: 'mask' }), character),
     ).toBe(true)
   })
+
+  it('hides choice when forbiddenArtifact is owned', () => {
+    const character = makeCharacter({
+      inventory: [
+        { id: 'mask', name: 'Mask', rarity: 'rare', description: 'A mask' },
+      ],
+    })
+
+    expect(
+      isChoiceVisible(makeChoice({}, { forbiddenArtifact: 'mask' }), character),
+    ).toBe(false)
+  })
+
+  it('hides choice when requiredOrigin does not match', () => {
+    expect(
+      isChoiceVisible(
+        makeChoice({}, { requiredOrigin: 'witness' }),
+        makeCharacter({ origin: 'hollow' }),
+      ),
+    ).toBe(false)
+  })
+
+  it('shows choice when requiredJournal matches', () => {
+    expect(
+      isChoiceVisible(
+        makeChoice({}, { requiredJournal: 'npc_breathless' }),
+        makeCharacter(),
+        ['npc_breathless'],
+      ),
+    ).toBe(true)
+  })
+
+  it('shows choice when requiredOrigin matches', () => {
+    expect(
+      isChoiceVisible(
+        makeChoice({}, { requiredOrigin: 'witness' }),
+        makeCharacter({ origin: 'witness' }),
+      ),
+    ).toBe(true)
+  })
 })

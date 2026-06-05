@@ -143,6 +143,12 @@ export const phaseScenes: Record<string, Scene> = {
         text: 'Присоединиться к правому хору',
         effects: { sanity: -5, corruption: 3 },
       },
+      {
+        id: 'whispers_mirror',
+        text: 'Слушать третий голос — не выбирая сторону',
+        requirements: { requiredFlag: 'choir_split' },
+        effects: { sanity: -4, corruption: 2 },
+      },
     ],
   },
 
@@ -193,6 +199,16 @@ export const phaseScenes: Record<string, Scene> = {
         requirements: { strength: 7 },
         effects: { sanity: -5, corruption: 4 },
       },
+      {
+        id: 'collapse_threshold',
+        text: 'Вынуть чёрный позвонок из спинки трона',
+        requirements: { intelligence: 7 },
+        effects: {
+          addArtifact: 'black_vertebrae',
+          corruption: 6,
+          sanity: -8,
+        },
+      },
     ],
   },
 
@@ -217,6 +233,13 @@ export const phaseScenes: Record<string, Scene> = {
         text: 'Произнести то, что помнишь о себе',
         requirements: { intelligence: 7 },
         effects: { sanity: 5, corruption: 5 },
+      },
+      {
+        id: 'heretic_whisper_pit',
+        text: 'Прошептать ответ под камнем в слитый исход',
+        targetSceneId: 'jump_pit',
+        requirements: { requiredFlag: 'heretic_answered' },
+        effects: { corruption: 8, sanity: -6 },
       },
     ],
   },

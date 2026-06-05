@@ -7,6 +7,7 @@ interface ResolveNextSceneParams {
   choice: Choice
   character: Character
   sceneHistory: SceneHistoryEntry[]
+  journalEntries?: string[]
 }
 
 export function resolveNextScene({
@@ -14,6 +15,13 @@ export function resolveNextScene({
   choice,
   character,
   sceneHistory,
+  journalEntries = [],
 }: ResolveNextSceneParams): Scene {
-  return resolveDirectedScene(currentScene, choice, character, sceneHistory)
+  return resolveDirectedScene(
+    currentScene,
+    choice,
+    character,
+    sceneHistory,
+    journalEntries,
+  )
 }

@@ -51,11 +51,18 @@ export interface ChoiceRequirements {
   maxSanity?: number
   requiredFlag?: string
   requiredArtifact?: string
+  forbiddenArtifact?: string
+  requiredOrigin?: Origin
+  forbiddenOrigin?: Origin
+  /** Запись дневника из прошлых спусков */
+  requiredJournal?: string
 }
 
 export interface Choice {
   id: string
   text: string
+  /** Куда ведёт выбор, если id не совпадает с id сцены (например, два пути в catacombs). */
+  targetSceneId?: string
   effects?: {
     sanity?: number
     corruption?: number

@@ -20,7 +20,8 @@ import { EffectIcon, getEffectColor } from '../ui/EffectIcon'
 interface ChoiceListProps {
   options: Choice[]
   character: Character
-  onSelect: (id: string) => void
+  journalEntries?: string[]
+  onSelect: (optionIndex: number) => void
   isLoading?: boolean
 }
 
@@ -237,25 +238,38 @@ function ChoiceMeta({
 export function ChoiceList({
   options,
   character,
+  journalEntries = [],
   onSelect,
   isLoading,
 }: ChoiceListProps) {
   const visibleOptions = options.filter((option) =>
-    isChoiceVisible(option, character),
+    isChoiceVisible(option, character, journalEntries),
   )
+
+  if (visibleOptions.length === 0) {
+    return (
+      <p className="border border-[#241919] bg-[#0a0808]/80 px-4 py-3 text-[13px] leading-relaxed text-[#85776a]">
+        {t.ui.game.noChoicesVisible}
+      </p>
+    )
+  }
 
   return (
     <div className="max-h-[min(42vh,360px)] overflow-y-auto pr-0.5 chronicle-scrollbar scroll-smooth">
       <div className="space-y-2">
-        {visibleOptions.map((option, index) => {
-          const available = isChoiceAvailable(option, character)
+        {options.map((option, index) => {
+          if (!isChoiceVisible(option, character, journalEntries)) {
+            return null
+          }
+
+          const available = isChoiceAvailable(option, character, journalEntries)
 
           return (
             <motion.button
-              key={option.id}
+              key={`${option.id}-${index}`}
               type="button"
               disabled={!available || isLoading}
-              onClick={() => onSelect(option.id)}
+              onClick={() => onSelect(index)}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}

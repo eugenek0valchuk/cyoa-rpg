@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
+import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
+import { journalCatalog } from '@/locales/ru/journal'
 import {
   RoomHotspotLayer,
   type HotspotBadges,
@@ -30,7 +32,7 @@ export default function HubPage() {
   const router = useRouter()
   useAutoSave()
 
-  const { ui: hubText, rooms, roomMarks } = t.hub
+  const { ui: hubText, rooms } = t.hub
   const hotspots = hubText.hotspots
 
   const character = useCharacterStore((state) => state.character)
@@ -122,11 +124,15 @@ export default function HubPage() {
     setActiveModal(null)
 
     resetGame()
-    setCurrentScene(getRaidStartScene())
+    const startScene = getRaidStartScene(
+      started.character,
+      started.hub.journalEntries ?? [],
+    )
+    setCurrentScene(startScene)
 
     await saveCurrentGameState(getActiveSlotId(), {
       character: started.character,
-      currentScene: getRaidStartScene(),
+      currentScene: startScene,
       history: [],
       sceneHistory: [],
       hub: started.hub,
@@ -152,9 +158,11 @@ export default function HubPage() {
     stash: hub.stash.length > 0 ? String(hub.stash.length) : undefined,
     vessel: String(character.sanity),
     chronicle:
-      hub.roomMarks.length > 0
-        ? String(hub.roomMarks.length)
-        : String(hub.totalRaids),
+      (hub.journalEntries?.length ?? 0) > 0
+        ? `${hub.journalEntries.length}/${journalCatalog.length}`
+        : hub.roomMarks.length > 0
+          ? String(hub.roomMarks.length)
+          : undefined,
     threshold: '↓',
   }
 
@@ -284,46 +292,14 @@ export default function HubPage() {
         icon="flag"
         title={hotspots.chronicle.label}
         subtitle={hotspots.chronicle.hint}
-        maxWidth="lg"
+        maxWidth="xl"
       >
-        <p className="text-[15px] leading-8 text-[#b8a99e]">{evolvedText}</p>
-
-        {hub.roomMarks.length > 0 && (
-          <div className="mt-6 border-t border-[#241919] pt-5">
-            <div className="text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
-              {hubText.marks}
-            </div>
-            <ul className="mt-3 space-y-2">
-              {hub.roomMarks.map((mark) => (
-                <li
-                  key={mark}
-                  className="flex items-center gap-2 text-[14px] text-[#9d8d82]"
-                >
-                  <GameIcon type="flag" size={28} />
-                  {roomMarks[mark] ?? mark}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="mt-8 grid grid-cols-3 gap-3">
-          {[
-            { label: hubText.raids, value: hub.totalRaids },
-            { label: hubText.extractions, value: hub.totalExtractions },
-            { label: hubText.bestDepth, value: hub.bestDepth },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="border border-[#2b2320] bg-black/40 px-3 py-4 text-center"
-            >
-              <div className="text-[12px] text-[#75685f]">{stat.label}</div>
-              <div className="font-cinzel mt-2 text-2xl text-[#d6cdc3]">
-                {stat.value}
-              </div>
-            </div>
-          ))}
-        </div>
+        <HubChronicleMagazine
+          hub={hub}
+          vesselName={character.name}
+          evolvedText={evolvedText}
+          roomTitle={room.title}
+        />
       </GothicModal>
 
       <GothicModal

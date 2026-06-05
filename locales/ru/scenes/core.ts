@@ -61,13 +61,13 @@ export const coreScenes: Record<string, Scene> = {
     title: 'Телега с Трупами',
 
     description: `
-Купец в капюшоне не дышит.
+Бездыханный стоит у телеги — так зовут купца, потому что он дышит только тогда, когда на него не смотрят.
 
 С его фигуры свисает гниющая ткань, а под телегой покачиваются десятки железных оберегов.
 
 Среди костей, погребальных свечей и сшитых реликвий лежит почерневшая железная маска, опутанная цепями.
 
-«Ты уже надевал её однажды», — шепчет фигура.
+«Плати зубами — или слухами», — говорит Бездыханный. «Синод всегда помнит.»
     `.trim(),
 
     options: [
@@ -75,6 +75,10 @@ export const coreScenes: Record<string, Scene> = {
         id: 'take_mask',
 
         text: 'Взять Пепельную Безликую Маску',
+
+        requirements: {
+          forbiddenArtifact: 'ashen_faceless_mask',
+        },
 
         effects: {
           addArtifact: 'ashen_faceless_mask',
@@ -86,12 +90,38 @@ export const coreScenes: Record<string, Scene> = {
       },
 
       {
-        id: 'leave_cart',
+        id: 'encounter_synod_acolyte',
 
-        text: 'Оставить телегу с трупами позади',
+        text: 'Спросить, что Синод знает об Устах',
+
+        requirements: {
+          intelligence: 5,
+        },
 
         effects: {
+          sanity: -4,
+          addFlag: 'met_breathless',
+        },
+      },
+
+      {
+        id: 'leave_cart',
+        text: 'Оставить телегу с трупами позади',
+        effects: {
           sanity: -2,
+        },
+      },
+
+      {
+        id: 'recall_synod',
+        text: 'Вспомнить слова Бездыханного — найти адепта Синода',
+        targetSceneId: 'encounter_synod_acolyte',
+        requirements: {
+          requiredJournal: 'npc_breathless',
+        },
+        effects: {
+          sanity: -3,
+          corruption: 2,
         },
       },
     ],

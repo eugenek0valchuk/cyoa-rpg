@@ -55,7 +55,7 @@ describe('resolveDirectedScene', () => {
     )
 
     expect(scene.id).not.toBe('mouth')
-    expect(['descent_echoes', 'descent_reliquary']).toContain(scene.id)
+    expect(['descent_echoes', 'descent_reliquary', 'encounter_wax_pilgrim']).toContain(scene.id)
   })
 
   it('falls back to phase scenes when no direct mapping exists', () => {

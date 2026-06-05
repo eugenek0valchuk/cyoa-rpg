@@ -4,6 +4,8 @@ import type { RaidModifierId } from '@/lib/game/raidModifiers'
 export interface HubState {
   roomLevel: number
   roomMarks: string[]
+  /** Постоянные записи дневника — сохраняются между спусками */
+  journalEntries: string[]
   stash: Artifact[]
   totalRaids: number
   totalExtractions: number
@@ -27,6 +29,7 @@ export function createInitialHubState(
   return {
     roomLevel: 0,
     roomMarks: [],
+    journalEntries: [],
     stash: [...starterInventory],
     totalRaids: 0,
     totalExtractions: 0,

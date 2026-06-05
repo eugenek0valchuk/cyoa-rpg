@@ -10,16 +10,18 @@ import { t } from '@/lib/i18n'
 interface SceneChoicesProps {
   scene: Scene
   character: Character
+  journalEntries?: string[]
   showChoices: boolean
   isLoading: boolean
   extractAvailable?: boolean
   onExtract?: () => void
-  onChoice: (choiceId: string) => void
+  onChoice: (choiceIndex: number) => void
 }
 
 export function SceneChoices({
   scene,
   character,
+  journalEntries = [],
   showChoices,
   isLoading,
   extractAvailable = false,
@@ -62,6 +64,7 @@ export function SceneChoices({
             <ChoiceList
               options={scene.options}
               character={character}
+              journalEntries={journalEntries}
               onSelect={onChoice}
               isLoading={isLoading}
             />

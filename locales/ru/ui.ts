@@ -86,6 +86,12 @@ export const ui = {
     reqCorruption: 'Скверна',
     reqSanity: 'Рассудок',
     inventoryEmpty: 'Ничего не осталось.',
+    endingEyebrow: 'Конец спуска',
+    endingReturnBody:
+      'Путь оборвался здесь. Спуск считается проваленным — добыча этого рейда потеряна, но сосуд вернётся в камеру.',
+    endingReturnHint: 'Открыть итог спуска и вернуться в камеру',
+    noChoicesVisible:
+      'Ни один путь не открыт — не хватает статов или меток. Попробуй хронику или отступи.',
     chroniclePast: 'Прошлая память',
     chroniclePresent: 'Настоящий миг',
     zone: 'Зона',

@@ -1,17 +1,33 @@
-import type { Character, Choice } from '@/lib/types/game'
 import { isChoiceVisible } from './choiceVisibility'
+
+import type { Character, Choice } from '../types/game'
 
 export function isChoiceAvailable(
   choice: Choice,
   character: Character,
+  journalEntries: string[] = [],
 ): boolean {
-  if (!isChoiceVisible(choice, character)) {
+  if (!isChoiceVisible(choice, character, journalEntries)) {
     return false
   }
 
   const requirements = choice.requirements
   if (!requirements) {
     return true
+  }
+
+  if (
+    requirements.requiredOrigin &&
+    character.origin !== requirements.requiredOrigin
+  ) {
+    return false
+  }
+
+  if (
+    requirements.forbiddenOrigin &&
+    character.origin === requirements.forbiddenOrigin
+  ) {
+    return false
   }
 
   if (

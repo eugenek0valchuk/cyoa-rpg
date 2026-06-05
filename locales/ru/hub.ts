@@ -12,6 +12,7 @@ export const hubUi = {
   bestDepth: 'Глубина',
   roomLevel: 'Камера',
   marks: 'Следы',
+  worldLore: 'Фракции',
   beginRaid: 'Начать спуск',
   continueRaid: 'Продолжить спуск',
   archives: 'Архивы',
@@ -66,7 +67,7 @@ export const hubUi = {
     },
     chronicle: {
       label: 'Хроника камеры',
-      hint: 'Следы и числа спусков',
+      hint: 'Журнал сосуда — листай страницы между спусками',
     },
     threshold: {
       label: 'Порог',

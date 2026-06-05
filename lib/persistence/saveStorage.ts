@@ -56,13 +56,20 @@ function runTransaction<T>(
 }
 
 function normalizeSlot(slot: Partial<SaveSlot> & { slotId: number }): SaveSlot {
+  const hub = slot.hub
+    ? {
+        ...slot.hub,
+        journalEntries: slot.hub.journalEntries ?? [],
+      }
+    : null
+
   return {
     slotId: slot.slotId,
     character: slot.character ?? null,
     currentScene: slot.currentScene ?? null,
     history: slot.history ?? [],
     sceneHistory: slot.sceneHistory ?? [],
-    hub: slot.hub ?? null,
+    hub,
     raid: slot.raid ?? null,
     savedAt: slot.savedAt ?? 0,
   }

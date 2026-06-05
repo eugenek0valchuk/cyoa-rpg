@@ -6,10 +6,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { useArtifactReveal } from '@/hooks/useArtifactReveal'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 
+import { applyJournalDiscovery } from '@/lib/game/applyJournalDiscovery'
 import { artifacts } from '@/lib/game/artifacts'
 import { handleGameChoice } from '@/lib/game/handleChoice'
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { hasReturnSigil } from '@/lib/game/extraction'
+import { isRaidEndingScene } from '@/lib/game/isRaidEndingScene'
 import { getRaidModifier } from '@/lib/game/raidModifiers'
 import { getRaidZone } from '@/lib/game/zones'
 import {
@@ -55,8 +57,47 @@ export function useGameSession() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [showChoices, setShowChoices] = useState(true)
+  const [chronicleOpen, setChronicleOpen] = useState(false)
+  const [showNewFlagHint, setShowNewFlagHint] = useState(false)
+  const [showNewJournalHint, setShowNewJournalHint] = useState(false)
 
-  const isEndingScene = currentScene?.options.length === 0
+  const syncJournal = useCallback(
+    (endingId?: string) => {
+      const activeHub = useHubStore.getState().hub
+      const activeCharacter = useCharacterStore.getState().character
+
+      if (!activeHub || !activeCharacter || !currentScene) {
+        return
+      }
+
+      const sceneIds = [
+        ...sceneHistory.map((entry) => entry.id),
+        currentScene.id,
+      ]
+
+      const { hub: nextHub, newEntries } = applyJournalDiscovery(activeHub, {
+        flags: activeCharacter.flags,
+        sceneIds,
+        endingId,
+      })
+
+      if (newEntries.length > 0) {
+        setHub(nextHub)
+        setShowNewJournalHint(true)
+      }
+    },
+    [currentScene, sceneHistory, setHub],
+  )
+
+  useEffect(() => {
+    if (!character || !hub || !currentScene || !raid?.active) {
+      return
+    }
+
+    syncJournal(isRaidEndingScene(currentScene) ? currentScene.id : undefined)
+  }, [character, hub, currentScene, raid?.active, syncJournal])
+
+  const isEndingScene = isRaidEndingScene(currentScene)
   const extractBlockReason = getExtractBlockReason(
     raid,
     character?.flags ?? [],
@@ -80,7 +121,9 @@ export function useGameSession() {
     }
 
     if (!currentScene) {
-      setCurrentScene(getRaidStartScene())
+      setCurrentScene(
+        getRaidStartScene(character, hub.journalEntries ?? []),
+      )
     }
   }, [character, hub, raid, currentScene, router, setCurrentScene])
 
@@ -164,21 +207,21 @@ export function useGameSession() {
   }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
 
   const handleChoice = useCallback(
-    async (choiceId: string) => {
+    async (choiceIndex: number) => {
       if (!currentScene || !character || !raid?.active || isLoading) {
         return
       }
 
-      const choice = currentScene.options.find(
-        (option) => option.id === choiceId,
-      )
+      const choice = currentScene.options[choiceIndex]
 
-      if (!choice || !isChoiceAvailable(choice, character)) {
+      if (!choice || !isChoiceAvailable(choice, character, hub?.journalEntries ?? [])) {
         return
       }
 
       setIsLoading(true)
       setShowChoices(false)
+
+      const flagsBefore = character.flags
 
       try {
         await handleGameChoice({
@@ -193,7 +236,18 @@ export function useGameSession() {
           pushSceneHistory,
           pushHistory,
           revealArtifact,
+          journalEntries: hub?.journalEntries ?? [],
         })
+
+        const flagsAfter =
+          useCharacterStore.getState().character?.flags ?? flagsBefore
+        const gainedFlag = flagsAfter.some((flag) => !flagsBefore.includes(flag))
+
+        if (gainedFlag) {
+          setShowNewFlagHint(true)
+        }
+
+        syncJournal()
 
         await new Promise((resolve) => setTimeout(resolve, 350))
         setShowChoices(true)
@@ -207,14 +261,17 @@ export function useGameSession() {
     [
       currentScene,
       character,
+      hub,
       raid,
       isLoading,
       sceneHistory,
+      hub?.journalEntries,
       setCharacter,
       setCurrentScene,
       pushSceneHistory,
       pushHistory,
       revealArtifact,
+      syncJournal,
     ],
   )
 
@@ -240,8 +297,19 @@ export function useGameSession() {
     router.push('/')
   }, [handleReturnToHub, isEndingScene, router])
 
+  const handleOpenChronicle = useCallback(() => {
+    setChronicleOpen(true)
+    setShowNewFlagHint(false)
+    setShowNewJournalHint(false)
+  }, [])
+
+  const handleCloseChronicle = useCallback(() => {
+    setChronicleOpen(false)
+  }, [])
+
   return {
     character,
+    hub,
     currentScene,
     artifact,
     artifactOpen: open,
@@ -255,6 +323,12 @@ export function useGameSession() {
     raidZone,
     raidModifier,
     minExtractDepth: MIN_EXTRACT_DEPTH,
+    chronicleOpen,
+    showNewFlagHint: showNewFlagHint || showNewJournalHint,
+    journalCount: hub?.journalEntries.length ?? 0,
+    flagCount: character?.flags.length ?? 0,
+    handleOpenChronicle,
+    handleCloseChronicle,
     handleChoice,
     handleExtract,
     handleReturnToHub,

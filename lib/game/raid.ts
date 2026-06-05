@@ -150,8 +150,11 @@ export function failRaid(
   }
 }
 
-export function getRaidStartScene() {
-  return getInitialScene()
+export function getRaidStartScene(
+  character?: Character,
+  journalEntries: string[] = [],
+) {
+  return getInitialScene(character, journalEntries)
 }
 
 function diffNewMarks(before: string[], after: string[]): string[] {
