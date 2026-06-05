@@ -2,17 +2,21 @@
 
 import { RotateCcw } from 'lucide-react'
 
+import { t } from '@/lib/i18n'
+
 interface Props {
   isLoading: boolean
   onReset: () => void
 }
 
 export function GameHeader({ isLoading, onReset }: Props) {
+  const { game } = t.ui
+
   return (
     <div className="mb-6 flex items-start justify-between gap-6">
       <div className="flex-1 text-center">
         <div className="text-[10px] uppercase tracking-[0.7em] text-[#6d5e55]">
-          THE CHRONICLE CONTINUES
+          {game.headerEyebrow}
         </div>
 
         <div className="mx-auto mt-4 h-px w-40 bg-gradient-to-r from-transparent via-[#7a2222] to-transparent" />
@@ -47,7 +51,7 @@ export function GameHeader({ isLoading, onReset }: Props) {
       >
         <RotateCcw className="h-3.5 w-3.5 transition-transform duration-500 group-hover:-rotate-180" />
 
-        <span>Return</span>
+        <span>{game.return}</span>
       </button>
     </div>
   )

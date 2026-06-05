@@ -1,5 +1,7 @@
 'use client'
 
+import { t } from '@/lib/i18n'
+
 import { Artifact } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
@@ -184,7 +186,7 @@ export function ArtifactReveal({
                     {artifact.effects?.sanity && (
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-[#d8d0c8]" />
-                        Sanity {artifact.effects.sanity > 0 ? '+' : ''}
+                        {t.ui.game.sanity} {artifact.effects.sanity > 0 ? '+' : ''}
                         {artifact.effects.sanity}
                       </div>
                     )}
@@ -192,7 +194,8 @@ export function ArtifactReveal({
                     {artifact.effects?.corruption && (
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-1.5 rounded-full bg-[#8e1f1f]" />
-                        Corruption {artifact.effects.corruption > 0 ? '+' : ''}
+                        {t.ui.game.corruption}{' '}
+                        {artifact.effects.corruption > 0 ? '+' : ''}
                         {artifact.effects.corruption}
                       </div>
                     )}
@@ -203,7 +206,7 @@ export function ArtifactReveal({
               {artifact.whisper?.length ? (
                 <div className="mt-8 border-2 border-[#241919] bg-[#0d0909]/80 p-6">
                   <div className="text-[12px] uppercase tracking-[0.35em] text-[#6f6259]">
-                    The Whisper
+                    {t.ui.artifactReveal.whisperTitle}
                   </div>
 
                   <div className="mt-4 space-y-4 italic text-[#8f7f75] text-[15px]">
@@ -251,7 +254,7 @@ export function ArtifactReveal({
                     color: colors.accent,
                   }}
                 >
-                  Accept Relic
+                  {t.ui.artifactReveal.acceptRelic}
                 </button>
               </div>
             </div>

@@ -2,6 +2,7 @@
 
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
+import { t } from '@/lib/i18n'
 import { Character, Choice } from '@/lib/types/game'
 import { motion } from 'framer-motion'
 import { EffectIcon } from '../ui/EffectIcon'
@@ -63,6 +64,8 @@ export function ChoiceList({
   onSelect,
   isLoading,
 }: ChoiceListProps) {
+  const { game } = t.ui
+
   const visibleOptions = options.filter((option) =>
     isChoiceVisible(option, character),
   )
@@ -139,9 +142,15 @@ export function ChoiceList({
                   {(req?.minCorruption || req?.maxSanity) && (
                     <div className="mt-2 text-[13px] uppercase tracking-[0.25em] text-[#8b5e5e]">
                       {req.minCorruption && (
-                        <span>Corruption {req.minCorruption}+ </span>
+                        <span>
+                          {game.reqCorruption} {req.minCorruption}+{' '}
+                        </span>
                       )}
-                      {req.maxSanity && <span>Sanity ≤ {req.maxSanity}</span>}
+                      {req.maxSanity && (
+                        <span>
+                          {game.reqSanity} ≤ {req.maxSanity}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -150,14 +159,14 @@ export function ChoiceList({
                   {option.effects?.addArtifact && (
                     <div className="inline-flex items-center gap-1.5 rounded-sm bg-[#2a2a1a]/60 px-3 py-1 text-[12px] uppercase tracking-[0.2em] text-[#c8b84a] border border-[#4a4a2a]/40">
                       <EffectIcon type="addArtifact" size={36} />
-                      Relic
+                      {game.choiceRelic}
                     </div>
                   )}
 
                   {option.effects?.addFlag && (
                     <div className="inline-flex items-center gap-1.5 text-[14px] text-[#7da87d]">
                       <EffectIcon type="addFlag" size={36} />
-                      Flag
+                      {game.choiceFlag}
                     </div>
                   )}
 

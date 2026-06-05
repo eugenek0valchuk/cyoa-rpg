@@ -6,6 +6,7 @@ import { ORIGIN_ICONS, ORIGIN_TITLES } from '../constants/origins'
 import { GameIcon } from '../ui/GameIcon'
 import { StatBar } from '../ui/StatBar'
 
+import { t } from '@/lib/i18n'
 import type { Character } from '@/lib/types/game'
 
 interface CharacterPanelProps {
@@ -13,6 +14,8 @@ interface CharacterPanelProps {
 }
 
 export function CharacterPanel({ character }: CharacterPanelProps) {
+  const { game } = t.ui
+
   return (
     <motion.section
       initial={{ opacity: 0, y: -10 }}
@@ -27,7 +30,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
             <div className="text-[12px] uppercase tracking-[0.4em] text-[#7a6d63]">
-              VESSEL
+              {game.vessel}
             </div>
 
             <h2 className="font-cinzel mt-2 text-3xl uppercase tracking-[0.14em] text-[#efe5dc]">
@@ -46,7 +49,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
               <div>
                 <div className="text-[11px] uppercase tracking-[0.3em] text-[#6f6259]">
-                  ORIGIN
+                  {game.origin}
                 </div>
 
                 <div className="font-cinzel mt-1 text-sm uppercase tracking-[0.12em]">
@@ -59,21 +62,21 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           <div className="grid grid-cols-3 gap-2">
             {[
               {
-                label: 'Strength',
+                label: game.strength,
                 value: character.stats.strength,
                 max: 20,
                 color: '#d46060',
                 icon: <GameIcon type="strength" size={56} />,
               },
               {
-                label: 'Agility',
+                label: game.agility,
                 value: character.stats.agility,
                 max: 20,
                 color: '#b4c27d',
                 icon: <GameIcon type="agility" size={56} />,
               },
               {
-                label: 'Intelligence',
+                label: game.intelligence,
                 value: character.stats.intelligence,
                 max: 20,
                 color: '#92a6dd',
@@ -115,7 +118,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
 
         <div className="mt-6 grid gap-3 lg:grid-cols-3">
           <StatBar
-            label="Sanity"
+            label={game.sanity}
             value={character.sanity}
             max={100}
             color="#d8d0c8"
@@ -123,7 +126,7 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           />
 
           <StatBar
-            label="Corruption"
+            label={game.corruption}
             value={character.corruption}
             max={100}
             color="#d46060"
@@ -135,12 +138,12 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
           <div className="border border-[#2b2320] bg-[#0a0707]/90 p-5">
             <div className="flex items-center gap-2 text-[12px] uppercase tracking-[0.3em] text-[#7a6d63]">
               <GameIcon type="artifact" size={56} />
-              Artifacts
+              {game.inventory}
             </div>
 
             <div className="mt-4 space-y-2">
               {character.inventory.length === 0 ? (
-                <div className="text-sm text-[#75685f]">Nothing remains.</div>
+                <div className="text-sm text-[#75685f]">{game.inventoryEmpty}</div>
               ) : (
                 character.inventory.map((artifact, i) => (
                   <motion.div

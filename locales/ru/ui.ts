@@ -1,0 +1,91 @@
+export const ui = {
+  meta: {
+    title: 'Последнее Эхо',
+    description: 'Готическая horror RPG — спуск в проклятые глубины',
+  },
+
+  home: {
+    titleLine1: 'ПОСЛЕДНЕЕ',
+    titleLine2: 'ЭХО',
+    tagline1: 'Где-то под руинами',
+    tagline1b: 'древняя машина всё ещё видит сны.',
+    tagline2: 'Каждое решение меняет историю.',
+    tagline2b: 'Каждый путь оставляет след.',
+    begin: 'Начать',
+    beginSub: 'Новый спуск',
+    archives: 'Архивы',
+    archivesSub: 'Продолжить или новая игра в слоте',
+    footer1: 'Машина помнит',
+    footer2: 'то, что мёртвые забыли.',
+    version: 'v0.1',
+  },
+
+  archives: {
+    eyebrow: 'Машина помнит',
+    title: 'Архивы',
+    description:
+      'Три сосуда могут хранить твой спуск. Прогресс сохраняется между сессиями.',
+    loading: 'Читаем архивы...',
+    slot: 'Слот',
+    emptyVessel: 'Пустой сосуд',
+    noDescent: 'Спуск не записан',
+    continue: 'Продолжить',
+    erase: 'Стереть',
+    newDescent: 'Новый спуск',
+    return: 'Назад',
+  },
+
+  editor: {
+    chooseOrigin: 'ВЫБЕРИ ПРОИСХОЖДЕНИЕ',
+    title: 'СПУСК',
+    origin: 'ПРОИСХОЖДЕНИЕ',
+    selected: 'ВЫБРАНО',
+    select: 'ВЫБРАТЬ',
+    vesselName: 'ИМЯ СОСУДА',
+    namePlaceholder: 'введите имя...',
+    beginDescent: 'Начать спуск',
+    preparing: 'Готовим спуск...',
+    stats: {
+      str: 'СИЛ',
+      agi: 'ЛОВ',
+      int: 'ИНТ',
+    },
+  },
+
+  game: {
+    loading: 'СПУСК ПРОБУЖДАЕТСЯ',
+    headerEyebrow: 'ХРОНИКА ПРОДОЛЖАЕТСЯ',
+    return: 'Выйти',
+    vessel: 'СОСУД',
+    origin: 'ПРОИСХОЖДЕНИЕ',
+    strength: 'Сила',
+    agility: 'Ловкость',
+    intelligence: 'Интеллект',
+    sanity: 'Рассудок',
+    corruption: 'Скверна',
+    inventory: 'Реликвии',
+    chronicleTitle: 'Долгий спуск',
+    chronicleSubtitle: 'Хроника',
+    choiceRelic: 'Реликвия',
+    choiceFlag: 'Метка',
+    reqCorruption: 'Скверна',
+    reqSanity: 'Рассудок',
+    inventoryEmpty: 'Ничего не осталось.',
+    chroniclePast: 'Прошлая память',
+    chroniclePresent: 'Настоящий миг',
+  },
+
+  artifactReveal: {
+    close: 'Принять',
+    whispers: 'Шёпот',
+    whisperTitle: 'Шёпот',
+    acceptRelic: 'Принять реликвию',
+  },
+
+  rarity: {
+    common: 'обычная',
+    rare: 'редкая',
+    forbidden: 'запретная',
+    mythic: 'мифическая',
+  },
+} as const

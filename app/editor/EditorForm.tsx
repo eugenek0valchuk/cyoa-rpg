@@ -9,10 +9,10 @@ import {
   setActiveSlotId,
 } from '@/lib/persistence/saveStorage'
 import { getInitialScene } from '@/lib/game/getInitialScene'
-import { artifacts } from '@/lib/game/artifacts'
+import { t } from '@/lib/i18n'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
-import type { Artifact, Origin } from '@/lib/types/game'
+import type { Origin } from '@/lib/types/game'
 
 const ORIGIN_ICON_MAP: Record<Origin, 'hollow' | 'heretic' | 'witness'> = {
   hollow: 'hollow',
@@ -20,80 +20,10 @@ const ORIGIN_ICON_MAP: Record<Origin, 'hollow' | 'heretic' | 'witness'> = {
   witness: 'witness',
 }
 
-type OriginCard = {
-  value: Origin
-  title: string
-  subtitle: string
-  description: string
-  image: string
-  inventory: Artifact[]
-  stats: {
-    strength: number
-    agility: number
-    intelligence: number
-  }
-}
-
-const origins = [
-  {
-    value: 'hollow',
-    title: 'THE HOLLOW',
-    subtitle: 'Returned from the abyss without a soul.',
-
-    description:
-      'No prayers answered when the abyss took him. What returned wore the armor still, but beneath the iron remained only hunger, silence, and the fading memory of a forgotten name.',
-
-    image: '/origins/hollow.png',
-
-    inventory: [artifacts.ashen_faceless_mask],
-
-    stats: {
-      strength: 7,
-      agility: 4,
-      intelligence: 4,
-    },
-  },
-
-  {
-    value: 'heretic',
-    title: 'THE HERETIC',
-    subtitle: 'Spoke with something beneath the cathedral.',
-
-    description:
-      'Within the buried cathedral he heard the voice beneath stone. It offered revelation in ash and blood. Since that night, sacred flame recoils from his presence.',
-
-    image: '/origins/heretic.png',
-
-    inventory: [artifacts.inverted_rosary],
-
-    stats: {
-      strength: 3,
-      agility: 4,
-      intelligence: 8,
-    },
-  },
-
-  {
-    value: 'witness',
-    title: 'THE WITNESS',
-    subtitle: 'Saw the end and survived the memory.',
-
-    description:
-      'He stood before the final procession and survived the sight. The mind endured, though something behind the eyes was forever stripped away forever.',
-
-    image: '/origins/witness.png',
-
-    inventory: [artifacts.drowned_bell_fragment],
-
-    stats: {
-      strength: 4,
-      agility: 8,
-      intelligence: 3,
-    },
-  },
-] satisfies OriginCard[]
+const origins = t.origins
 
 export function EditorForm() {
+  const { editor: e } = t.ui
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -170,10 +100,10 @@ export function EditorForm() {
           <div className="border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
             <div>
               <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
-                CHOOSE YOUR ORIGIN
+                {e.chooseOrigin}
               </div>
               <h1 className="font-cinzel mt-1 text-3xl uppercase tracking-[0.08em] text-[#ece2d9]">
-                DESCENT
+                {e.title}
               </h1>
             </div>
           </div>
@@ -233,7 +163,7 @@ export function EditorForm() {
                     <div className="min-w-0 space-y-4">
                       <div>
                         <div className="text-[12px] uppercase tracking-[0.3em] text-[#6f6259]">
-                          ORIGIN
+                          {e.origin}
                         </div>
                         <h2 className="font-cinzel mt-2 break-words text-3xl uppercase tracking-[0.14em] text-[#e4d8cf]">
                           {origin.title}
@@ -250,17 +180,17 @@ export function EditorForm() {
                       <div className="grid grid-cols-3 gap-3">
                         {[
                           {
-                            label: 'STR',
+                            label: e.stats.str,
                             value: origin.stats.strength,
                             icon: 'strength',
                           },
                           {
-                            label: 'AGI',
+                            label: e.stats.agi,
                             value: origin.stats.agility,
                             icon: 'agility',
                           },
                           {
-                            label: 'INT',
+                            label: e.stats.int,
                             value: origin.stats.intelligence,
                             icon: 'intelligence',
                           },
@@ -307,7 +237,7 @@ export function EditorForm() {
                           : 'border-[#2b2320] text-[#6d5d53] hover:border-[#5c1f1f] hover:text-[#d46060]'
                       }`}
                     >
-                      {i === index ? 'SELECTED' : 'SELECT'}
+                      {i === index ? e.selected : e.select}
                     </button>
                   </div>
                 </div>
@@ -320,7 +250,7 @@ export function EditorForm() {
           <div className="border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]">
             <div className="flex items-center justify-between border-b-2 border-[#241919] bg-[#120d0d] px-6 py-4">
               <div className="text-[12px] uppercase tracking-[0.35em] text-[#75685f]">
-                VESSEL NAME
+                {e.vesselName}
               </div>
               <div className="flex items-center gap-2 text-[12px] text-[#6d5d53]">
                 <GameIcon type={ORIGIN_ICON_MAP[selected.value]} size={36} />
@@ -332,7 +262,7 @@ export function EditorForm() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="enter name..."
+                placeholder={e.namePlaceholder}
                 maxLength={24}
                 className="font-cinzel flex-1 border-0 border-b-2 border-[#4a3a32] bg-transparent py-2 text-2xl uppercase tracking-[0.14em] text-[#f1e6dc] outline-none placeholder:text-[#5e544c] transition-colors duration-300 focus:border-[#8e1f1f]"
               />
@@ -342,7 +272,7 @@ export function EditorForm() {
                 disabled={!name.trim()}
                 className="font-cinzel shrink-0 border-2 border-[#5c1f1f] bg-[#160909] px-8 py-3 text-sm uppercase tracking-[0.2em] text-[#d46060] transition-all duration-300 hover:bg-[#220d0d] hover:text-[#ff7b7b] hover:shadow-[0_0_30px_rgba(92,31,31,0.2)] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Begin Descent
+                {e.beginDescent}
               </button>
             </div>
           </div>

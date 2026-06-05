@@ -1,4 +1,7 @@
 import type { Scene } from '@/lib/types/game'
+
+import { t } from '@/lib/i18n'
+
 import { ChronicleCard } from '../shared/ChronicleCard'
 
 interface ChronicleProps {
@@ -11,17 +14,19 @@ interface ChronicleProps {
 }
 
 export function Chronicle({ history, currentScene }: ChronicleProps) {
+  const { game } = t.ui
+
   return (
     <ChronicleCard
-      title="The Long Descent"
-      subtitle="Chronicle"
+      title={game.chronicleTitle}
+      subtitle={game.chronicleSubtitle}
       maxHeight="max-h-[25vh]"
     >
       <div className="space-y-14">
         {history.map((scene) => (
           <div key={scene.id} className="opacity-40">
             <div className="text-[10px] uppercase tracking-[0.35em] text-[#6c5f57]">
-              Past Memory
+              {game.chroniclePast}
             </div>
 
             <h3 className="font-cinzel mt-3 text-2xl uppercase tracking-[0.08em] text-[#bcaea2]">
@@ -43,7 +48,7 @@ export function Chronicle({ history, currentScene }: ChronicleProps) {
 
         <div>
           <div className="text-[10px] uppercase tracking-[0.35em] text-[#8e1f1f]">
-            Present Moment
+            {game.chroniclePresent}
           </div>
 
           <h3 className="font-cinzel mt-3 text-4xl uppercase tracking-[0.12em] text-[#efe5dc]">

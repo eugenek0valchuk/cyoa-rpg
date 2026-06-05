@@ -1,8 +1,11 @@
 'use client'
 
-import { Scene } from '@/lib/types/game'
 import { ScrollText } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+
+import { t } from '@/lib/i18n'
+import { Scene } from '@/lib/types/game'
+
 import { ChronicleCard } from '../shared/ChronicleCard'
 
 interface SceneChronicleProps {
@@ -76,7 +79,7 @@ export function SceneChronicle({
   return (
     <ChronicleCard
       title={scene.title}
-      subtitle="Chronicle"
+      subtitle={t.ui.game.chronicleSubtitle}
       icon={<ScrollText className="h-5 w-5 text-[#8e1f1f]" />}
       maxHeight="max-h-[28vh]"
     >

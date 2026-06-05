@@ -46,6 +46,18 @@ function buildSeed(parts: string[]): number {
   return parts.reduce((acc, part) => acc + part.split('').reduce((s, c) => s + c.charCodeAt(0), 0), 0)
 }
 
+function wasSceneVisited(
+  sceneId: string,
+  title: string,
+  visitedSceneIds: Set<string>,
+  visitedTitles: Set<string>,
+): boolean {
+  return (
+    visitedSceneIds.has(sceneId) ||
+    visitedTitles.has(title.toLowerCase())
+  )
+}
+
 export function resolveDirectedScene(
   currentScene: Scene,
   choice: Choice,
@@ -59,7 +71,15 @@ export function resolveDirectedScene(
 
   const directScene = getSceneById(choice.id)
 
-  if (directScene && !visitedTitles.has(directScene.title.toLowerCase())) {
+  if (
+    directScene &&
+    !wasSceneVisited(
+      directScene.id,
+      directScene.title,
+      visitedSceneIds,
+      visitedTitles,
+    )
+  ) {
     return directScene
   }
 
@@ -81,10 +101,6 @@ export function resolveDirectedScene(
     if (pooled) {
       return pooled
     }
-  }
-
-  if (directScene) {
-    return directScene
   }
 
   const director = buildDirectorState(character, sceneHistory)

@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest'
+
+import { t } from '@/lib/i18n'
 import { validateScene } from '../validateScene'
 
 describe('validateScene', () => {
@@ -7,18 +9,18 @@ describe('validateScene', () => {
   it('normalizes valid scene with full data', () => {
     const result = validateScene(
       {
-        title: 'The Dark Hall',
-        description: 'A long corridor stretches before you.',
+        title: 'Тёмный зал',
+        description: 'Длинный коридор тянется перед тобой.',
         options: [
-          { id: 'go_left', text: 'Go left' },
-          { id: 'go_right', text: 'Go right' },
+          { id: 'go_left', text: 'Налево' },
+          { id: 'go_right', text: 'Направо' },
         ],
       },
       emptyOwned,
     )
 
-    expect(result.title).toBe('The Dark Hall')
-    expect(result.description).toBe('A long corridor stretches before you.')
+    expect(result.title).toBe('Тёмный зал')
+    expect(result.description).toBe('Длинный коридор тянется перед тобой.')
     expect(result.options).toHaveLength(2)
     expect(result.id).toMatch(/^scene_\d+_/)
   })
@@ -26,8 +28,8 @@ describe('validateScene', () => {
   it('falls back to defaults for missing fields', () => {
     const result = validateScene({}, emptyOwned)
 
-    expect(result.title).toBe('Unknown Depths')
-    expect(result.description).toBe('The darkness shifts around you.')
+    expect(result.title).toBe(t.system.unknownDepths)
+    expect(result.description).toBe(t.system.defaultDescription)
     expect(result.options).toHaveLength(2)
   })
 

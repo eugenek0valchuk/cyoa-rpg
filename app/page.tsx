@@ -2,7 +2,11 @@
 
 import Link from 'next/link'
 
+import { t } from '@/lib/i18n'
+
 export default function HomePage() {
+  const { home } = t.ui
+
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black text-zinc-100">
       <img
@@ -13,29 +17,28 @@ export default function HomePage() {
 
       <div className="absolute inset-0 bg-black/60" />
 
-      {/* Content */}
       <section className="relative z-10 flex h-full items-center justify-center px-6">
         <div className="w-full max-w-[520px] border border-[#3b3028]/80 bg-[#080505]/88 px-10 py-14 shadow-[0_0_60px_rgba(0,0,0,0.6)] backdrop-blur-[2px]">
           <div className="text-center">
             <h1 className="font-cinzel text-6xl uppercase tracking-[0.14em] text-[#d6cdc3]">
-              THE LAST
+              {home.titleLine1}
             </h1>
 
             <h1 className="font-cinzel mt-1 text-7xl uppercase tracking-[0.12em] text-[#8e1f1f]">
-              ECHO
+              {home.titleLine2}
             </h1>
 
             <div className="mx-auto mt-10 max-w-[320px] space-y-5 text-[15px] leading-8 text-[#85776a]">
               <p>
-                Somewhere beneath the ruins,
+                {home.tagline1}
                 <br />
-                an ancient machine continues to dream.
+                {home.tagline1b}
               </p>
 
               <p>
-                Every decision alters the story.
+                {home.tagline2}
                 <br />
-                Every path leaves something behind.
+                {home.tagline2b}
               </p>
             </div>
           </div>
@@ -47,11 +50,11 @@ export default function HomePage() {
             >
               <div className="text-center">
                 <div className="font-cinzel text-3xl uppercase tracking-[0.18em] text-[#c84a4a] group-hover:text-[#ff6b6b]">
-                  Begin
+                  {home.begin}
                 </div>
 
                 <div className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#6d5d53]">
-                  Start new descent
+                  {home.beginSub}
                 </div>
               </div>
             </Link>
@@ -62,11 +65,11 @@ export default function HomePage() {
             >
               <div className="text-center">
                 <div className="font-cinzel text-3xl uppercase tracking-[0.18em] text-[#c84a4a] group-hover:text-[#ff6b6b]">
-                  Archives
+                  {home.archives}
                 </div>
 
                 <div className="mt-2 text-[11px] uppercase tracking-[0.3em] text-[#6d5d53]">
-                  Continue or begin in a save slot
+                  {home.archivesSub}
                 </div>
               </div>
             </Link>
@@ -74,13 +77,13 @@ export default function HomePage() {
 
           <div className="mt-14 text-center">
             <p className="text-[15px] leading-8 tracking-[0.08em] text-[#7b6f63]">
-              The machine remembers
+              {home.footer1}
               <br />
-              what the dead forgot.
+              {home.footer2}
             </p>
 
             <div className="mt-8 text-[10px] uppercase tracking-[0.4em] text-[#4c433d]">
-              v0.1
+              {home.version}
             </div>
           </div>
         </div>

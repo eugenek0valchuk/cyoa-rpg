@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { restoreActiveSlot } from '@/hooks/useAutoSave'
+import { t } from '@/lib/i18n'
 import {
   deleteSaveSlot,
   listSaveSlots,
@@ -14,13 +15,14 @@ import {
 
 function formatSavedAt(timestamp: number): string {
   if (!timestamp) {
-    return 'Empty'
+    return t.ui.archives.noDescent
   }
 
-  return new Date(timestamp).toLocaleString()
+  return new Date(timestamp).toLocaleString('ru-RU')
 }
 
 export default function ArchivesPage() {
+  const { archives: a } = t.ui
   const router = useRouter()
   const [slots, setSlots] = useState<SaveSlot[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,21 +68,20 @@ export default function ArchivesPage() {
       <section className="relative z-10 mx-auto max-w-[720px]">
         <div className="mb-8 text-center">
           <div className="text-[11px] uppercase tracking-[0.35em] text-[#75685f]">
-            The Machine Remembers
+            {a.eyebrow}
           </div>
           <h1 className="font-cinzel mt-2 text-4xl uppercase tracking-[0.12em] text-[#d6cdc3]">
-            Archives
+            {a.title}
           </h1>
           <p className="mt-4 text-[14px] leading-7 text-[#85776a]">
-            Three vessels may carry your descent. Progress is preserved between
-            sessions.
+            {a.description}
           </p>
         </div>
 
         <div className="space-y-4">
           {loading ? (
             <div className="border border-[#3b3028]/80 bg-[#080505]/88 px-6 py-10 text-center text-sm uppercase tracking-[0.3em] text-[#75685f]">
-              Reading the archives...
+              {a.loading}
             </div>
           ) : (
             slots.map((slot) => {
@@ -94,15 +95,15 @@ export default function ArchivesPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <div className="text-[11px] uppercase tracking-[0.35em] text-[#75685f]">
-                        Slot {slot.slotId + 1}
+                        {a.slot} {slot.slotId + 1}
                       </div>
                       <h2 className="font-cinzel mt-2 text-2xl uppercase tracking-[0.1em] text-[#d6cdc3]">
-                        {occupied ? slot.character!.name : 'Empty Vessel'}
+                        {occupied ? slot.character!.name : a.emptyVessel}
                       </h2>
                       <p className="mt-2 text-[13px] text-[#85776a]">
                         {occupied
                           ? `${slot.currentScene!.title} · ${formatSavedAt(slot.savedAt)}`
-                          : 'No descent recorded'}
+                          : a.noDescent}
                       </p>
                     </div>
 
@@ -114,14 +115,14 @@ export default function ArchivesPage() {
                             onClick={() => handleContinue(slot.slotId)}
                             className="border border-[#5c1f1f] bg-[#160909] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#d46060] transition hover:bg-[#220d0d]"
                           >
-                            Continue
+                            {a.continue}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDelete(slot.slotId)}
                             className="border border-[#2b2320] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#75685f] transition hover:border-[#5c1f1f] hover:text-[#d46060]"
                           >
-                            Erase
+                            {a.erase}
                           </button>
                         </>
                       ) : (
@@ -130,7 +131,7 @@ export default function ArchivesPage() {
                           onClick={() => handleNewDescent(slot.slotId)}
                           className="border border-[#5c1f1f] bg-[#160909] px-5 py-2 text-[11px] uppercase tracking-[0.25em] text-[#d46060] transition hover:bg-[#220d0d]"
                         >
-                          New Descent
+                          {a.newDescent}
                         </button>
                       )}
                     </div>
@@ -146,7 +147,7 @@ export default function ArchivesPage() {
             href="/"
             className="text-[11px] uppercase tracking-[0.3em] text-[#75685f] no-underline hover:text-[#d46060]"
           >
-            Return
+            {a.return}
           </Link>
         </div>
       </section>

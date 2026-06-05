@@ -9,6 +9,7 @@ import {
   ArtifactReveal,
 } from '@/components/game'
 import { useGameSession } from '@/hooks/useGameSession'
+import { t } from '@/lib/i18n'
 
 export default function GamePage() {
   const {
@@ -31,7 +32,7 @@ export default function GamePage() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-black text-[#d7c8bc]">
         <div className="animate-pulse text-sm uppercase tracking-[0.4em] text-[#75685f]">
-          DESCENT AWAKENS
+          {t.ui.game.loading}
         </div>
       </main>
     )

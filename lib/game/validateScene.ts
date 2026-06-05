@@ -1,5 +1,7 @@
-import { artifacts } from '@/lib/game/artifacts'
+import { t } from '@/lib/i18n'
 import { getCorruptionGameplayRules } from '@/lib/game/corruption'
+
+const artifacts = t.artifacts
 import type {
   Character,
   Choice,
@@ -162,12 +164,12 @@ function createFallbackOptions(): Choice[] {
   return [
     {
       id: 'continue_forward',
-      text: 'Continue deeper into the abyss',
+      text: t.system.continueForward,
       effects: { sanity: -3 },
     },
     {
       id: 'observe',
-      text: 'Remain still and listen to the dark',
+      text: t.system.observeDark,
     },
   ]
 }
@@ -177,10 +179,10 @@ export function validateScene(
   ownedArtifacts: Set<string>,
   character?: Character,
 ): Scene {
-  const title = normalizeText(rawScene?.title, 'Unknown Depths').slice(0, 80)
+  const title = normalizeText(rawScene?.title, t.system.unknownDepths).slice(0, 80)
   const description = normalizeText(
     rawScene?.description,
-    'The darkness shifts around you.',
+    t.system.defaultDescription,
   ).slice(0, 2200)
   const maxOptions = getMaxOptions(character)
   const rawOptions = Array.isArray(rawScene?.options) ? rawScene.options : []
@@ -197,7 +199,7 @@ export function validateScene(
 
       return {
         id,
-        text: normalizeText(option?.text, `Choice ${index + 1}`).slice(0, 120),
+        text: normalizeText(option?.text, `${t.system.fallbackChoicePrefix} ${index + 1}`).slice(0, 120),
         requirements: normalizeRequirements(option?.requirements),
         effects: normalizeEffects(option?.effects, ownedArtifacts),
       }
