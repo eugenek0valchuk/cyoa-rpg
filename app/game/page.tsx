@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 
 import { artifacts } from '@/lib/game/artifacts'
 import { isChoiceVisible } from '@/lib/game/choiceVisibility'
@@ -18,19 +18,26 @@ import {
   StatChangeFlash,
 } from '@/components/game'
 import { DiceRollOverlay } from '@/components/game/scene/DiceRollOverlay'
+import { NpcEncounterModal } from '@/components/game/scene/NpcEncounterModal'
 import { KeyChoiceConfirm } from '@/components/game/scene/KeyChoiceConfirm'
 import { RaidPrologueModal } from '@/components/game/scene/RaidPrologueModal'
 import { buildPrologueSlides } from '@/lib/game/prologue'
+import { isNpcEncounterScene, getNpcMeetingFlag } from '@/lib/game/npcEncounter'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
 import { useHubStore } from '@/lib/store/hubStore'
+import { useGameStore } from '@/lib/store/gameStore'
+import { useCharacterStore } from '@/lib/store/characterStore'
 import { t } from '@/lib/i18n'
 
 export default function GamePage() {
   const [abandonOpen, setAbandonOpen] = useState(false)
-  const [prologueDone, setPrologueDone] = useState(false)
+  const [npcEncounterOpen, setNpcEncounterOpen] = useState(false)
   const raid = useHubStore((state) => state.raid)
+  const setRaid = useHubStore((state) => state.setRaid)
+  const sceneHistory = useGameStore((state) => state.sceneHistory)
+  const setCharacter = useCharacterStore((state) => state.setCharacter)
 
   const {
     character,
@@ -71,22 +78,63 @@ export default function GamePage() {
   const { ui: hubText } = t.hub
 
   const prologueSlides = useMemo(() => {
-    if (!character || !hub || !raid?.active) {
+    if (!raid?.active) {
       return []
     }
 
-    const room = t.hub.rooms[character.origin]
-
     return buildPrologueSlides({
-      origin: character.origin,
-      roomImage: room.image,
       modifierId: raid.modifierId ?? null,
-      contractId: raid.contractId ?? null,
-      isFirstRaid: hub.totalRaids <= 1,
     })
-  }, [character, hub, raid?.active, raid?.modifierId, raid?.contractId])
+  }, [raid?.active, raid?.modifierId])
 
-  const showPrologue = prologueSlides.length > 0 && !prologueDone && !isEndingScene
+  const showPrologue =
+    prologueSlides.length > 0 &&
+    !raid?.prologueSeen &&
+    sceneHistory.length === 0 &&
+    !isEndingScene
+
+  const isNpcScene =
+    currentScene != null && isNpcEncounterScene(currentScene.id)
+
+  useEffect(() => {
+    setNpcEncounterOpen(isNpcScene)
+  }, [isNpcScene, currentScene?.id])
+
+  const handleNpcDialogueComplete = useCallback(() => {
+    const active = useCharacterStore.getState().character
+    const flag = currentScene ? getNpcMeetingFlag(currentScene.id) : null
+
+    if (!active || !flag || active.flags.includes(flag)) {
+      return
+    }
+
+    setCharacter({
+      ...active,
+      flags: [...active.flags, flag],
+    })
+  }, [currentScene, setCharacter])
+
+  const handleNpcChoice = useCallback(
+    (choiceIndex: number) => {
+      handleChoice(choiceIndex)
+    },
+    [handleChoice],
+  )
+
+  const handleNpcRiskChoice = useCallback(
+    (choiceIndex: number) => {
+      handleRiskChoice(choiceIndex)
+    },
+    [handleRiskChoice],
+  )
+
+  const handlePrologueComplete = () => {
+    if (!raid) {
+      return
+    }
+
+    setRaid({ ...raid, prologueSeen: true })
+  }
 
   const pendingKeyChoiceData = useMemo(() => {
     if (!currentScene || pendingKeyChoice == null) {
@@ -194,19 +242,20 @@ export default function GamePage() {
           raidModifierId={raidModifier?.id}
           roomMarks={hub?.roomMarks ?? []}
           isLoading={isLoading}
-          showChoices={showChoices && !showPrologue}
+          showChoices={showChoices && !showPrologue && !npcEncounterOpen}
           extractAvailable={extractAvailable && !isEndingScene}
           onExtract={handleExtract}
           onChoice={handleChoice}
           onRiskChoice={handleRiskChoice}
           onReturnToChamber={handleExitToMenu}
+          hideSceneBody={npcEncounterOpen && isNpcScene}
         />
       </GameViewport>
 
       <RaidPrologueModal
         open={showPrologue}
         slides={prologueSlides}
-        onComplete={() => setPrologueDone(true)}
+        onComplete={handlePrologueComplete}
       />
 
       {diceRoll && (
@@ -218,6 +267,23 @@ export default function GamePage() {
           onComplete={handleDiceComplete}
         />
       )}
+
+      <NpcEncounterModal
+        open={
+          npcEncounterOpen && isNpcScene && !showPrologue && !artifactOpen
+        }
+        scene={currentScene}
+        character={character}
+        journalEntries={hub?.journalEntries ?? []}
+        visitedSceneIds={new Set(sceneHistory.map((entry) => entry.id))}
+        raidModifierId={raidModifier?.id}
+        roomMarks={hub?.roomMarks ?? []}
+        isLoading={isLoading}
+        pendingKeyChoice={pendingKeyChoice}
+        onDialogueComplete={handleNpcDialogueComplete}
+        onChoice={handleNpcChoice}
+        onRiskChoice={handleNpcRiskChoice}
+      />
 
       <KeyChoiceConfirm
         open={pendingKeyChoiceData?.meta != null}

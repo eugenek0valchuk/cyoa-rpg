@@ -23,6 +23,7 @@ interface Props {
   onChoice: (choiceIndex: number) => void
   onRiskChoice?: (choiceIndex: number) => void
   onReturnToChamber?: () => void
+  hideSceneBody?: boolean
 }
 
 export function GameSceneView({
@@ -38,6 +39,7 @@ export function GameSceneView({
   onChoice,
   onRiskChoice,
   onReturnToChamber,
+  hideSceneBody = false,
 }: Props) {
   const [isTyping, setIsTyping] = useState(true)
   const prevSceneIdRef = useRef(scene.id)
@@ -67,6 +69,7 @@ export function GameSceneView({
           >
             <SceneChronicle
               scene={scene}
+              hideBody={hideSceneBody}
               onTypingComplete={handleTypingComplete}
             />
           </motion.div>

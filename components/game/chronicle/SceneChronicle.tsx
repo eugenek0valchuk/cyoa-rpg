@@ -11,11 +11,14 @@ import { ChronicleCard } from '../shared/ChronicleCard'
 interface SceneChronicleProps {
   scene: Scene
   onTypingComplete?: () => void
+  /** Hide body when a dedicated encounter modal carries the narrative. */
+  hideBody?: boolean
 }
 
 export function SceneChronicle({
   scene,
   onTypingComplete,
+  hideBody = false,
 }: SceneChronicleProps) {
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
@@ -24,6 +27,13 @@ export function SceneChronicle({
   const text = scene.description
 
   useEffect(() => {
+    if (hideBody) {
+      setDisplayedText('')
+      setIsTyping(false)
+      onTypingComplete?.()
+      return
+    }
+
     indexRef.current = 0
     setDisplayedText('')
     setIsTyping(true)
@@ -57,7 +67,7 @@ export function SceneChronicle({
     }, tick)
 
     return () => clearInterval(timer)
-  }, [text, onTypingComplete])
+  }, [text, onTypingComplete, hideBody])
 
   useEffect(() => {
     textEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
@@ -72,6 +82,7 @@ export function SceneChronicle({
       className="border-[#2b2320]/90 shadow-[0_0_40px_rgba(0,0,0,0.45)]"
       titleClassName="text-2xl sm:text-[1.65rem]"
     >
+      {!hideBody && (
       <div className="relative w-full max-w-[720px] space-y-4 whitespace-pre-wrap text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">
         {displayedText}
 
@@ -80,6 +91,7 @@ export function SceneChronicle({
         )}
         <span ref={textEndRef} className="block h-px w-full" aria-hidden />
       </div>
+      )}
     </ChronicleCard>
   )
 }
