@@ -174,6 +174,11 @@ export const phaseScenes: Record<string, Scene> = {
         requirements: { strength: 6 },
         effects: { corruption: 6, sanity: -4 },
       },
+      {
+        id: 'whispers_parlor',
+        text: 'Отдернуть руку и отступить',
+        effects: { sanity: 2, corruption: -1 },
+      },
     ],
   },
 

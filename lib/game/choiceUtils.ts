@@ -50,3 +50,35 @@ export function isChoiceAvailable(
 
   return true
 }
+
+/** Успешный Risk-бросок снимает только пороги силы/ловкости/интеллекта. */
+export function isChoiceAvailableAfterRiskSuccess(
+  choice: Choice,
+  character: Character,
+  journalEntries: string[] = [],
+): boolean {
+  if (!isChoiceVisible(choice, character, journalEntries)) {
+    return false
+  }
+
+  const requirements = choice.requirements
+  if (!requirements) {
+    return true
+  }
+
+  if (
+    requirements.requiredOrigin &&
+    character.origin !== requirements.requiredOrigin
+  ) {
+    return false
+  }
+
+  if (
+    requirements.forbiddenOrigin &&
+    character.origin === requirements.forbiddenOrigin
+  ) {
+    return false
+  }
+
+  return true
+}

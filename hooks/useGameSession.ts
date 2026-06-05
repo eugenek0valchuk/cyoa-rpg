@@ -9,7 +9,10 @@ import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 import { applyJournalDiscovery } from '@/lib/game/applyJournalDiscovery'
 import { artifacts } from '@/lib/game/artifacts'
 import { handleGameChoice } from '@/lib/game/handleChoice'
-import { isChoiceAvailable } from '@/lib/game/choiceUtils'
+import {
+  isChoiceAvailable,
+  isChoiceAvailableAfterRiskSuccess,
+} from '@/lib/game/choiceUtils'
 import {
   applyRiskFailure,
   getRiskOffer,
@@ -266,14 +269,23 @@ export function useGameSession() {
   }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
 
   const executeChoice = useCallback(
-    async (choiceIndex: number) => {
+    async (
+      choiceIndex: number,
+      options?: { riskSuccess?: boolean },
+    ) => {
       if (!currentScene || !character || !raid?.active) {
+        setShowChoices(true)
         return
       }
 
       const choice = currentScene.options[choiceIndex]
+      const journalEntries = hub?.journalEntries ?? []
+      const available = options?.riskSuccess
+        ? isChoiceAvailableAfterRiskSuccess(choice, character, journalEntries)
+        : isChoiceAvailable(choice, character, journalEntries)
 
-      if (!choice || !isChoiceAvailable(choice, character, hub?.journalEntries ?? [])) {
+      if (!choice || !available) {
+        setShowChoices(true)
         return
       }
 
@@ -389,7 +401,7 @@ export function useGameSession() {
     setDiceRoll(null)
 
     if (activeRoll.result.success) {
-      await executeChoice(activeRoll.choiceIndex)
+      await executeChoice(activeRoll.choiceIndex, { riskSuccess: true })
       return
     }
 

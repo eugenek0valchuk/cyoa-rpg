@@ -116,6 +116,8 @@ export const ui = {
       neutral: 'Путь',
     },
     riskAttemptLabel: 'Попробовать на удачу',
+    riskRollShort: '+{bonus} · {chance}%',
+    riskRollDc: 'vs {dc}',
     riskAttemptHint: 'd20 + {bonus} vs {dc} (~{chance}%)',
     riskFailureNote: 'Провал — рассудок {sanity}, скверна +{corruption}',
     diceRolling: 'Бросок судьбы',
@@ -131,11 +133,13 @@ export const ui = {
     sanityStress: 'Рассудок на грани',
     hubOnboardingTitle: 'Камера ждёт',
     hubOnboardingBody:
-      'Сокровищница — реликвии между спусками. Сосуд — статы. Хроника — журнал. Порог (Спуск) — снаряжение и обет. Читай сцены до конца, смотри цифры на кнопках.',
+      'Светящиеся зоны и кнопки внизу — снаряжение, журнал, спуск.',
     hubOnboardingDismiss: 'Понятно',
     thresholdContractsTitle: 'Обет спуска',
     thresholdContractsHint:
-      'Необязательно — но выполнишь, камера заплатит эхом или снимет след.',
+      'Можно взять один обет — награда у Писца после извлечения.',
+    thresholdContractsFirstHint:
+      'Первый спуск: обет необязателен. Писец откроется после первого возврата.',
     extractHintMore: 'Как выбраться',
     extractHintLess: 'Свернуть',
     noChoicesVisible:

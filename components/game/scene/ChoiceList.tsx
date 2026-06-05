@@ -398,6 +398,42 @@ function SanityProjection({
   )
 }
 
+function RiskDiceButton({
+  riskOffer,
+  disabled,
+  onClick,
+}: {
+  riskOffer: NonNullable<ReturnType<typeof getRiskOffer>>
+  disabled?: boolean
+  onClick: () => void
+}) {
+  const { game } = t.ui
+
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-full min-h-[5.5rem] w-[5.25rem] shrink-0 flex-col items-center justify-center gap-0.5 border-l-2 border-[#8e1f1f] bg-[#180a0a] px-2 py-3 transition hover:border-[#c04040] hover:bg-[#260d0d] disabled:opacity-40 sm:w-[5.75rem]"
+    >
+      <span className="font-cinzel text-[26px] leading-none text-[#efe5dc]">
+        d20
+      </span>
+      <span className="text-[9px] uppercase tracking-[0.14em] text-[#e07070]">
+        {game.choiceIntent.risk}
+      </span>
+      <span className="font-cinzel text-[11px] tabular-nums text-[#d8a0a0]">
+        {game.riskRollShort
+          .replace('{bonus}', String(riskOffer.bonus))
+          .replace('{chance}', String(riskOffer.chancePercent))}
+      </span>
+      <span className="text-[9px] tabular-nums text-[#75685f]">
+        {game.riskRollDc.replace('{dc}', String(riskOffer.dc))}
+      </span>
+    </button>
+  )
+}
+
 export function ChoiceList({
   options,
   character,
@@ -420,116 +456,130 @@ export function ChoiceList({
     )
   }
 
+  const hasRiskOptions = options.some(
+    (option) =>
+      isChoiceVisible(option, character, journalEntries) &&
+      getRiskOffer(option, character, journalEntries) != null,
+  )
+
   return (
-    <div className="max-h-[min(42vh,360px)] overflow-y-auto pr-0.5 chronicle-scrollbar scroll-smooth">
-      <div className="space-y-2">
-        {options.map((option, index) => {
-          if (!isChoiceVisible(option, character, journalEntries)) {
-            return null
-          }
+    <div
+      className={`space-y-2 ${
+        hasRiskOptions
+          ? 'max-h-[min(46vh,420px)] overflow-y-auto pr-0.5 chronicle-scrollbar scroll-smooth'
+          : ''
+      }`}
+    >
+      {options.map((option, index) => {
+        if (!isChoiceVisible(option, character, journalEntries)) {
+          return null
+        }
 
-          const available = isChoiceAvailable(option, character, journalEntries)
-          const blockReason = getChoiceBlockReason(
-            option,
-            character,
-            journalEntries,
-          )
-          const riskOffer = getRiskOffer(option, character, journalEntries)
+        const available = isChoiceAvailable(option, character, journalEntries)
+        const blockReason = getChoiceBlockReason(
+          option,
+          character,
+          journalEntries,
+        )
+        const riskOffer = getRiskOffer(option, character, journalEntries)
+        const showIntegratedRisk =
+          !available && riskOffer != null && onRiskSelect != null
 
+        if (showIntegratedRisk) {
           return (
-            <div key={`${option.id}-${index}`} className="space-y-1.5">
-            <motion.button
-              type="button"
-              disabled={!available || isLoading}
-              onClick={() => onSelect(index)}
+            <motion.div
+              key={`${option.id}-${index}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className={`group relative w-full border text-left transition-all duration-300 ${
-                available
-                  ? 'border-[#2b2320] bg-[#0c0909]/95 hover:border-[#8e1f1f]/70 hover:bg-[#140d0d] hover:shadow-[0_0_24px_rgba(92,31,31,0.12)]'
-                  : 'cursor-not-allowed border-[#181212] bg-[#0a0808]/80 opacity-45'
-              }`}
+              className="flex overflow-hidden border border-[#5c3030] bg-[#0c0909]/95 shadow-[0_0_20px_rgba(92,31,31,0.08)]"
             >
-              <div className="absolute inset-y-0 left-0 w-[2px] bg-[#8e1f1f] opacity-0 transition-opacity group-hover:opacity-100" />
-
-              <div className="relative px-4 py-3.5 sm:px-5 sm:py-4">
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#e7ded7] sm:text-[17px]">
-                        {option.text}
-                      </div>
-                      <ChoiceIntentBadge option={option} />
-                    </div>
-                    <ChoiceMeta option={option} character={character} />
-                    <SanityProjection
-                      option={option}
-                      character={character}
-                      raidModifierId={raidModifierId}
-                      roomMarks={roomMarks}
-                    />
-                    <CorruptionProjection
-                      option={option}
-                      character={character}
-                      raidModifierId={raidModifierId}
-                      roomMarks={roomMarks}
-                    />
-                    {!available && blockReason && (
-                      <p className="mt-2 text-[10px] uppercase tracking-[0.08em] text-[#8b5e5e]">
-                        {formatBlockReason(blockReason)}
-                      </p>
-                    )}
+              <div className="min-w-0 flex-1 px-4 py-3 sm:px-5 sm:py-3.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#c8bdb6] sm:text-[16px]">
+                    {option.text}
                   </div>
-
-                  <ChevronRight
-                    className={`mt-1 h-5 w-5 shrink-0 transition-transform ${
-                      available
-                        ? 'text-[#75685f] group-hover:translate-x-0.5 group-hover:text-[#d46060]'
-                        : 'text-[#4c433d]'
-                    }`}
-                  />
+                  <ChoiceIntentBadge option={option} />
                 </div>
+                <ChoiceMeta option={option} character={character} />
+                {blockReason && (
+                  <p className="mt-2 text-[10px] uppercase tracking-[0.08em] text-[#8b5e5e]">
+                    {formatBlockReason(blockReason)}
+                  </p>
+                )}
+                <p className="mt-1.5 text-[10px] text-[#75685f]">
+                  {t.ui.game.riskFailureNote
+                    .replace('{sanity}', String(RISK_FAILURE_SANITY))
+                    .replace('{corruption}', String(RISK_FAILURE_CORRUPTION))}
+                </p>
               </div>
-            </motion.button>
-
-            {riskOffer && onRiskSelect && (
-              <motion.button
-                type="button"
+              <RiskDiceButton
+                riskOffer={riskOffer}
                 disabled={isLoading}
                 onClick={() => onRiskSelect(index)}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.05 + 0.08 }}
-                className="group relative w-full border border-[#6a2020]/80 bg-[#1a0808]/90 text-left transition hover:border-[#8e1f1f] hover:bg-[#220d0d] disabled:opacity-40"
-              >
-                <div className="relative px-4 py-2.5 sm:px-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex border border-[#6a2020]/80 bg-[#160909] px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] text-[#e07070]">
-                      {t.ui.game.choiceIntent.risk}
-                    </span>
-                    <span className="font-cinzel text-[13px] uppercase tracking-[0.08em] text-[#d8a0a0]">
-                      {t.ui.game.riskAttemptLabel}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-[11px] uppercase tracking-[0.1em] text-[#9d8d82]">
-                    {t.ui.game.riskAttemptHint
-                      .replace('{bonus}', String(riskOffer.bonus))
-                      .replace('{dc}', String(riskOffer.dc))
-                      .replace('{chance}', String(riskOffer.chancePercent))}
-                  </p>
-                  <p className="mt-1 text-[10px] text-[#75685f]">
-                    {t.ui.game.riskFailureNote
-                      .replace('{sanity}', String(RISK_FAILURE_SANITY))
-                      .replace('{corruption}', String(RISK_FAILURE_CORRUPTION))}
-                  </p>
-                </div>
-              </motion.button>
-            )}
-            </div>
+              />
+            </motion.div>
           )
-        })}
-      </div>
+        }
+
+        return (
+          <motion.button
+            key={`${option.id}-${index}`}
+            type="button"
+            disabled={!available || isLoading}
+            onClick={() => onSelect(index)}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className={`group relative w-full border text-left transition-all duration-300 ${
+              available
+                ? 'border-[#2b2320] bg-[#0c0909]/95 hover:border-[#8e1f1f]/70 hover:bg-[#140d0d] hover:shadow-[0_0_24px_rgba(92,31,31,0.12)]'
+                : 'cursor-not-allowed border-[#181212] bg-[#0a0808]/80 opacity-45'
+            }`}
+          >
+            <div className="absolute inset-y-0 left-0 w-[2px] bg-[#8e1f1f] opacity-0 transition-opacity group-hover:opacity-100" />
+
+            <div className="relative px-4 py-3.5 sm:px-5 sm:py-4">
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="font-cinzel text-[15px] uppercase leading-snug tracking-[0.08em] text-[#e7ded7] sm:text-[17px]">
+                      {option.text}
+                    </div>
+                    <ChoiceIntentBadge option={option} />
+                  </div>
+                  <ChoiceMeta option={option} character={character} />
+                  <SanityProjection
+                    option={option}
+                    character={character}
+                    raidModifierId={raidModifierId}
+                    roomMarks={roomMarks}
+                  />
+                  <CorruptionProjection
+                    option={option}
+                    character={character}
+                    raidModifierId={raidModifierId}
+                    roomMarks={roomMarks}
+                  />
+                  {!available && blockReason && (
+                    <p className="mt-2 text-[10px] uppercase tracking-[0.08em] text-[#8b5e5e]">
+                      {formatBlockReason(blockReason)}
+                    </p>
+                  )}
+                </div>
+
+                <ChevronRight
+                  className={`mt-1 h-5 w-5 shrink-0 transition-transform ${
+                    available
+                      ? 'text-[#75685f] group-hover:translate-x-0.5 group-hover:text-[#d46060]'
+                      : 'text-[#4c433d]'
+                  }`}
+                />
+              </div>
+            </div>
+          </motion.button>
+        )
+      })}
     </div>
   )
 }

@@ -38,7 +38,7 @@ export function SceneChoices({
   const { ui: raidText } = t.raid
 
   return (
-    <div className="relative min-h-[180px]">
+    <div className="relative">
       <AnimatePresence mode="wait">
         {showChoices && !isLoading && (
           <motion.div

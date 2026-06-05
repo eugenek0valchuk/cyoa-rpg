@@ -7,7 +7,12 @@ import { t } from '@/lib/i18n'
 
 const STORAGE_KEY = 'cyoa_hub_onboarding_dismissed'
 
-export function HubOnboardingBanner() {
+interface Props {
+  /** Не дублировать брифинг спуска подсказками камеры */
+  suppressed?: boolean
+}
+
+export function HubOnboardingBanner({ suppressed = false }: Props) {
   const { game } = t.ui
   const [open, setOpen] = useState(false)
 
@@ -19,7 +24,7 @@ export function HubOnboardingBanner() {
     }
   }, [])
 
-  if (!open) {
+  if (!open || suppressed) {
     return null
   }
 

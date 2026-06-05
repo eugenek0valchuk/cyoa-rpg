@@ -57,22 +57,23 @@ export function GameSceneView({
   const revealActions = showChoices && !isTyping && !isLoading
 
   return (
-    <div className="relative">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={scene.id}
-          {...fadeSlideUp}
-          transition={sceneTransition}
-        >
-          <SceneChronicle
-            scene={scene}
-            onTypingComplete={handleTypingComplete}
-          />
-        </motion.div>
-      </AnimatePresence>
+    <div className="flex flex-col gap-3">
+      <div className="max-h-[min(34vh,280px)] min-h-0 overflow-y-auto chronicle-scrollbar pr-0.5">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={scene.id}
+            {...fadeSlideUp}
+            transition={sceneTransition}
+          >
+            <SceneChronicle
+              scene={scene}
+              onTypingComplete={handleTypingComplete}
+            />
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      <div className="h-4" />
-
+      <div className="shrink-0 border-t border-[#241919]/90 bg-gradient-to-t from-black/90 via-black/70 to-transparent pt-3">
       {isEnding && revealActions && onReturnToChamber ? (
         <EndingActions
           isLoading={isLoading}
@@ -93,6 +94,7 @@ export function GameSceneView({
           onRiskChoice={onRiskChoice}
         />
       )}
+      </div>
     </div>
   )
 }

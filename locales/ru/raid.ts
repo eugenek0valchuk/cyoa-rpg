@@ -6,6 +6,7 @@ export const raidUi = {
   modifierLabel: 'Проклятие спуска',
   prepareTitle: 'Брифинг спуска',
   prepareSubtitle: 'Порог открыт — машина уже считает твой путь',
+  prepareSubtitleFirst: 'Порог открыт',
   prepareRulesTitle: 'Правила извлечения',
   prepareVesselTitle: 'Сосуд',
   prepareLoadoutTitle: 'Снаряжение',

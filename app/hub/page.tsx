@@ -88,6 +88,21 @@ export default function HubPage() {
     () => (hub ? pickOfferedContracts(hub) : []),
     [hub],
   )
+  const thresholdContracts = useMemo(() => {
+    if (!hub) {
+      return []
+    }
+
+    if (scribeUnlocked) {
+      return offeredContracts
+    }
+
+    return offeredContracts
+      .filter((contract) => contract.id === 'vow_first_threshold')
+      .slice(0, 1)
+  }, [hub, offeredContracts, scribeUnlocked])
+  const isFirstBriefing =
+    hub != null && hub.totalExtractions === 0 && hub.totalRaids === 0
   const visibleHotspots = useMemo(
     () =>
       hotspotRegions.filter(
@@ -335,7 +350,9 @@ export default function HubPage() {
       />
 
       <header className="absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-black/85 to-transparent px-5 pb-8 pt-6 sm:px-8">
-        <HubOnboardingBanner />
+        <HubOnboardingBanner
+          suppressed={activeModal !== null || (hub?.totalRaids ?? 0) > 0}
+        />
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-[12px] uppercase tracking-[0.15em] text-[#85776a]">
@@ -358,7 +375,9 @@ export default function HubPage() {
                   {hub.roomLevel + 1}
                 </span>
               </span>
-              <span className="text-[#6f6259]">{hubText.hotspotHint}</span>
+              {(hub.totalRaids === 0 && hub.totalExtractions === 0) && (
+                <span className="text-[#6f6259]">{hubText.hotspotHint}</span>
+              )}
             </div>
           </div>
 
@@ -511,7 +530,11 @@ export default function HubPage() {
         onClose={closeModal}
         icon="corruption"
         title={raidText.prepareTitle}
-        subtitle={raidText.prepareSubtitle}
+        subtitle={
+          isFirstBriefing
+            ? raidText.prepareSubtitleFirst
+            : raidText.prepareSubtitle
+        }
         maxWidth="lg"
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -592,9 +615,10 @@ export default function HubPage() {
           )}
 
           <ThresholdContractPicker
-            offered={offeredContracts}
+            offered={thresholdContracts}
             selectedContractId={selectedContractId}
             onSelect={setSelectedContractId}
+            compact={!scribeUnlocked}
           />
 
           {scribeUnlocked && (
