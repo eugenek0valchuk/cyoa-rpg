@@ -20,6 +20,7 @@ export type ContractResult = {
   title: string
   fulfilled: boolean
   rewardSummary: string
+  claimPending?: boolean
 }
 
 export function isScribeUnlocked(hub: HubState): boolean {
@@ -216,7 +217,7 @@ export function resolveRaidContract(
 
   if (!fulfilled) {
     return {
-      hub,
+      hub: { ...hub, pendingContractClaim: null },
       result: {
         contractId,
         title: contract.title,
@@ -226,16 +227,44 @@ export function resolveRaidContract(
     }
   }
 
-  const rewarded = applyContractRewards(hub, contractId)
-
   return {
-    hub: rewarded.hub,
+    hub: {
+      ...hub,
+      pendingContractClaim: {
+        contractId,
+        title: contract.title,
+        vow: contract.vow,
+        rewardSummary: contract.reward,
+      },
+    },
     result: {
       contractId,
       title: contract.title,
       fulfilled: true,
-      rewardSummary: rewarded.rewardSummary || contract.reward,
+      rewardSummary: contract.reward,
+      claimPending: true,
     },
+  }
+}
+
+export function claimPendingContract(hub: HubState): {
+  hub: HubState
+  rewardSummary: string
+} {
+  const pending = hub.pendingContractClaim
+
+  if (!pending) {
+    return { hub, rewardSummary: '' }
+  }
+
+  const rewarded = applyContractRewards(hub, pending.contractId)
+
+  return {
+    hub: {
+      ...rewarded.hub,
+      pendingContractClaim: null,
+    },
+    rewardSummary: rewarded.rewardSummary || pending.rewardSummary,
   }
 }
 

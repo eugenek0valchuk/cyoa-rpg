@@ -107,6 +107,7 @@ export const raidSummaryUi = {
   contractFulfilled: 'Выполнен',
   contractBroken: 'Нарушен',
   contractReward: 'Награда обета',
+  contractClaimHint: 'Награда ждёт у Писца Эха в камере',
 } as const
 
 export const roomMarkEffects: Record<string, string> = {

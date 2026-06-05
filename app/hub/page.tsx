@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
 import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
+import { HubContractClaim } from '@/components/hub/HubContractClaim'
 import { HubScribePanel } from '@/components/hub/HubScribePanel'
 import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
 import { journalCatalog } from '@/locales/ru/journal'
@@ -34,6 +35,7 @@ import {
   spendEcho,
 } from '@/lib/game/hubMeta'
 import {
+  claimPendingContract,
   isScribeUnlocked,
   pickOfferedContracts,
 } from '@/lib/game/contracts'
@@ -73,6 +75,8 @@ export default function HubPage() {
   const [selectedContractId, setSelectedContractId] = useState<string | null>(
     null,
   )
+  const [claimingContract, setClaimingContract] = useState(false)
+  const [claimToast, setClaimToast] = useState<string | null>(null)
 
   const room = character ? rooms[character.origin] : null
   const hotspotRegions = character
@@ -94,6 +98,12 @@ export default function HubPage() {
   const selectedContract = selectedContractId
     ? contractById[selectedContractId]
     : null
+
+  useEffect(() => {
+    if (hub?.pendingContractClaim) {
+      setActiveModal('scribe')
+    }
+  }, [hub?.pendingContractClaim])
 
   useEffect(() => {
     if (activeModal === 'threshold' && hub) {
@@ -151,6 +161,37 @@ export default function HubPage() {
   const handleExitToMenu = async () => {
     await exitToMainMenu()
     router.push('/')
+  }
+
+  const handleClaimContract = async () => {
+    if (!hub?.pendingContractClaim || claimingContract) {
+      return
+    }
+
+    setClaimingContract(true)
+
+    const { hub: nextHub, rewardSummary } = claimPendingContract(hub)
+    setHub(nextHub)
+    setClaimToast(
+      rewardSummary
+        ? `${scribeUi.claimDone} ${rewardSummary}`
+        : scribeUi.claimDone,
+    )
+
+    if (character) {
+      const gameState = useGameStore.getState()
+      await saveCurrentGameState(getActiveSlotId(), {
+        character,
+        currentScene: gameState.currentScene,
+        history: gameState.history,
+        sceneHistory: gameState.sceneHistory,
+        hub: nextHub,
+        raid,
+      })
+    }
+
+    setClaimingContract(false)
+    window.setTimeout(() => setClaimToast(null), 4000)
   }
 
   const handleRerollModifier = () => {
@@ -260,7 +301,13 @@ export default function HubPage() {
           ? String(hub.roomMarks.length)
           : undefined,
     threshold: selectedContract ? '◆' : '↓',
-    scribe: selectedContract ? '◆' : scribeUnlocked ? '?' : undefined,
+    scribe: hub.pendingContractClaim
+      ? '!'
+      : selectedContract
+        ? '◆'
+        : scribeUnlocked
+          ? '?'
+          : undefined,
   }
 
   const closeModal = () => setActiveModal(null)
@@ -432,12 +479,26 @@ export default function HubPage() {
         }
       >
         {scribeUnlocked ? (
-          <HubScribePanel
-            hub={hub}
-            offered={offeredContracts}
-            selectedContractId={selectedContractId}
-            onSelect={setSelectedContractId}
-          />
+          <>
+            {hub.pendingContractClaim && (
+              <HubContractClaim
+                claim={hub.pendingContractClaim}
+                onClaim={handleClaimContract}
+                claiming={claimingContract}
+              />
+            )}
+            {claimToast && (
+              <p className="mb-4 border border-[#2a3d2a] bg-[#0a120a]/60 px-4 py-3 text-[13px] text-[#8fbc8f]">
+                {claimToast}
+              </p>
+            )}
+            <HubScribePanel
+              hub={hub}
+              offered={offeredContracts}
+              selectedContractId={selectedContractId}
+              onSelect={setSelectedContractId}
+            />
+          </>
         ) : (
           <p className="text-[15px] leading-relaxed text-[#75685f]">
             {scribeUi.lockedBody}

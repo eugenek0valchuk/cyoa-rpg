@@ -217,6 +217,7 @@ function attachContractToSummary(
     contractReward: contractResult.fulfilled
       ? contractResult.rewardSummary
       : undefined,
+    contractClaimPending: contractResult.claimPending,
   }
 }
 

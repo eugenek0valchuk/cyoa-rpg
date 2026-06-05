@@ -18,4 +18,5 @@ export interface RaidSummary {
   contractTitle?: string
   contractFulfilled?: boolean
   contractReward?: string
+  contractClaimPending?: boolean
 }

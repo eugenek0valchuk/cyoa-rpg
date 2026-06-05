@@ -46,6 +46,12 @@ export const scribeUi = {
   fulfilled: 'Обет выполнен',
   broken: 'Обет нарушен',
   skipped: 'Без обета',
+  claimEyebrow: 'Обет закрыт',
+  claimGreeting:
+    'Ты вернулся — и строка в моей книге **сошлась**. Забери, что обещала камера.',
+  claimButton: 'Забрать награду',
+  claiming: 'Писец стирает чернила…',
+  claimDone: 'Награда записана в камеру.',
 } as const
 
 export const contractCatalog: ContractDef[] = [

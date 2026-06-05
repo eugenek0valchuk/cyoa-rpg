@@ -130,6 +130,13 @@ export default function RaidSummaryPage() {
                       : '—'
                   }
                 />
+                {summary.contractClaimPending && (
+                  <div className="border border-[#2a3d2a] bg-[#0a120a]/60 px-4 py-3 sm:col-span-2">
+                    <p className="text-[13px] leading-relaxed text-[#8fbc8f]">
+                      {text.contractClaimHint}
+                    </p>
+                  </div>
+                )}
               </>
             )}
           </div>

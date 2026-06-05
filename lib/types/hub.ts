@@ -1,6 +1,13 @@
 import type { Artifact } from './game'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 
+export type PendingContractClaim = {
+  contractId: string
+  title: string
+  vow: string
+  rewardSummary: string
+}
+
 export interface HubState {
   roomLevel: number
   roomMarks: string[]
@@ -10,6 +17,8 @@ export interface HubState {
   echo: number
   /** Приоритет встречи на следующий спуск (награда обета) */
   pendingEncounterBoost?: string | null
+  /** Обет выполнен — награда ждёт сдачи у Писца */
+  pendingContractClaim?: PendingContractClaim | null
   stash: Artifact[]
   totalRaids: number
   totalExtractions: number
@@ -38,6 +47,7 @@ export function createInitialHubState(
     journalEntries: [],
     echo: 0,
     pendingEncounterBoost: null,
+    pendingContractClaim: null,
     stash: [...starterInventory],
     totalRaids: 0,
     totalExtractions: 0,
