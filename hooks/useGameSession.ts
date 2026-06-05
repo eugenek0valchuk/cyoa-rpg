@@ -25,6 +25,7 @@ import { applyRaidModifierTick } from '@/lib/game/raidModifiers'
 import { hasReturnSigil, isAtExtractionSite } from '@/lib/game/extraction'
 import { isRaidEndingScene } from '@/lib/game/isRaidEndingScene'
 import { getRaidModifier } from '@/lib/game/raidModifiers'
+import { collectNewNpcFlags } from '@/lib/game/npcFlags'
 import { getMapReachableTargets, resolveMapNavigation } from '@/lib/game/navigateScene'
 import { getRaidZone } from '@/lib/game/zones'
 import {
@@ -412,6 +413,7 @@ export function useGameSession() {
           raidModifierId: raid?.modifierId,
           contractId: raid?.contractId,
           encountersSeen: raid?.encountersSeen ?? [],
+          npcFlags: raid?.npcFlags ?? [],
           onEncounterSeen: (sceneId) => {
             const activeRaid = useHubStore.getState().raid
 
@@ -441,6 +443,23 @@ export function useGameSession() {
 
         if (gainedFlag) {
           setShowNewFlagHint(true)
+        }
+
+        const gainedNpcFlags = collectNewNpcFlags(
+          flagsBefore,
+          flagsAfter,
+          useHubStore.getState().raid?.npcFlags ?? [],
+        )
+
+        if (gainedNpcFlags.length > 0) {
+          const activeRaid = useHubStore.getState().raid
+
+          if (activeRaid?.active) {
+            useHubStore.getState().setRaid({
+              ...activeRaid,
+              npcFlags: [...(activeRaid.npcFlags ?? []), ...gainedNpcFlags],
+            })
+          }
         }
 
         syncJournal()

@@ -1,5 +1,6 @@
 'use client'
 
+import { getScribeHubLine } from '@/lib/game/contracts'
 import type { ContractDef } from '@/locales/ru/contracts'
 import { scribeUi } from '@/locales/ru/contracts'
 import type { HubState } from '@/lib/types/hub'
@@ -9,6 +10,8 @@ interface HubScribePanelProps {
   offered: ContractDef[]
   selectedContractId: string | null
   onSelect: (contractId: string | null) => void
+  /** Приветствие показывается в оверлее слева — не дублировать в панели */
+  hideGreeting?: boolean
 }
 
 function renderEmphasis(text: string) {
@@ -25,32 +28,20 @@ function renderEmphasis(text: string) {
   )
 }
 
-function getGreeting(hub: HubState): string {
-  if (hub.roomMarks.includes('failure_stain')) {
-    return scribeUi.greetingStain
-  }
-
-  if (
-    hub.journalEntries.includes('npc_breathless') &&
-    !hub.journalEntries.includes('npc_synod')
-  ) {
-    return scribeUi.greetingSynod
-  }
-
-  return scribeUi.greeting
-}
-
 export function HubScribePanel({
   hub,
   offered,
   selectedContractId,
   onSelect,
+  hideGreeting = false,
 }: HubScribePanelProps) {
   return (
     <div className="space-y-5">
-      <p className="text-[15px] leading-8 text-[#b8a99e]">
-        {renderEmphasis(getGreeting(hub))}
-      </p>
+      {!hideGreeting && (
+        <p className="text-[15px] leading-8 text-[#b8a99e]">
+          {renderEmphasis(getScribeHubLine(hub))}
+        </p>
+      )}
 
       <div className="space-y-3">
         {offered.map((contract) => {

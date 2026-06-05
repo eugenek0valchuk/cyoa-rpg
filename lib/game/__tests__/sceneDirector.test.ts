@@ -133,4 +133,26 @@ describe('resolveDirectedScene', () => {
 
     expect(scene.id).toBe('remembered_path')
   })
+
+  it('boosts wax pilgrim when wax_offered is in npcFlags this run', () => {
+    const history: SceneHistoryEntry[] = [
+      {
+        id: 'mouth',
+        title: scenes.mouth.title,
+        description: scenes.mouth.description,
+      },
+    ]
+
+    const scene = resolveDirectedScene(
+      scenes.start,
+      scenes.start.options[0]!,
+      baseCharacter,
+      history,
+      [],
+      [],
+      ['wax_offered'],
+    )
+
+    expect(scene.id).toBe('encounter_wax_pilgrim')
+  })
 })

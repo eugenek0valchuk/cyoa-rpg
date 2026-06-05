@@ -92,12 +92,15 @@ export const repeatSceneVariants: Partial<Record<string, RepeatSceneConfig>> = {
           id: 'descent',
           text: 'Снова позволить считать — зная, чем это кончилось',
           requirements: { agility: 6 },
+          riskFailSceneId: 'encounter_wax_fail_stagger',
+          targetSceneId: 'encounter_wax_counted',
           effects: { corruption: 5, sanity: -4 },
         },
         {
           id: 'mouth',
           text: 'Сорвать маску и бежать к Устам',
           requirements: { strength: 7 },
+          targetSceneId: 'encounter_wax_pull_away',
           effects: { sanity: -7, corruption: 2 },
         },
       ],
@@ -160,6 +163,29 @@ export const repeatSceneVariants: Partial<Record<string, RepeatSceneConfig>> = {
     },
   },
 
+  encounter_heretic_cog: {
+    journalId: 'npc_heretic',
+    variant: {
+      title: 'Шестерня Снова Крутится',
+      description: `
+Зубья **теплее** — будто Машина наверху крутила их в твоё отсутствие.
+
+Вопрос на металле не стёрся. Он **уточнился**: «Что осталось, когда перестали верить в ответ **второй** раз?»
+
+Трансепт пахнет железом и чужим шёпотом.
+      `.trim(),
+      addOptions: [
+        {
+          id: 'heretic_reunion_pit',
+          text: 'Шепнуть ответ снова — Машина помнит первый',
+          targetSceneId: 'encounter_heretic_whisper',
+          requirements: { requiredOrigin: 'heretic', requiredFlag: 'heretic_answered' },
+          effects: { corruption: 6, sanity: -7 },
+        },
+      ],
+    },
+  },
+
   encounter_synod_acolyte: {
     journalId: 'npc_synod',
     variant: {
@@ -187,6 +213,7 @@ export const repeatSceneVariants: Partial<Record<string, RepeatSceneConfig>> = {
           id: 'mouth',
           text: 'Принять вторую метку — Устам должны знать',
           requirements: { requiredFlag: 'synod_mark' },
+          targetSceneId: 'encounter_synod_marked',
           effects: { sanity: -8, corruption: 6 },
         },
       ],
@@ -315,6 +342,7 @@ export const repeatFollowUpScenes: Record<string, import('@/lib/types/game').Sce
       {
         id: 'mouth',
         text: 'Взять слух и спуститься к Устам',
+        targetSceneId: 'merchant_reunion_mouth_path',
         effects: { sanity: -2, addFlag: 'met_breathless' },
       },
       {
@@ -365,11 +393,13 @@ export const repeatFollowUpScenes: Record<string, import('@/lib/types/game').Sce
       {
         id: 'mouth',
         text: 'Принять обмен — шаг снова твой',
+        targetSceneId: 'encounter_wax_pull_away',
         effects: { sanity: 5, corruption: 4, addFlag: 'wax_offered' },
       },
       {
         id: 'catacombs',
         text: 'Отказаться и рвануть в боковой проход',
+        targetSceneId: 'encounter_wax_flee_side',
         effects: { sanity: -4 },
       },
     ],
@@ -389,11 +419,13 @@ export const repeatFollowUpScenes: Record<string, import('@/lib/types/game').Sce
       {
         id: 'bell',
         text: 'Идти к колоколам — теперь с частотой',
+        targetSceneId: 'encounter_bell_silenced',
         effects: { sanity: -4, addFlag: 'heard_the_bell' },
       },
       {
         id: 'monastery',
         text: 'Отступить в неф — звон ещё не закончен',
+        targetSceneId: 'encounter_bell_retreat_nave',
         effects: { sanity: -6 },
       },
     ],
@@ -444,6 +476,7 @@ export const repeatFollowUpScenes: Record<string, import('@/lib/types/game').Sce
       {
         id: 'mouth',
         text: 'Уйти к Устам — пока книга закрыта',
+        targetSceneId: 'encounter_synod_amend_mouth',
         effects: { sanity: -2, corruption: 1 },
       },
     ],

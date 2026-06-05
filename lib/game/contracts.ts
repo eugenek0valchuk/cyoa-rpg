@@ -1,6 +1,7 @@
 import {
   contractById,
   contractCatalog,
+  scribeUi,
   type ContractDef,
 } from '@/locales/ru/contracts'
 
@@ -25,6 +26,21 @@ export type ContractResult = {
 
 export function isScribeUnlocked(hub: HubState): boolean {
   return hub.totalExtractions >= 1
+}
+
+export function getScribeHubLine(hub: HubState): string {
+  if (hub.roomMarks.includes('failure_stain')) {
+    return scribeUi.greetingStain
+  }
+
+  if (
+    hub.journalEntries.includes('npc_breathless') &&
+    !hub.journalEntries.includes('npc_synod')
+  ) {
+    return scribeUi.greetingSynod
+  }
+
+  return scribeUi.greeting
 }
 
 function matchesOffer(hub: HubState, contract: ContractDef): boolean {

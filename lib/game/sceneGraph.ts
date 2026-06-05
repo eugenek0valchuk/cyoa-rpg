@@ -48,6 +48,12 @@ const SPINE_LAYOUT: Record<
   encounter_choir_remnant: { x: 3, y: 6, zone: 'event', label: 'Осколок' },
   encounter_synod_acolyte: { x: 0, y: 0, zone: 'event', label: 'Синод' },
   encounter_heretic_cog: { x: 3, y: 5, zone: 'event', label: 'Шестерня' },
+  encounter_heretic_whisper: { x: 3, y: 4, zone: 'event', label: 'Шёпот' },
+  encounter_wax_pull_away: { x: 0, y: 2, zone: 'event' },
+  encounter_synod_marked: { x: 0, y: 1, zone: 'event' },
+  encounter_bell_silenced: { x: 3, y: 1, zone: 'event' },
+  encounter_choir_hymn_reply: { x: 4, y: 6, zone: 'event' },
+  merchant_reunion_mouth_path: { x: 0, y: 2, zone: 'surface' },
   sarcophagus_tunnel: { x: 0, y: 6, zone: 'fracture' },
   blood_path: { x: 2, y: 5, zone: 'depth' },
 }

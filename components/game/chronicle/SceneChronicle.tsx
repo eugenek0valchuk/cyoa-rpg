@@ -1,10 +1,14 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import clsx from 'clsx'
+import { motion } from 'framer-motion'
+import { useEffect, useRef } from 'react'
 
+import { useNarrativeReveal } from '@/hooks/useNarrativeReveal'
 import { t } from '@/lib/i18n'
 import { Scene } from '@/lib/types/game'
 
+import { renderNarrativeEmphasis } from '../shared/NarrativeText'
 import { GameIcon } from '../ui/GameIcon'
 import { ChronicleCard } from '../shared/ChronicleCard'
 
@@ -20,66 +24,37 @@ export function SceneChronicle({
   onTypingComplete,
   hideBody = false,
 }: SceneChronicleProps) {
-  const [displayedText, setDisplayedText] = useState('')
-  const [isTyping, setIsTyping] = useState(true)
-  const indexRef = useRef(0)
-  const textEndRef = useRef<HTMLSpanElement>(null)
+  const textEndRef = useRef<HTMLDivElement>(null)
   const text = scene.description
+  const instant = process.env.NEXT_PUBLIC_E2E === '1'
+
+  const { chunks, visibleCount, isRevealing, skip } = useNarrativeReveal({
+    text,
+    enabled: !hideBody,
+    instant,
+    onComplete: onTypingComplete,
+  })
 
   useEffect(() => {
-    if (hideBody) {
-      setDisplayedText('')
-      setIsTyping(false)
-      onTypingComplete?.()
+    if (!isRevealing) {
       return
     }
 
-    // E2E: мгновенный текст — клики по выборам, без ожидания typewriter (см. playwright.config.ts).
-    if (process.env.NEXT_PUBLIC_E2E === '1') {
-      setDisplayedText(text)
-      setIsTyping(false)
-      onTypingComplete?.()
-      return
-    }
-
-    indexRef.current = 0
-    setDisplayedText('')
-    setIsTyping(true)
-
-    if (text.length <= 2) {
-      setDisplayedText(text)
-      setIsTyping(false)
-      const timeout = setTimeout(() => {
-        onTypingComplete?.()
-      }, 60)
-      return () => clearTimeout(timeout)
-    }
-
-    const charsPerTick = 2
-    const tick = 38
-
-    const timer = setInterval(() => {
-      const next = indexRef.current + charsPerTick
-      if (next >= text.length) {
-        setDisplayedText(text)
-        setIsTyping(false)
-        clearInterval(timer)
-        const timeout = setTimeout(() => {
-          onTypingComplete?.()
-        }, 60)
-        return () => clearTimeout(timeout)
-      } else {
-        setDisplayedText(text.slice(0, next))
-        indexRef.current = next
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault()
+        skip()
       }
-    }, tick)
+    }
 
-    return () => clearInterval(timer)
-  }, [text, onTypingComplete, hideBody])
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isRevealing, skip])
 
   useEffect(() => {
-    textEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }, [displayedText])
+    textEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [visibleCount])
 
   return (
     <ChronicleCard
@@ -92,14 +67,46 @@ export function SceneChronicle({
       data-testid={`scene-${scene.id}`}
     >
       {!hideBody && (
-      <div className="relative w-full max-w-[720px] space-y-4 whitespace-pre-wrap text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">
-        {displayedText}
+        <div
+          role={isRevealing ? 'button' : undefined}
+          tabIndex={isRevealing ? 0 : undefined}
+          onClick={() => {
+            if (isRevealing) {
+              skip()
+            }
+          }}
+          onKeyDown={(event) => {
+            if (isRevealing && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault()
+              skip()
+            }
+          }}
+          className={clsx(
+            'relative w-full max-w-[720px] outline-none',
+            isRevealing && 'cursor-pointer',
+          )}
+        >
+          <div className="space-y-5 text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">
+            {chunks.slice(0, visibleCount).map((chunk, index) => (
+              <motion.p
+                key={`${scene.id}-${index}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                {renderNarrativeEmphasis(chunk)}
+              </motion.p>
+            ))}
+          </div>
 
-        {isTyping && (
-          <span className="ml-0.5 inline-block h-5 w-2 animate-pulse bg-[#8e1f1f] align-middle" />
-        )}
-        <span ref={textEndRef} className="block h-px w-full" aria-hidden />
-      </div>
+          {isRevealing && (
+            <p className="mt-5 text-[11px] uppercase tracking-[0.14em] text-[#5a5048]">
+              {t.ui.game.narrativeSkipHint}
+            </p>
+          )}
+
+          <div ref={textEndRef} className="h-px w-full" aria-hidden />
+        </div>
       )}
     </ChronicleCard>
   )

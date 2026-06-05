@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildNpcEncounterDialogue,
+  buildNpcReplyTurns,
+  getChoiceReplyForScene,
   isNpcEncounterScene,
 } from '../npcEncounter'
 
@@ -70,5 +72,56 @@ describe('npcEncounter', () => {
 
     expect(dialogue.def?.npcName).toBe('Колокольный урод')
     expect(dialogue.lines[0]).toContain('медью')
+  })
+
+  it('registers follow-up scenes as npc encounters', () => {
+    expect(isNpcEncounterScene('encounter_wax_pull_away')).toBe(true)
+    expect(isNpcEncounterScene('encounter_synod_marked')).toBe(true)
+  })
+
+  it('returns choice reply with player and npc lines', () => {
+    const reply = getChoiceReplyForScene(
+      'encounter_wax_pilgrim',
+      'mouth',
+      [],
+      new Set(),
+    )
+
+    expect(reply?.player).toContain('пульс')
+    expect(reply?.npc.length).toBeGreaterThan(2)
+    expect(reply?.epilogue?.length).toBeGreaterThan(0)
+
+    const turns = buildNpcReplyTurns(reply!)
+    expect(turns[0]?.speaker).toBe('player')
+    expect(turns[1]?.speaker).toBe('npc')
+  })
+
+  it('returns reunion reply when journal remembers npc', () => {
+    const reply = getChoiceReplyForScene(
+      'encounter_wax_pilgrim',
+      'mouth',
+      ['npc_wax'],
+      new Set(),
+    )
+
+    expect(reply?.player).toContain('Снова')
+  })
+
+  it('registers take_mask as npc dialogue scene', () => {
+    expect(isNpcEncounterScene('take_mask')).toBe(true)
+
+    const dialogue = buildNpcEncounterDialogue('take_mask', [], new Set())
+
+    expect(dialogue.lines.length).toBeGreaterThan(2)
+  })
+
+  it('uses opening dialogue on follow-up scenes', () => {
+    const dialogue = buildNpcEncounterDialogue(
+      'encounter_wax_pull_away',
+      [],
+      new Set(),
+    )
+
+    expect(dialogue.lines[0]).toContain('Паломник')
   })
 })

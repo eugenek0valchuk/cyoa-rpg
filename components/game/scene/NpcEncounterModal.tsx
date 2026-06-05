@@ -1,16 +1,23 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 
 import { ChoiceList } from '@/components/game/scene/ChoiceList'
 import { GameIcon } from '@/components/game/ui/GameIcon'
-import { buildNpcEncounterDialogue } from '@/lib/game/npcEncounter'
+import {
+  buildNpcEncounterDialogue,
+  buildNpcReplyTurns,
+  getChoiceReplyForScene,
+  type NpcDialogueTurn,
+} from '@/lib/game/npcEncounter'
+import { getRiskOffer } from '@/lib/game/riskCheck'
 import { zLayers } from '@/lib/ui/layers'
 import { npcEncounterUi } from '@/locales/ru/npcEncounters'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import type { Character, Scene } from '@/lib/types/game'
+import { renderNarrativeEmphasis } from '@/components/game/shared/NarrativeText'
 
 interface NpcEncounterModalProps {
   open: boolean
@@ -26,17 +33,26 @@ interface NpcEncounterModalProps {
   onRiskChoice?: (choiceIndex: number) => void
 }
 
-function renderEmphasis(text: string) {
-  const parts = text.split(/\*\*(.*?)\*\*/g)
+type Phase = 'dialogue' | 'choices' | 'reply'
 
-  return parts.map((part, index) =>
-    index % 2 === 1 ? (
-      <strong key={index} className="font-medium text-[#e7ded7]">
-        {part}
-      </strong>
-    ) : (
-      part
-    ),
+function DialogueTurnView({ turn }: { turn: NpcDialogueTurn }) {
+  if (turn.speaker === 'player') {
+    return (
+      <div className="ml-3 border-r-2 border-[#5c4040]/80 pr-3 text-right sm:ml-6">
+        <p className="text-[10px] uppercase tracking-[0.14em] text-[#75685f]">
+          {npcEncounterUi.playerVoice}
+        </p>
+        <p className="mt-1 text-[13px] leading-relaxed text-[#b8a99e]">
+          {renderNarrativeEmphasis(turn.text)}
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <blockquote className="border-l-2 border-[#8e1f1f]/70 pl-3 text-[14px] leading-relaxed text-[#cfc2b8]">
+      «{renderNarrativeEmphasis(turn.text)}»
+    </blockquote>
   )
 }
 
@@ -53,6 +69,8 @@ export function NpcEncounterModal({
   onChoice,
   onRiskChoice,
 }: NpcEncounterModalProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   const encounter = useMemo(
     () =>
       buildNpcEncounterDialogue(scene.id, journalEntries, visitedSceneIds),
@@ -63,11 +81,19 @@ export function NpcEncounterModal({
   const lines = encounter.lines
 
   const [step, setStep] = useState(0)
-  const [phase, setPhase] = useState<'dialogue' | 'choices'>('dialogue')
+  const [phase, setPhase] = useState<Phase>('dialogue')
+  const [pendingChoiceIndex, setPendingChoiceIndex] = useState<number | null>(
+    null,
+  )
+  const [replyStep, setReplyStep] = useState(0)
+  const [replyTurns, setReplyTurns] = useState<NpcDialogueTurn[]>([])
 
   useEffect(() => {
     setStep(0)
     setPhase('dialogue')
+    setPendingChoiceIndex(null)
+    setReplyStep(0)
+    setReplyTurns([])
   }, [scene.id])
 
   useEffect(() => {
@@ -82,6 +108,40 @@ export function NpcEncounterModal({
     }
   }, [open])
 
+  const openingTurns = useMemo<NpcDialogueTurn[]>(
+    () => lines.map((line) => ({ speaker: 'npc', text: line })),
+    [lines],
+  )
+
+  const visibleOpeningCount =
+    phase === 'dialogue' ? step + 1 : openingTurns.length
+
+  const visibleReplyCount =
+    phase === 'reply' ? replyStep + 1 : phase === 'choices' ? 0 : 0
+
+  const transcript = useMemo(() => {
+    const turns = openingTurns.slice(0, visibleOpeningCount)
+
+    if (phase === 'reply' || (phase === 'choices' && replyTurns.length > 0)) {
+      turns.push(...replyTurns.slice(0, visibleReplyCount))
+    }
+
+    return turns
+  }, [
+    openingTurns,
+    visibleOpeningCount,
+    phase,
+    replyTurns,
+    visibleReplyCount,
+  ])
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: 'smooth',
+    })
+  }, [transcript.length, step, replyStep, phase])
+
   const advanceDialogue = useCallback(() => {
     setStep((current) => {
       if (current >= lines.length - 1) {
@@ -94,22 +154,106 @@ export function NpcEncounterModal({
   }, [lines.length])
 
   const skipToChoices = useCallback(() => {
+    setStep(Math.max(0, lines.length - 1))
     setPhase('choices')
-  }, [])
+  }, [lines.length])
+
+  const commitChoice = useCallback(
+    (index: number) => {
+      const choice = scene.options[index]
+
+      if (!choice) {
+        return
+      }
+
+      const riskOffer = getRiskOffer(choice, character, journalEntries)
+
+      if (riskOffer && onRiskChoice) {
+        onRiskChoice(index)
+        return
+      }
+
+      onChoice(index)
+    },
+    [character, journalEntries, onChoice, onRiskChoice, scene.options],
+  )
+
+  const handlePickChoice = useCallback(
+    (index: number) => {
+      const choice = scene.options[index]
+
+      if (!choice) {
+        return
+      }
+
+      const reply = getChoiceReplyForScene(
+        scene.id,
+        choice.id,
+        journalEntries,
+        visitedSceneIds,
+      )
+
+      if (reply && (reply.player || reply.npc.length > 0 || reply.epilogue)) {
+        setReplyTurns(buildNpcReplyTurns(reply))
+        setReplyStep(0)
+        setPendingChoiceIndex(index)
+        setPhase('reply')
+        return
+      }
+
+      commitChoice(index)
+    },
+    [
+      commitChoice,
+      journalEntries,
+      scene.id,
+      scene.options,
+      visitedSceneIds,
+    ],
+  )
+
+  const finishReply = useCallback(() => {
+    const index = pendingChoiceIndex
+
+    setPendingChoiceIndex(null)
+    setReplyStep(0)
+
+    if (index != null) {
+      commitChoice(index)
+    }
+  }, [commitChoice, pendingChoiceIndex])
+
+  const advanceReply = useCallback(() => {
+    if (replyStep >= replyTurns.length - 1) {
+      finishReply()
+      return
+    }
+
+    setReplyStep((value) => value + 1)
+  }, [finishReply, replyStep, replyTurns.length])
 
   useEffect(() => {
-    if (!open || phase !== 'dialogue') {
+    if (!open || phase === 'choices') {
       return
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         event.preventDefault()
-        advanceDialogue()
+
+        if (phase === 'dialogue') {
+          advanceDialogue()
+          return
+        }
+
+        if (phase === 'reply') {
+          advanceReply()
+        }
+
         return
       }
 
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && phase === 'dialogue') {
         event.preventDefault()
         skipToChoices()
       }
@@ -117,10 +261,8 @@ export function NpcEncounterModal({
 
     window.addEventListener('keydown', onKeyDown)
 
-    return () => {
-      window.removeEventListener('keydown', onKeyDown)
-    }
-  }, [open, phase, advanceDialogue, skipToChoices])
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [advanceDialogue, advanceReply, open, phase, skipToChoices])
 
   const choicesLocked = isLoading || pendingKeyChoice != null
 
@@ -129,6 +271,7 @@ export function NpcEncounterModal({
   }
 
   const isLastLine = step >= lines.length - 1
+  const isLastReply = replyStep >= replyTurns.length - 1
 
   return createPortal(
     <div
@@ -173,20 +316,39 @@ export function NpcEncounterModal({
           </div>
         </div>
 
-        <div className="flex min-h-0 w-full shrink-0 flex-col border-t border-[#2b2320] lg:w-[21rem] lg:border-l lg:border-t-0 xl:w-[23rem]">
+        <div className="flex min-h-0 w-full shrink-0 flex-col border-t border-[#2b2320] lg:w-[24rem] lg:border-l lg:border-t-0 xl:w-[26rem]">
           <div className="shrink-0 border-b border-[#241919] bg-[#120d0d] px-4 py-2.5">
             <p className="text-[10px] uppercase tracking-[0.16em] text-[#75685f]">
               {scene.title}
+              {phase === 'reply' && (
+                <span className="text-[#8e1f1f]">
+                  {' '}
+                  · {npcEncounterUi.afterChoice}
+                </span>
+              )}
+              {phase === 'dialogue' && lines.length > 1 && (
+                <span className="text-[#5a5048]">
+                  {' '}
+                  · {step + 1}/{lines.length}
+                </span>
+              )}
             </p>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto chronicle-scrollbar px-4 py-3 sm:px-4">
-            {phase === 'dialogue' ? (
-              <blockquote className="border-l-2 border-[#8e1f1f]/70 pl-3 text-[14px] leading-relaxed text-[#cfc2b8]">
-                «{renderEmphasis(lines[step] ?? '')}»
-              </blockquote>
-            ) : (
-              <div className="space-y-3">
+          <div
+            ref={scrollRef}
+            className="min-h-0 flex-1 overflow-y-auto chronicle-scrollbar px-4 py-3 sm:px-4"
+          >
+            {transcript.length > 0 && (
+              <div className="space-y-3 pb-3">
+                {transcript.map((turn, index) => (
+                  <DialogueTurnView key={`${turn.speaker}-${index}`} turn={turn} />
+                ))}
+              </div>
+            )}
+
+            {phase === 'choices' && (
+              <div className="space-y-3 border-t border-[#241919]/80 pt-3">
                 <p className="text-[10px] uppercase tracking-[0.16em] text-[#75685f]">
                   {npcEncounterUi.yourMove}
                 </p>
@@ -197,7 +359,11 @@ export function NpcEncounterModal({
                       : npcEncounterUi.resolving}
                   </p>
                 )}
-                <div className={choicesLocked ? 'pointer-events-none opacity-45' : ''}>
+                <div
+                  className={
+                    choicesLocked ? 'pointer-events-none opacity-45' : ''
+                  }
+                >
                   <ChoiceList
                     options={scene.options}
                     sceneId={scene.id}
@@ -205,8 +371,8 @@ export function NpcEncounterModal({
                     journalEntries={journalEntries}
                     raidModifierId={raidModifierId}
                     roomMarks={roomMarks}
-                    onSelect={onChoice}
-                    onRiskSelect={onRiskChoice}
+                    onSelect={handlePickChoice}
+                    onRiskSelect={handlePickChoice}
                     isLoading={choicesLocked}
                   />
                 </div>
@@ -230,6 +396,18 @@ export function NpcEncounterModal({
                 className="flex-1 px-3 py-3 text-[10px] uppercase tracking-[0.12em] text-[#d46060] transition hover:bg-[#160909]"
               >
                 {isLastLine ? npcEncounterUi.yourMove : npcEncounterUi.continue}
+              </button>
+            </div>
+          )}
+
+          {phase === 'reply' && (
+            <div className="flex shrink-0 border-t border-[#241919]">
+              <button
+                type="button"
+                onClick={advanceReply}
+                className="w-full px-3 py-3 text-[10px] uppercase tracking-[0.12em] text-[#d46060] transition hover:bg-[#160909]"
+              >
+                {isLastReply ? npcEncounterUi.resolving : npcEncounterUi.continue}
               </button>
             </div>
           )}

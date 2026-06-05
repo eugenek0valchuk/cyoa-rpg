@@ -106,6 +106,38 @@ function boostPoolForOrigin(
   return boosted
 }
 
+function boostPoolForNpcFlags(
+  pool: string[],
+  npcFlags: string[],
+  visitedSceneIds: Set<string>,
+): string[] {
+  const boosts: Record<string, string> = {
+    synod_mark: 'encounter_synod_acolyte',
+    met_breathless: 'merchant',
+    wax_offered: 'encounter_wax_pilgrim',
+    choir_split: 'fracture_choir',
+    met_heretic_cog: 'encounter_heretic_cog',
+    heard_the_bell: 'bell',
+  }
+
+  const boosted: string[] = []
+
+  for (const flag of npcFlags) {
+    const sceneId = boosts[flag]
+
+    if (
+      sceneId &&
+      pool.includes(sceneId) &&
+      !visitedSceneIds.has(sceneId) &&
+      !boosted.includes(sceneId)
+    ) {
+      boosted.push(sceneId)
+    }
+  }
+
+  return boosted
+}
+
 function boostPoolForContractFlags(
   pool: string[],
   character: Character,
@@ -134,6 +166,7 @@ function boostPoolForContractFlags(
 
 interface PickSceneParamsWithEncounters extends PickSceneParams {
   encountersSeen?: Set<string>
+  npcFlags?: string[]
 }
 
 function pickFromPool({
@@ -144,12 +177,18 @@ function pickFromPool({
   character,
   journalEntries,
   encountersSeen = new Set<string>(),
+  npcFlags = [],
 }: PickSceneParamsWithEncounters): Scene | null {
   const eligiblePool = filterSeenEncounters(pool, encountersSeen)
   const flagBoosted = boostPoolForFlags(eligiblePool, character, visitedSceneIds)
   const originBoosted = boostPoolForOrigin(
     eligiblePool,
     character,
+    visitedSceneIds,
+  )
+  const npcBoosted = boostPoolForNpcFlags(
+    eligiblePool,
+    npcFlags,
     visitedSceneIds,
   )
   const journalBoosted = boostPoolForJournal(
@@ -167,13 +206,20 @@ function pickFromPool({
     ...originBoosted.filter(
       (id) => !flagBoosted.includes(id),
     ),
-    ...journalBoosted.filter(
+    ...npcBoosted.filter(
       (id) => !flagBoosted.includes(id) && !originBoosted.includes(id),
+    ),
+    ...journalBoosted.filter(
+      (id) =>
+        !flagBoosted.includes(id) &&
+        !originBoosted.includes(id) &&
+        !npcBoosted.includes(id),
     ),
     ...contractBoosted.filter(
       (id) =>
         !flagBoosted.includes(id) &&
         !originBoosted.includes(id) &&
+        !npcBoosted.includes(id) &&
         !journalBoosted.includes(id),
     ),
   ]
@@ -245,6 +291,7 @@ export function resolveDirectedScene(
   sceneHistory: SceneHistoryEntry[],
   journalEntries: string[] = [],
   encountersSeen: string[] = [],
+  npcFlags: string[] = [],
 ): Scene {
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
   const encountersSeenSet = new Set(encountersSeen)
@@ -285,6 +332,7 @@ export function resolveDirectedScene(
       character,
       journalEntries,
       encountersSeen: encountersSeenSet,
+      npcFlags,
     })
 
     if (pooled) {
@@ -308,6 +356,7 @@ export function resolveDirectedScene(
     character,
     journalEntries,
     encountersSeen: encountersSeenSet,
+    npcFlags,
   })
 
   if (phaseScene) {

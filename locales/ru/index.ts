@@ -17,6 +17,7 @@ import {
   originBeatScenes,
   phaseScenes,
 } from './scenes'
+import { encounterFollowUpScenes } from './scenes/encounterFollowUps'
 import { repeatFollowUpScenes } from './scenes/repeatVariants'
 import { system } from './system'
 import { ui } from './ui'
@@ -43,6 +44,7 @@ export const ru = {
     ...encounterScenes,
     ...originBeatScenes,
     ...repeatFollowUpScenes,
+    ...encounterFollowUpScenes,
   },
 } as const
 

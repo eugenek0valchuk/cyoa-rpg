@@ -28,8 +28,12 @@ export type ContractDef = {
 
 export const scribeUi = {
   name: 'Писец Эха',
+  npcName: 'Писец Эха',
+  npcTitle: 'Трещина в камере',
   title: 'Обет у Порога',
   subtitle: 'Машина предлагает сделку — выполнишь, и камера запомнит',
+  contractsTitle: 'Обеты',
+  close: 'Закрыть',
   lockedTitle: 'Трещина молчит',
   lockedBody:
     'Писец появится после первого извлечения — когда камера поймёт, что ты умеешь возвращаться.',

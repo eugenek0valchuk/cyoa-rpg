@@ -6,9 +6,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
 import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
-import { HubContractClaim } from '@/components/hub/HubContractClaim'
 import { HubMerchantOverlay } from '@/components/hub/HubMerchantOverlay'
-import { HubScribePanel } from '@/components/hub/HubScribePanel'
+import { HubScribeOverlay } from '@/components/hub/HubScribeOverlay'
 import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
 import { journalCatalog } from '@/locales/ru/journal'
 import { contractById, scribeUi } from '@/locales/ru/contracts'
@@ -610,50 +609,19 @@ export default function HubPage() {
         />
       </GothicModal>
 
-      <GothicModal
+      <HubScribeOverlay
         open={activeModal === 'scribe'}
+        unlocked={scribeUnlocked}
+        hub={hub}
+        offered={offeredContracts}
+        selectedContractId={selectedContractId}
+        selectedContractTitle={selectedContract?.title}
+        onSelectContract={setSelectedContractId}
         onClose={closeModal}
-        icon="intelligence"
-        title={scribeUnlocked ? scribeUi.title : scribeUi.lockedTitle}
-        subtitle={
-          scribeUnlocked ? scribeUi.subtitle : hotspots.scribe.hint
-        }
-        maxWidth="lg"
-        footer={
-          scribeUnlocked && selectedContract ? (
-            <p className="text-[13px] text-[#6a8f6a]">
-              {scribeUi.activeContract}: {selectedContract.title}
-            </p>
-          ) : undefined
-        }
-      >
-        {scribeUnlocked ? (
-          <>
-            {hub.pendingContractClaim && (
-              <HubContractClaim
-                claim={hub.pendingContractClaim}
-                onClaim={handleClaimContract}
-                claiming={claimingContract}
-              />
-            )}
-            {claimToast && (
-              <p className="mb-4 border border-[#2a3d2a] bg-[#0a120a]/60 px-4 py-3 text-[13px] text-[#8fbc8f]">
-                {claimToast}
-              </p>
-            )}
-            <HubScribePanel
-              hub={hub}
-              offered={offeredContracts}
-              selectedContractId={selectedContractId}
-              onSelect={setSelectedContractId}
-            />
-          </>
-        ) : (
-          <p className="text-[15px] leading-relaxed text-[#75685f]">
-            {scribeUi.lockedBody}
-          </p>
-        )}
-      </GothicModal>
+        claimToast={claimToast}
+        claimingContract={claimingContract}
+        onClaimContract={handleClaimContract}
+      />
 
       <GothicModal
         open={activeModal === 'threshold'}

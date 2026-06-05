@@ -9,6 +9,7 @@ interface ResolveNextSceneParams {
   sceneHistory: SceneHistoryEntry[]
   journalEntries?: string[]
   encountersSeen?: string[]
+  npcFlags?: string[]
 }
 
 export function resolveNextScene({
@@ -18,6 +19,7 @@ export function resolveNextScene({
   sceneHistory,
   journalEntries = [],
   encountersSeen = [],
+  npcFlags = [],
 }: ResolveNextSceneParams): Scene {
   return resolveDirectedScene(
     currentScene,
@@ -26,5 +28,6 @@ export function resolveNextScene({
     sceneHistory,
     journalEntries,
     encountersSeen,
+    npcFlags,
   )
 }

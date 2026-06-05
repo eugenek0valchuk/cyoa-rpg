@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { choiceAnimation, sceneTransition } from '../constants/animations'
 import { ChoiceList } from './ChoiceList'
 import { getExtractHint } from '@/lib/game/extractHints'
-import { hasReturnSigil } from '@/lib/game/extraction'
+import { EXIT_SITE_EXTRACT_COPY, hasReturnSigil } from '@/lib/game/extraction'
 import type { ExtractBlockReason } from '@/lib/game/extraction'
 import { t } from '@/lib/i18n'
 
@@ -48,6 +48,12 @@ export function SceneChoices({
   const { ui: hubText } = t.hub
   const blockedAtExit =
     atExtractionSite && !extractAvailable && extractBlockReason !== 'available'
+  const extractCopy =
+    EXIT_SITE_EXTRACT_COPY[scene.id] ?? {
+      title: raidText.extractInScene,
+      hint: raidText.extractInSceneHint,
+    }
+
   const blockedHint = blockedAtExit
     ? getExtractHint(extractBlockReason, {
         hasSigil: hasReturnSigil(character.flags),
@@ -98,10 +104,10 @@ export function SceneChoices({
                   <DoorOpen className="mt-0.5 h-4 w-4 shrink-0 text-[#d46060]" />
                   <div className="min-w-0 flex-1">
                     <div className="font-cinzel text-[15px] uppercase tracking-[0.08em] text-[#d46060] sm:text-[17px]">
-                      {raidText.extractInScene}
+                      {extractCopy.title}
                     </div>
                     <p className="mt-1.5 text-[12px] leading-relaxed text-[#9d8d82]">
-                      {raidText.extractInSceneHint}
+                      {extractCopy.hint}
                     </p>
                   </div>
                   <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-[#75685f] transition-transform group-hover:translate-x-0.5 group-hover:text-[#d46060]" />

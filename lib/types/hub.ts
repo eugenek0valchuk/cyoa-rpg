@@ -55,6 +55,8 @@ export interface RaidState {
   emergencyExtractUsed?: boolean
   /** Встречи NPC в этом спуске — не повторять из пула */
   encountersSeen?: string[]
+  /** Метки NPC-взаимодействий в этом спуске (synod_mark, wax_offered…) */
+  npcFlags?: string[]
 }
 
 export const MIN_EXTRACT_DEPTH = 2

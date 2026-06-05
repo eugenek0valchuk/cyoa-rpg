@@ -41,7 +41,7 @@ export function buildPrologueSlides(options: {
       id: `contract_${contract.id}`,
       title: prologueUi.contractTitle,
       body: `${prologueUi.contractBody} **${contract.title}:** ${contract.vow}`,
-      imageSrc: '/ui/gothic-blessed-star.png',
+      imageSrc: '/hub/scribe-chamber-scene.png',
       imageAlt: contract.title,
     })
   } else {
@@ -49,6 +49,8 @@ export function buildPrologueSlides(options: {
       id: 'contract_none',
       title: prologueUi.contractTitle,
       body: prologueUi.contractBodyNone,
+      imageSrc: '/hub/scribe-chamber-scene.png',
+      imageAlt: prologueUi.contractTitle,
     })
   }
 

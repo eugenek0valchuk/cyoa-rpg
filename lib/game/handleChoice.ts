@@ -42,6 +42,7 @@ interface HandleChoiceParams {
   roomMarks?: string[]
   contractId?: string | null
   encountersSeen?: string[]
+  npcFlags?: string[]
   onEncounterSeen?: (sceneId: string) => void
 }
 
@@ -83,6 +84,7 @@ export async function handleGameChoice({
   roomMarks = [],
   contractId = null,
   encountersSeen = [],
+  npcFlags = [],
   onEncounterSeen,
 }: HandleChoiceParams) {
   const { updatedCharacter, revealedArtifact } = applyChoiceEffects({
@@ -155,6 +157,7 @@ export async function handleGameChoice({
     sceneHistory,
     journalEntries,
     encountersSeen,
+    npcFlags,
   })
 
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))

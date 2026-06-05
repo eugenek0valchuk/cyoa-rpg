@@ -20,6 +20,40 @@ export const SIGIL_EXTRACTION_SITES = new Set([
   'start',
 ])
 
+/** Текст кнопки извлечения на конкретной точке выхода. */
+export const EXIT_SITE_EXTRACT_COPY: Partial<
+  Record<string, { title: string; hint: string }>
+> = {
+  exit_monastery: {
+    title: 'Вырваться во двор монастыря',
+    hint: 'Воск на воротах ещё тёплый — камера ждёт наверху',
+  },
+  ash_path: {
+    title: 'Уйти по пепельной щели',
+    hint: 'Свет снаружи слабый, но настоящий — хватит, чтобы дойти',
+  },
+  drain_water: {
+    title: 'Подняться по стоку к свету',
+    hint: 'Вода тянет вверх. Пока печать держит — не отпускай',
+  },
+  mouth: {
+    title: 'Отступить с печатью у Уст',
+    hint: 'Слепые фигуры не мешают — путь на поверхность открыт',
+  },
+  merchant: {
+    title: 'Попросить Бездыханного отпустить',
+    hint: 'Он кивнёт, не поднимая головы — долг за слух уже записан',
+  },
+  start: {
+    title: 'Вернуться на дорогу паломника',
+    hint: 'Пепел на плечах — но ноги ещё помнят камеру',
+  },
+  leave_cart: {
+    title: 'Уйти от телеги к поверхности',
+    hint: 'Обереги на колёсах звенят в такт шагу домой',
+  },
+}
+
 export type ExitSiteCondition =
   | { kind: 'min_depth'; value: number }
   | { kind: 'min_sanity'; value: number }

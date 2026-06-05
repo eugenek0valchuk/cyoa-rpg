@@ -15,19 +15,22 @@ export const encounterScenes: Record<string, Scene> = {
       {
         id: 'mouth',
         text: 'Отнять руку и идти к Устам',
+        targetSceneId: 'encounter_wax_pull_away',
         effects: { sanity: -3 },
       },
       {
         id: 'descent',
         text: 'Позволить считать до конца',
         requirements: { agility: 6 },
-        riskFailSceneId: 'encounter_wax_fail',
+        riskFailSceneId: 'encounter_wax_fail_stagger',
+        targetSceneId: 'encounter_wax_counted',
         effects: { corruption: 3, addFlag: 'wax_offered' },
       },
       {
         id: 'catacombs',
         text: 'Вывернуть запястье и сбежать в боковой проход',
         requirements: { strength: 6 },
+        targetSceneId: 'encounter_wax_flee_side',
         effects: { sanity: -5, corruption: 2 },
       },
     ],
@@ -48,18 +51,21 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'bell',
         text: 'Подойти к колоколам и заглушить эхо',
         requirements: { strength: 7 },
-        riskFailSceneId: 'encounter_bell_fail',
+        riskFailSceneId: 'encounter_bell_fail_ringing',
+        targetSceneId: 'encounter_bell_silenced',
         effects: { sanity: -4, corruption: 3 },
       },
       {
         id: 'monastery',
         text: 'Отступить в пустой неф',
+        targetSceneId: 'encounter_bell_retreat_nave',
         effects: { sanity: -2 },
       },
       {
         id: 'whispers_parlor',
         text: 'Срезать медную полоску с его ребра',
         requirements: { intelligence: 6 },
+        targetSceneId: 'encounter_bell_copper_taken',
         effects: { corruption: 5, sanity: -6, addFlag: 'synod_mark' },
       },
     ],
@@ -79,18 +85,21 @@ export const encounterScenes: Record<string, Scene> = {
       {
         id: 'bell',
         text: 'Закрыть уши и идти на звон колокола',
+        targetSceneId: 'encounter_choir_to_bell',
         effects: { sanity: -5, corruption: 4 },
       },
       {
         id: 'light_candle',
         text: 'Прошептать гимн в ответ',
         requirements: { intelligence: 7 },
+        targetSceneId: 'encounter_choir_hymn_reply',
         effects: { sanity: -8, corruption: 6, addFlag: 'choir_split' },
       },
       {
         id: 'fracture_stairs',
         text: 'Разбить челюсть камнем и бежать',
         requirements: { strength: 6 },
+        targetSceneId: 'encounter_choir_shatter_jaw',
         effects: { sanity: -3, corruption: 2 },
       },
     ],
@@ -111,18 +120,46 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'mouth',
         text: 'Принять метку и слух о Устах',
         requirements: { intelligence: 5 },
+        targetSceneId: 'encounter_synod_marked',
         effects: { sanity: -6, corruption: 4, addFlag: 'synod_mark' },
       },
       {
         id: 'merchant',
         text: 'Отказаться и вернуться к телеге',
+        targetSceneId: 'encounter_synod_refused',
         effects: { sanity: -2 },
       },
       {
         id: 'leave_cart',
         text: 'Уйти, не дав ему закончить фразу',
         requirements: { agility: 6 },
+        riskFailSceneId: 'encounter_synod_fail_inked',
+        targetSceneId: 'leave_cart',
         effects: { sanity: -1 },
+      },
+    ],
+  },
+
+  encounter_synod_fail: {
+    id: 'encounter_synod_fail',
+    title: 'Строка Закрылась',
+    description: `
+Ты дёргаешься — поздно. Адепт **уже** дописал.
+
+Страница шелестит сама. На ней появляется не метка — **предложение**: принять долг или стереть имя.
+
+Синод не злится. Синод **фиксирует**.
+    `.trim(),
+    options: [
+      {
+        id: 'mouth',
+        text: 'Принять метку — Устам должны знать',
+        effects: { sanity: -7, corruption: 5, addFlag: 'synod_mark' },
+      },
+      {
+        id: 'merchant',
+        text: 'Вернуться к телеге — пусть Бездыханный видел отказ',
+        effects: { sanity: -4 },
       },
     ],
   },
@@ -142,6 +179,7 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'heretic_whisper_pit',
         text: 'Ответить шёпотом — Машина запишет',
         requirements: { requiredOrigin: 'heretic' },
+        targetSceneId: 'encounter_heretic_whisper',
         effects: {
           addFlag: 'heretic_answered',
           corruption: 5,
@@ -152,11 +190,13 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'jump_pit',
         text: 'Сорвать шестерню и бросить в чашу',
         requirements: { strength: 7 },
+        targetSceneId: 'encounter_heretic_cog_torn',
         effects: { corruption: 6, sanity: -7 },
       },
       {
         id: 'monastery',
         text: 'Отступить — вопрос не для тебя',
+        targetSceneId: 'encounter_heretic_retreat',
         effects: { sanity: -2 },
       },
     ],

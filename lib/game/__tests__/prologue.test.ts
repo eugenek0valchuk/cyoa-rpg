@@ -14,6 +14,7 @@ describe('buildPrologueSlides', () => {
       'road',
       'contract_none',
     ])
+    expect(slides[2]?.imageSrc).toBe('/hub/scribe-chamber-scene.png')
   })
 
   it('includes contract and modifier slides when present', () => {
