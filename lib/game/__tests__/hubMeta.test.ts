@@ -28,10 +28,10 @@ describe('hubMeta', () => {
   it('stacks mark penalties on raid start sanity', () => {
     expect(
       getRaidStartSanityDelta(['failure_stain', 'deep_wound']),
-    ).toBe(-9)
+    ).toBe(-7)
     expect(
       applyRaidStartSanity(70, ['failure_stain', 'deep_wound']),
-    ).toBe(61)
+    ).toBe(63)
   })
 
   it('scales loadout slots with room level', () => {
@@ -62,7 +62,7 @@ describe('hubMeta', () => {
       ['deep_echo'],
     )
 
-    expect(after.sanity).toBe(67)
+    expect(after.sanity).toBe(68)
   })
 
   it('restores minimum hub sanity after failed raid', () => {

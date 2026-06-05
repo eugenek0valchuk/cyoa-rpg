@@ -1,12 +1,36 @@
 import type { StoryPhase } from './director'
 
 export const choicePools: Record<string, string[]> = {
-  mouth: ['mouth', 'descent_echoes', 'descent_reliquary', 'encounter_wax_pilgrim'],
-  monastery: ['monastery', 'whispers_parlor', 'whispers_mirror', 'encounter_bell_wretch'],
-  merchant: ['merchant', 'descent_reliquary', 'encounter_synod_acolyte'],
-  descent: ['descent', 'fracture_stairs', 'encounter_wax_pilgrim'],
-  bell: ['bell', 'fracture_choir', 'encounter_bell_wretch'],
-  catacombs: ['catacombs', 'whispers_mirror', 'encounter_choir_remnant'],
+  mouth: [
+    'encounter_wax_pilgrim',
+    'mouth',
+    'descent_echoes',
+    'descent_reliquary',
+  ],
+  monastery: [
+    'encounter_bell_wretch',
+    'monastery',
+    'whispers_parlor',
+    'whispers_mirror',
+  ],
+  merchant: [
+    'encounter_synod_acolyte',
+    'merchant',
+    'descent_reliquary',
+  ],
+  descent: [
+    'encounter_wax_pilgrim',
+    'descent',
+    'fracture_stairs',
+    'iron_passage',
+  ],
+  bell: ['encounter_bell_wretch', 'bell', 'fracture_choir', 'whispers_parlor'],
+  catacombs: [
+    'encounter_choir_remnant',
+    'catacombs',
+    'whispers_mirror',
+    'read_writings',
+  ],
 }
 
 export const phasePools: Record<StoryPhase, string[]> = {

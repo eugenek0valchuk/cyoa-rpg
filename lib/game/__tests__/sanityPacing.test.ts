@@ -26,8 +26,8 @@ const heavyLoss: Choice = {
 
 describe('sanityPacing', () => {
   it('caps sanity loss when vessel is already fragile', () => {
-    expect(softenSanityDelta(10, -8)).toBe(-3)
-    expect(softenSanityDelta(18, -8)).toBe(-5)
+    expect(softenSanityDelta(10, -8)).toBe(-4)
+    expect(softenSanityDelta(18, -8)).toBe(-6)
     expect(softenSanityDelta(40, -8)).toBe(-8)
   })
 
@@ -42,7 +42,7 @@ describe('sanityPacing', () => {
       artifacts,
     )
 
-    expect(projected).toBe(7)
+    expect(projected).toBe(6)
   })
 
   it('marks choices that would leave sanity at the edge', () => {

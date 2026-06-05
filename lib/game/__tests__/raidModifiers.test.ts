@@ -31,7 +31,7 @@ describe('raid modifiers', () => {
       'muted_bells',
     )
 
-    expect(result.sanity).toBe(48)
+    expect(result.sanity).toBe(49)
     expect(result.corruption).toBe(10)
   })
 })

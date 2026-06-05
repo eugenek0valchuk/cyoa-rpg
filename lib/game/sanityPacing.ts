@@ -25,12 +25,12 @@ export function softenSanityDelta(currentSanity: number, delta: number): number 
   }
 
   const loss = Math.abs(delta)
-  let maxLoss = 8
+  let maxLoss = 9
 
-  if (currentSanity <= 12) {
-    maxLoss = 3
-  } else if (currentSanity <= 22) {
-    maxLoss = 5
+  if (currentSanity <= 15) {
+    maxLoss = 4
+  } else if (currentSanity <= 28) {
+    maxLoss = 6
   }
 
   return -Math.min(loss, maxLoss)

@@ -31,20 +31,28 @@ export default function RaidSummaryPage() {
   }
 
   const isExtracted = summary.outcome === 'extracted'
+  const isEmergencyExtracted = summary.outcome === 'emergency_extracted'
+  const isSuccessfulExtract = isExtracted || isEmergencyExtracted
   const isAbandoned = summary.outcome === 'abandoned'
-  const loot = isExtracted ? summary.gainedArtifacts : summary.lostArtifacts
+  const loot = isSuccessfulExtract
+    ? summary.gainedArtifacts
+    : summary.lostArtifacts
 
   const title = isExtracted
     ? text.extractedTitle
-    : isAbandoned
-      ? text.abandonedTitle
-      : text.failedTitle
+    : isEmergencyExtracted
+      ? text.emergencyExtractedTitle
+      : isAbandoned
+        ? text.abandonedTitle
+        : text.failedTitle
 
   const subtitle = isExtracted
     ? text.extractedSubtitle
-    : isAbandoned
-      ? text.abandonedSubtitle
-      : text.failedSubtitle
+    : isEmergencyExtracted
+      ? text.emergencyExtractedSubtitle
+      : isAbandoned
+        ? text.abandonedSubtitle
+        : text.failedSubtitle
 
   const endZone = getRaidZone(summary.depth)
 
@@ -67,8 +75,10 @@ export default function RaidSummaryPage() {
         <div className="text-center">
           <div
             className={`text-[12px] uppercase tracking-[0.2em] ${
-              isExtracted
-                ? 'text-[#6a8f6a]'
+              isSuccessfulExtract
+                ? isEmergencyExtracted
+                  ? 'text-[#a89060]'
+                  : 'text-[#6a8f6a]'
                 : isAbandoned
                   ? 'text-[#a08080]'
                   : 'text-[#d46060]'
@@ -100,7 +110,9 @@ export default function RaidSummaryPage() {
               label={text.roomLevel}
               value={String(summary.roomLevelAfter + 1)}
             />
-            {isExtracted && summary.echoGain != null && summary.echoGain > 0 && (
+            {isSuccessfulExtract &&
+              summary.echoGain != null &&
+              summary.echoGain > 0 && (
               <>
                 <SummaryRow
                   label={text.echoGained}
@@ -143,7 +155,7 @@ export default function RaidSummaryPage() {
 
           <div className="border-t border-[#241919] pt-5">
             <div className="text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
-              {isExtracted ? text.gained : text.lost}
+              {isSuccessfulExtract ? text.gained : text.lost}
             </div>
             {loot.length === 0 ? (
               <p className="mt-3 text-[15px] text-[#75685f]">{text.noLoot}</p>
@@ -159,6 +171,26 @@ export default function RaidSummaryPage() {
                   </li>
                 ))}
               </ul>
+            )}
+            {isEmergencyExtracted && summary.lostArtifacts.length > 0 && (
+              <>
+                <div className="mt-5 text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
+                  {text.lost}
+                </div>
+                <ul className="mt-3 space-y-2">
+                  {summary.lostArtifacts.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-center gap-3 border border-[#3a2a1a] bg-black/40 px-4 py-3"
+                    >
+                      <GameIcon type="artifact" size={36} />
+                      <span className="text-[15px] text-[#a89070]">
+                        {item.name}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </div>
 

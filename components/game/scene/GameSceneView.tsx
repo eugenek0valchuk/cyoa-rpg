@@ -1,5 +1,6 @@
 'use client'
 
+import type { ExtractBlockReason } from '@/lib/game/extraction'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import { Character, Scene } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -19,6 +20,9 @@ interface Props {
   roomMarks?: string[]
   showChoices: boolean
   extractAvailable?: boolean
+  extractBlockReason?: ExtractBlockReason
+  atExtractionSite?: boolean
+  raidDepth?: number
   onExtract?: () => void
   onChoice: (choiceIndex: number) => void
   onRiskChoice?: (choiceIndex: number) => void
@@ -35,6 +39,9 @@ export function GameSceneView({
   roomMarks = [],
   showChoices,
   extractAvailable,
+  extractBlockReason,
+  atExtractionSite,
+  raidDepth = 0,
   onExtract,
   onChoice,
   onRiskChoice,
@@ -92,6 +99,9 @@ export function GameSceneView({
           showChoices={revealActions}
           isLoading={isLoading}
           extractAvailable={extractAvailable}
+          extractBlockReason={extractBlockReason}
+          atExtractionSite={atExtractionSite}
+          raidDepth={raidDepth}
           onExtract={onExtract}
           onChoice={onChoice}
           onRiskChoice={onRiskChoice}

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "lib/game/**/*.ts",
+    "lib/persistence/**/*.ts",
+    "lib/types/**/*.ts"
+  ],
+  "exclude": ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"]
+}

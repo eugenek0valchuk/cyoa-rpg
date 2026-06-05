@@ -24,7 +24,9 @@ import { RaidPrologueModal } from '@/components/game/scene/RaidPrologueModal'
 import { buildPrologueSlides } from '@/lib/game/prologue'
 import { isNpcEncounterScene } from '@/lib/game/npcEncounter'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
+import { RaidMinimap } from '@/components/game/scene/RaidMinimap'
 import { GothicModal } from '@/components/ui/GothicModal'
+import { getSceneMapNodes } from '@/lib/game/sceneGraph'
 import { useGameSession } from '@/hooks/useGameSession'
 import { useHubStore } from '@/lib/store/hubStore'
 import { useGameStore } from '@/lib/store/gameStore'
@@ -32,6 +34,8 @@ import { t } from '@/lib/i18n'
 
 export default function GamePage() {
   const [abandonOpen, setAbandonOpen] = useState(false)
+  const [emergencyExtractOpen, setEmergencyExtractOpen] = useState(false)
+  const [mapNavTarget, setMapNavTarget] = useState<string | null>(null)
   const [npcEncounterOpen, setNpcEncounterOpen] = useState(false)
   const raid = useHubStore((state) => state.raid)
   const setRaid = useHubStore((state) => state.setRaid)
@@ -48,6 +52,8 @@ export default function GamePage() {
     isEndingScene,
     extractAvailable,
     extractBlockReason,
+    atExtractionSite,
+    emergencyExtractAvailable,
     hasSigil,
     raidDepth,
     raidZone,
@@ -67,6 +73,9 @@ export default function GamePage() {
     diceRoll,
     handleDiceComplete,
     handleExtract,
+    handleEmergencyExtract,
+    handleMapNavigate,
+    mapReachableTargets,
     handleAbandonRaid,
     handleExitToMenu,
     closeArtifactReveal,
@@ -74,6 +83,12 @@ export default function GamePage() {
   } = useGameSession()
 
   const { ui: hubText } = t.hub
+  const { ui: raidText } = t.raid
+  const mapNodes = useMemo(() => getSceneMapNodes(), [])
+  const mapNavLabel =
+    mapNavTarget != null
+      ? mapNodes.find((node) => node.id === mapNavTarget)?.label ?? mapNavTarget
+      : ''
 
   const prologueSlides = useMemo(() => {
     if (!raid?.active) {
@@ -184,6 +199,11 @@ export default function GamePage() {
     await handleAbandonRaid()
   }
 
+  const confirmEmergencyExtract = async () => {
+    setEmergencyExtractOpen(false)
+    await handleEmergencyExtract()
+  }
+
   return (
     <GameLayout>
       <div className="shrink-0">
@@ -194,6 +214,9 @@ export default function GamePage() {
           hasSigil={hasSigil}
           raidDepth={raidDepth}
           minExtractDepth={minExtractDepth}
+          sanity={character.sanity}
+          corruption={character.corruption}
+          currentSceneId={currentScene.id}
           raidZone={raidZone}
           raidModifier={raidModifier}
           isEndingScene={isEndingScene}
@@ -202,6 +225,8 @@ export default function GamePage() {
           showNewFlagHint={showNewFlagHint}
           onOpenChronicle={handleOpenChronicle}
           onExtract={handleExtract}
+          emergencyExtractAvailable={emergencyExtractAvailable}
+          onEmergencyExtract={() => setEmergencyExtractOpen(true)}
           onAbandon={() => setAbandonOpen(true)}
           onReset={handleExitToMenu}
         />
@@ -210,6 +235,20 @@ export default function GamePage() {
       <div className="shrink-0">
         <CharacterPanel character={character} sanityStress={sanityStress} />
       </div>
+
+      {!isEndingScene && (
+        <div className="pointer-events-none fixed right-3 top-28 z-30 sm:right-5 sm:top-32 xl:left-[calc((100vw+min(100vw-3rem,980px))/2+1.5rem)] xl:right-auto">
+          <div className="pointer-events-auto">
+            <RaidMinimap
+              currentSceneId={currentScene.id}
+              sceneHistoryIds={sceneHistory.map((entry) => entry.id)}
+              reachableTargets={mapReachableTargets}
+              onNavigate={(sceneId) => setMapNavTarget(sceneId)}
+              disabled={isLoading || showPrologue || npcEncounterOpen}
+            />
+          </div>
+        </div>
+      )}
 
       <GameViewport loading={isLoading} blocked={artifactOpen}>
         <div className="shrink-0">
@@ -228,6 +267,9 @@ export default function GamePage() {
           isLoading={isLoading}
           showChoices={showChoices && !showPrologue && !npcEncounterOpen}
           extractAvailable={extractAvailable && !isEndingScene}
+          extractBlockReason={extractBlockReason}
+          atExtractionSite={atExtractionSite}
+          raidDepth={raidDepth}
           onExtract={handleExtract}
           onChoice={handleChoice}
           onRiskChoice={handleRiskChoice}
@@ -292,6 +334,78 @@ export default function GamePage() {
         journalEntries={hub?.journalEntries ?? []}
         raidDepth={raidDepth}
       />
+
+      <GothicModal
+        open={mapNavTarget != null}
+        onClose={() => setMapNavTarget(null)}
+        icon="flag"
+        title={raidText.mapNavigate}
+        subtitle={raidText.mapNavigateConfirm.replace('{place}', mapNavLabel)}
+        footer={
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setMapNavTarget(null)}
+              className="border border-[#2b2320] px-6 py-2 text-[11px] uppercase tracking-[0.15em] text-[#85776a] transition hover:border-[#5c1f1f] hover:text-[#d8c9be]"
+            >
+              {raidText.mapNavigateCancel}
+            </button>
+            <button
+              type="button"
+              data-testid="map-navigate-confirm"
+              onClick={async () => {
+                if (!mapNavTarget) {
+                  return
+                }
+
+                const target = mapNavTarget
+                setMapNavTarget(null)
+                await handleMapNavigate(target)
+              }}
+              disabled={isLoading}
+              className="font-cinzel border-2 border-[#4a5c4a] bg-[#0d120d] px-6 py-2 text-[11px] uppercase tracking-[0.15em] text-[#b4c27d] transition hover:bg-[#121812] disabled:opacity-40"
+            >
+              {raidText.mapNavigate}
+            </button>
+          </div>
+        }
+      >
+        <p className="text-[14px] leading-relaxed text-[#9d8d82]">
+          {raidText.mapHint}
+        </p>
+      </GothicModal>
+
+      <GothicModal
+        open={emergencyExtractOpen}
+        onClose={() => setEmergencyExtractOpen(false)}
+        icon="corruption"
+        title={hubText.emergencyExtractConfirmTitle}
+        subtitle={hubText.emergencyExtractConfirmBody}
+        footer={
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setEmergencyExtractOpen(false)}
+              className="border border-[#2b2320] px-6 py-2 text-[11px] uppercase tracking-[0.15em] text-[#85776a] transition hover:border-[#5c1f1f] hover:text-[#d8c9be]"
+            >
+              {hubText.emergencyExtractCancel}
+            </button>
+            <button
+              type="button"
+              data-testid="emergency-extract-confirm"
+              onClick={confirmEmergencyExtract}
+              disabled={isLoading}
+              className="font-cinzel border-2 border-[#6a4a1a] bg-[#161009] px-6 py-2 text-[11px] uppercase tracking-[0.15em] text-[#c9a060] transition hover:bg-[#221508] disabled:opacity-40"
+            >
+              {hubText.emergencyExtractConfirm}
+            </button>
+          </div>
+        }
+      >
+        <p className="text-[14px] leading-relaxed text-[#9d8d82]">
+          {hubText.emergencyExtractHint}
+        </p>
+      </GothicModal>
 
       <GothicModal
         open={abandonOpen}

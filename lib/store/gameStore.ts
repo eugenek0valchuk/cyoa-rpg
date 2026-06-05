@@ -11,6 +11,7 @@ interface GameStore {
   setQueuedScene: (scene: Scene | null) => void
   pushHistory: (sceneId: string) => void
   pushSceneHistory: (scene: SceneHistoryEntry) => void
+  rewindSceneHistoryTo: (index: number) => void
   resetGame: () => void
 }
 
@@ -38,6 +39,12 @@ export const useGameStore = create<GameStore>((set) => ({
   pushSceneHistory: (scene) =>
     set((state) => ({
       sceneHistory: [...state.sceneHistory, scene].slice(-12),
+    })),
+
+  rewindSceneHistoryTo: (index) =>
+    set((state) => ({
+      sceneHistory: state.sceneHistory.slice(0, index),
+      history: state.history.slice(0, index + 1),
     })),
 
   resetGame: () =>

@@ -139,18 +139,18 @@ export function NpcEncounterModal({
     >
       <div className="absolute inset-0 bg-black/86 backdrop-blur-[2px]" />
 
-      <div className="relative z-10 flex h-[min(92vh,760px)] w-full max-w-6xl flex-col overflow-hidden border-2 border-[#4a3030] bg-[#0a0707] shadow-[0_0_80px_rgba(92,31,31,0.35)] lg:flex-row">
-        <div className="relative min-h-[200px] w-full shrink-0 lg:min-h-0 lg:w-[42%]">
+      <div className="relative z-10 flex h-[min(92vh,760px)] w-full max-w-7xl flex-col overflow-hidden border-2 border-[#4a3030] bg-[#0a0707] shadow-[0_0_80px_rgba(92,31,31,0.35)] lg:flex-row">
+        <div className="relative flex min-h-[min(42vh,340px)] w-full shrink-0 items-center justify-center bg-[#080606] lg:min-h-0 lg:min-w-0 lg:flex-1">
           <Image
             src={def.imageSrc}
             alt=""
             fill
-            className="object-cover object-center"
-            sizes="(max-width: 1024px) 100vw, 42vw"
+            className="object-contain object-center p-1 sm:p-2"
+            sizes="(max-width: 1024px) 100vw, 70vw"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/45 to-[#0a0707] lg:to-[#0a0707]/95" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0707] via-transparent to-black/35" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0707] via-transparent to-black/25" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-16 bg-gradient-to-l from-[#0a0707]/90 to-transparent lg:block" />
 
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
             <div className="flex items-end gap-3">
@@ -172,16 +172,16 @@ export function NpcEncounterModal({
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col border-t border-[#2b2320] lg:border-l lg:border-t-0">
-          <div className="shrink-0 border-b border-[#241919] bg-[#120d0d] px-4 py-3 sm:px-5">
+        <div className="flex min-h-0 w-full shrink-0 flex-col border-t border-[#2b2320] lg:w-[21rem] lg:border-l lg:border-t-0 xl:w-[23rem]">
+          <div className="shrink-0 border-b border-[#241919] bg-[#120d0d] px-4 py-2.5">
             <p className="text-[10px] uppercase tracking-[0.16em] text-[#75685f]">
               {scene.title}
             </p>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto chronicle-scrollbar px-4 py-4 sm:px-5">
+          <div className="min-h-0 flex-1 overflow-y-auto chronicle-scrollbar px-4 py-3 sm:px-4">
             {phase === 'dialogue' ? (
-              <blockquote className="border-l-2 border-[#8e1f1f]/70 pl-4 text-[15px] leading-relaxed text-[#cfc2b8] sm:text-[16px]">
+              <blockquote className="border-l-2 border-[#8e1f1f]/70 pl-3 text-[14px] leading-relaxed text-[#cfc2b8]">
                 «{renderEmphasis(lines[step] ?? '')}»
               </blockquote>
             ) : (
@@ -218,14 +218,14 @@ export function NpcEncounterModal({
               <button
                 type="button"
                 onClick={skipToChoices}
-                className="flex-1 border-r border-[#241919] px-4 py-3.5 text-[11px] uppercase tracking-[0.14em] text-[#75685f] transition hover:bg-[#0a0808]"
+                className="flex-1 border-r border-[#241919] px-3 py-3 text-[10px] uppercase tracking-[0.12em] text-[#75685f] transition hover:bg-[#0a0808]"
               >
                 {npcEncounterUi.skipToChoices}
               </button>
               <button
                 type="button"
                 onClick={advanceDialogue}
-                className="flex-1 px-4 py-3.5 text-[11px] uppercase tracking-[0.14em] text-[#d46060] transition hover:bg-[#160909]"
+                className="flex-1 px-3 py-3 text-[10px] uppercase tracking-[0.12em] text-[#d46060] transition hover:bg-[#160909]"
               >
                 {isLastLine ? npcEncounterUi.yourMove : npcEncounterUi.continue}
               </button>
@@ -237,6 +237,3 @@ export function NpcEncounterModal({
     document.body,
   )
 }
-
-/** @deprecated use NpcEncounterModal */
-export const BreathlessEncounterModal = NpcEncounterModal

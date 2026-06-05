@@ -22,18 +22,23 @@ import {
 } from '@/lib/game/riskCheck'
 import { getKeyChoiceMeta } from '@/lib/game/keyChoices'
 import { applyRaidModifierTick } from '@/lib/game/raidModifiers'
-import { hasReturnSigil } from '@/lib/game/extraction'
+import { hasReturnSigil, isAtExtractionSite } from '@/lib/game/extraction'
 import { isRaidEndingScene } from '@/lib/game/isRaidEndingScene'
 import { getRaidModifier } from '@/lib/game/raidModifiers'
+import { getMapReachableTargets, resolveMapNavigation } from '@/lib/game/navigateScene'
 import { getRaidZone } from '@/lib/game/zones'
 import {
   buildAbandonSummary,
+  buildEmergencyExtractSummary,
   buildExtractSummary,
   buildFailSummary,
   applyContractToRaidEnd,
+  completeEmergencyExtraction,
   completeRaidExtraction,
   failRaid,
+  canEmergencyExtractRaid,
   getExtractBlockReason,
+  getEmergencyExtractBlockReason,
   getRaidStartScene,
 } from '@/lib/game/raid'
 import { getActiveSlotId, saveCurrentGameState } from '@/lib/persistence/saveStorage'
@@ -63,6 +68,7 @@ export function useGameSession() {
   const sceneHistory = useGameStore((state) => state.sceneHistory)
   const resetGame = useGameStore((state) => state.resetGame)
   const setQueuedScene = useGameStore((state) => state.setQueuedScene)
+  const rewindSceneHistoryTo = useGameStore((state) => state.rewindSceneHistoryTo)
 
   const { artifact, open, revealArtifact, closeArtifactReveal } =
     useArtifactReveal()
@@ -126,8 +132,19 @@ export function useGameSession() {
     raid,
     character?.flags ?? [],
     currentScene?.id,
+    character,
   )
   const extractAvailable = extractBlockReason === 'available'
+  const atExtractionSite = isAtExtractionSite(
+    currentScene?.id,
+    character?.flags ?? [],
+  )
+  const emergencyExtractBlockReason = getEmergencyExtractBlockReason(
+    raid,
+    extractBlockReason,
+  )
+  const emergencyExtractAvailable =
+    canEmergencyExtractRaid(raid, extractBlockReason)
   const hasSigil = hasReturnSigil(character?.flags ?? [])
   const raidDepth = sceneHistory.length
   const raidZone = getRaidZone(raidDepth, character?.corruption ?? 0)
@@ -197,6 +214,93 @@ export function useGameSession() {
       router.push('/raid-summary')
     },
     [resetGame, router, setCharacter, setHub, setPendingSummary, setRaid],
+  )
+
+  const handleEmergencyExtract = useCallback(async () => {
+    if (!character || !hub || !raid || !emergencyExtractAvailable) {
+      return
+    }
+
+    const depth = sceneHistory.length
+    const result = completeEmergencyExtraction(character, hub, raid, depth)
+    const contractResolved = applyContractToRaidEnd(result.hub, raid, {
+      outcome: 'emergency_extracted',
+      depth,
+      flags: character.flags,
+      sanityAfter: result.character.sanity,
+    })
+    const summary = buildEmergencyExtractSummary(
+      character,
+      hub,
+      raid,
+      result,
+      depth,
+      contractResolved.contractResult,
+      contractResolved.hub,
+    )
+
+    await persistRaidReturn(
+      result.character,
+      contractResolved.hub,
+      result.raid,
+      summary,
+    )
+  }, [
+    character,
+    emergencyExtractAvailable,
+    hub,
+    persistRaidReturn,
+    raid,
+    sceneHistory.length,
+  ])
+
+  const mapReachableTargets = getMapReachableTargets(
+    currentScene?.id ?? '',
+    sceneHistory,
+  )
+
+  const handleMapNavigate = useCallback(
+    async (targetSceneId: string) => {
+      if (!character || !currentScene || !raid?.active || isLoading) {
+        return
+      }
+
+      const resolved = resolveMapNavigation(
+        currentScene.id,
+        targetSceneId,
+        sceneHistory,
+        character,
+        hub?.journalEntries ?? [],
+      )
+
+      if (!resolved) {
+        return
+      }
+
+      rewindSceneHistoryTo(resolved.rewindToIndex)
+      setCurrentScene(resolved.nextScene)
+      setQueuedScene(null)
+
+      const state = useHubStore.getState()
+      if (state.raid?.active) {
+        setRaid({
+          ...state.raid,
+          depth: resolved.rewindToIndex,
+        })
+      }
+    },
+    [
+      character,
+      currentScene,
+      hub?.journalEntries,
+      isLoading,
+      raid?.active,
+      rewindSceneHistoryTo,
+      sceneHistory,
+      setCurrentScene,
+      setQueuedScene,
+      setRaid,
+    ],
   )
 
   const handleExtract = useCallback(async () => {
@@ -540,6 +644,9 @@ export function useGameSession() {
     isEndingScene,
     extractAvailable,
     extractBlockReason,
+    atExtractionSite,
+    emergencyExtractAvailable,
+    emergencyExtractBlockReason,
     hasSigil,
     raidDepth,
     raidZone,
@@ -559,6 +666,9 @@ export function useGameSession() {
     diceRoll,
     handleDiceComplete,
     handleExtract,
+    handleEmergencyExtract,
+    handleMapNavigate,
+    mapReachableTargets,
     handleReturnToHub,
     handleAbandonRaid,
     handleExitToMenu,

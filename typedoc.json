@@ -1,0 +1,21 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "tsconfig": "tsconfig.typedoc.json",
+  "entryPointStrategy": "expand",
+  "entryPoints": [
+    "lib/game/raid.ts",
+    "lib/game/sceneDirector.ts",
+    "lib/game/handleChoice.ts",
+    "lib/game/hubMeta.ts",
+    "lib/game/extraction.ts",
+    "lib/persistence",
+    "lib/types"
+  ],
+  "exclude": ["**/__tests__/**"],
+  "out": "docs/api",
+  "readme": "docs/API.md",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "sort": ["source-order"],
+  "name": "Последнее Эхо — Game API"
+}

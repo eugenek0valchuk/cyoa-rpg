@@ -5,6 +5,7 @@ import { ChevronDown, RotateCcw, DoorOpen, Skull } from 'lucide-react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { t } from '@/lib/i18n'
+import { getExtractHint } from '@/lib/game/extractHints'
 import type { ExtractBlockReason } from '@/lib/game/extraction'
 import type { RaidModifierDef } from '@/lib/game/raidModifiers'
 import type { RaidZone } from '@/lib/game/zones'
@@ -13,9 +14,13 @@ interface Props {
   isLoading: boolean
   extractAvailable: boolean
   extractBlockReason: ExtractBlockReason
+  emergencyExtractAvailable: boolean
   hasSigil: boolean
   raidDepth: number
   minExtractDepth: number
+  sanity: number
+  corruption: number
+  currentSceneId?: string
   raidZone: RaidZone
   raidModifier: RaidModifierDef | null
   isEndingScene: boolean
@@ -24,51 +29,22 @@ interface Props {
   showNewFlagHint: boolean
   onOpenChronicle: () => void
   onExtract: () => void
+  onEmergencyExtract: () => void
   onAbandon: () => void
   onReset: () => void
-}
-
-function getExtractHint(
-  reason: ExtractBlockReason,
-  hasSigil: boolean,
-  raidDepth: number,
-  minExtractDepth: number,
-): { summary: string; detail?: string } | null {
-  const { ui: hubText } = t.hub
-
-  if (reason === 'available') {
-    return { summary: hubText.extractAvailable }
-  }
-
-  if (reason === 'need_depth') {
-    return {
-      summary: hubText.extractHintDepth
-        .replace('{depth}', String(raidDepth))
-        .replace('{min}', String(minExtractDepth)),
-    }
-  }
-
-  if (reason === 'need_sigil_site') {
-    return { summary: hubText.extractHintSigilSite }
-  }
-
-  if (hasSigil) {
-    return { summary: hubText.extractHintSigilSite }
-  }
-
-  return {
-    summary: hubText.extractHintShort,
-    detail: `${hubText.extractHintExitSite} ${hubText.extractHintSigil}`,
-  }
 }
 
 export function GameHeader({
   isLoading,
   extractAvailable,
   extractBlockReason,
+  emergencyExtractAvailable,
   hasSigil,
   raidDepth,
   minExtractDepth,
+  sanity,
+  corruption,
+  currentSceneId,
   raidZone,
   raidModifier,
   isEndingScene,
@@ -77,6 +53,7 @@ export function GameHeader({
   showNewFlagHint,
   onOpenChronicle,
   onExtract,
+  onEmergencyExtract,
   onAbandon,
   onReset,
 }: Props) {
@@ -87,12 +64,14 @@ export function GameHeader({
   const { ui: chronicleText } = t.raidChronicle
   const { ui: diaryText } = t.journal
 
-  const extractHint = getExtractHint(
-    extractBlockReason,
+  const extractHint = getExtractHint(extractBlockReason, {
     hasSigil,
     raidDepth,
     minExtractDepth,
-  )
+    sanity,
+    corruption,
+    sceneId: currentSceneId,
+  })
 
   return (
     <div className="mb-4 space-y-3">
@@ -164,6 +143,17 @@ export function GameHeader({
               </button>
               <button
                 type="button"
+                data-testid="emergency-extract"
+                onClick={onEmergencyExtract}
+                disabled={isLoading || !emergencyExtractAvailable}
+                title={hubText.emergencyExtractHint}
+                className="inline-flex items-center gap-1.5 border border-[#4a3a1a] bg-[#161009]/90 px-3 py-2 text-[9px] uppercase tracking-[0.14em] text-[#c9a060] transition hover:bg-[#221508] disabled:cursor-help disabled:opacity-40"
+              >
+                <GameIcon type="corruption" size={24} noBlend />
+                {hubText.emergencyExtract}
+              </button>
+              <button
+                type="button"
                 onClick={onAbandon}
                 disabled={isLoading}
                 title={hubText.abandonHint}
@@ -201,7 +191,17 @@ export function GameHeader({
         </button>
       )}
 
-      {!isEndingScene && extractHint && !extractAvailable && (
+      {!isEndingScene && emergencyExtractAvailable && (
+        <div className="border border-[#4a3a1a]/70 bg-[#120e08]/70 px-3 py-2 text-[10px] leading-relaxed text-[#a89060]">
+          <p>{raidText.emergencyExtractBanner}</p>
+        </div>
+      )}
+
+      {!isEndingScene &&
+        extractHint &&
+        !extractAvailable &&
+        extractBlockReason !== 'need_exit_site' &&
+        extractBlockReason !== 'need_sigil_site' && (
         <div className="border border-[#241919] bg-[#0a0808]/60 px-3 py-2 text-[10px] leading-relaxed text-[#85776a]">
           <p>{extractHint.summary}</p>
           {extractHint.detail && (

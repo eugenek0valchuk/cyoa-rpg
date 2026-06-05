@@ -9,17 +9,47 @@ import type { RaidSummary, RaidOutcome } from '@/lib/types/raidSummary'
 
 export {
   canExtractRaid,
+  canEmergencyExtractRaid,
   getExtractBlockReason,
+  getEmergencyExtractBlockReason,
+  getExitSiteConditionValues,
   hasReturnSigil,
+  isAtExtractionSite,
   RETURN_SIGIL_FLAG,
   EXTRACTION_SITES,
   SIGIL_EXTRACTION_SITES,
+  EXIT_SITE_CONDITIONS,
 } from './extraction'
-export type { ExtractBlockReason } from './extraction'
+export type {
+  ExtractBlockReason,
+  EmergencyExtractBlockReason,
+} from './extraction'
 export type { ContractResult } from './contracts'
+
+export const EMERGENCY_EXTRACT_SANITY_COST = 12
+export const EMERGENCY_EXTRACT_CORRUPTION = 3
+export const EMERGENCY_EXTRACT_ECHO_FACTOR = 0.5
 
 export function getRaidDepth(sceneHistoryLength: number): number {
   return sceneHistoryLength
+}
+
+export function partitionEmergencyLoot(
+  inventory: Artifact[],
+  inventoryAtStart: string[],
+): { kept: Artifact[]; lost: Artifact[] } {
+  const loadout = inventory.filter((item) =>
+    inventoryAtStart.includes(item.id),
+  )
+  const newLoot = inventory.filter(
+    (item) => !inventoryAtStart.includes(item.id),
+  )
+  const keepCount = Math.ceil(newLoot.length / 2)
+
+  return {
+    kept: [...loadout, ...newLoot.slice(0, keepCount)],
+    lost: newLoot.slice(keepCount),
+  }
 }
 
 export function startRaidFromHub(
@@ -88,6 +118,75 @@ function calcRoomLevel(bestDepth: number, extractions: number): number {
   }
 
   return 0
+}
+
+export function completeEmergencyExtraction(
+  character: Character,
+  hub: HubState,
+  raid: RaidState,
+  depth: number,
+): { character: Character; hub: HubState; raid: null } {
+  const { kept, lost } = partitionEmergencyLoot(
+    character.inventory,
+    raid.inventoryAtStart,
+  )
+
+  const bestDepth = Math.max(hub.bestDepth, depth)
+  const totalExtractions = hub.totalExtractions + 1
+  const roomLevel = calcRoomLevel(bestDepth, totalExtractions)
+  const roomMarks = [...hub.roomMarks]
+
+  if (depth >= 6 && !roomMarks.includes('deep_echo')) {
+    roomMarks.push('deep_echo')
+  }
+
+  if (kept.some((item) => !raid.inventoryAtStart.includes(item.id))) {
+    if (!roomMarks.includes('first_spoils')) {
+      roomMarks.push('first_spoils')
+    }
+  }
+
+  const gainedCount = kept.filter(
+    (item) => !raid.inventoryAtStart.includes(item.id),
+  ).length
+
+  const stash = mergeIntoStash(hub.stash, kept)
+  const rawEcho = calcEchoFromExtraction(depth, gainedCount, roomMarks)
+  const echoGain = Math.max(
+    1,
+    Math.floor(rawEcho * EMERGENCY_EXTRACT_ECHO_FACTOR),
+  )
+
+  const hubAfter = syncHubProgression({
+    ...hub,
+    stash,
+    bestDepth,
+    totalExtractions,
+    roomLevel,
+    roomMarks,
+    echo: (hub.echo ?? 0) + echoGain,
+  })
+
+  return {
+    character: {
+      ...character,
+      inventory: [],
+      sanity: Math.max(
+        0,
+        Math.min(100, character.sanity - EMERGENCY_EXTRACT_SANITY_COST),
+      ),
+      corruption: Math.min(
+        100,
+        character.corruption + EMERGENCY_EXTRACT_CORRUPTION,
+      ),
+    },
+    hub: appendRaidLog(hubAfter, {
+      outcome: 'emergency_extracted',
+      depth,
+      echoGain,
+    }),
+    raid: null,
+  }
 }
 
 export function completeRaidExtraction(
@@ -230,6 +329,48 @@ function attachContractToSummary(
       : undefined,
     contractClaimPending: contractResult.claimPending,
   }
+}
+
+export function buildEmergencyExtractSummary(
+  characterBefore: Character,
+  hubBefore: HubState,
+  raid: RaidState,
+  result: ReturnType<typeof completeEmergencyExtraction>,
+  depth: number,
+  contractResult: ContractResult | null = null,
+  hubAfterContract?: HubState,
+): RaidSummary {
+  const { kept, lost } = partitionEmergencyLoot(
+    characterBefore.inventory,
+    raid.inventoryAtStart,
+  )
+  const gainedArtifacts = kept.filter(
+    (item) => !raid.inventoryAtStart.includes(item.id),
+  )
+  const finalHub = hubAfterContract ?? result.hub
+  const echoGain = (finalHub.echo ?? 0) - (hubBefore.echo ?? 0)
+
+  const summary: RaidSummary = {
+    outcome: 'emergency_extracted',
+    depth,
+    gainedArtifacts,
+    lostArtifacts: lost,
+    newMarks: diffNewMarks(hubBefore.roomMarks, result.hub.roomMarks),
+    sanityBefore: characterBefore.sanity,
+    sanityAfter: result.character.sanity,
+    roomLevelAfter: finalHub.roomLevel,
+    bestDepthAfter: finalHub.bestDepth,
+    totalExtractionsAfter: finalHub.totalExtractions,
+    echoGain,
+    echoAfter: finalHub.echo ?? 0,
+  }
+
+  return attachContractToSummary(
+    summary,
+    hubBefore,
+    finalHub,
+    contractResult,
+  )
 }
 
 export function buildExtractSummary(

@@ -19,21 +19,3 @@ export function buildNpcEncounterDialogue(
     lines: resolveNpcEncounterLines(sceneId, journalEntries, visitedSceneIds),
   }
 }
-
-/** @deprecated use isNpcEncounterScene */
-export const isBreathlessEncounterScene = isNpcEncounterScene
-
-/** @deprecated use buildNpcEncounterDialogue */
-export function buildBreathlessEncounterDialogue(
-  sceneId: string,
-  journalEntries: string[],
-  visitedSceneIds: Set<string>,
-) {
-  const { lines } = buildNpcEncounterDialogue(
-    sceneId,
-    journalEntries,
-    visitedSceneIds,
-  )
-
-  return { mode: 'first' as const, lines }
-}

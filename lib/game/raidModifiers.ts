@@ -14,7 +14,7 @@ export const RAID_MODIFIERS: Record<RaidModifierId, RaidModifierDef> = {
     id: 'muted_bells',
     name: 'Глухие колокола',
     description: 'Колокола монастыря не слышны — разум теряет опору с каждым шагом.',
-    hint: '−2 рассудка после каждой сцены',
+    hint: '−1 рассудка после каждой сцены',
   },
   blood_mist: {
     id: 'blood_mist',
@@ -26,7 +26,7 @@ export const RAID_MODIFIERS: Record<RaidModifierId, RaidModifierDef> = {
     id: 'hollow_wind',
     name: 'Пустой ветер',
     description: 'Сквозняк вытягивает тепло из костей. Тело помнит падение.',
-    hint: '−1 рассудок и +1 скверна после каждой сцены',
+    hint: '−1 рассудок после каждой сцены',
   },
 }
 
@@ -67,7 +67,7 @@ export function applyRaidModifierTick(
 
   switch (modifierId) {
     case 'muted_bells':
-      next = { ...character, sanity: clampStat(character.sanity - 2) }
+      next = { ...character, sanity: clampStat(character.sanity - 1) }
       break
     case 'blood_mist':
       next = { ...character, corruption: clampStat(character.corruption + 1) }
@@ -76,7 +76,6 @@ export function applyRaidModifierTick(
       next = {
         ...character,
         sanity: clampStat(character.sanity - 1),
-        corruption: clampStat(character.corruption + 1),
       }
       break
     default:

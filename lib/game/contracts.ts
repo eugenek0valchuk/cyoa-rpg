@@ -117,7 +117,10 @@ function checkCondition(
 ): boolean {
   switch (condition.kind) {
     case 'extract':
-      return context.outcome === 'extracted'
+      return (
+        context.outcome === 'extracted' ||
+        context.outcome === 'emergency_extracted'
+      )
     case 'flag':
       return context.flags.includes(String(condition.value))
     case 'min_depth':

@@ -6,6 +6,9 @@ import { Scene, Character } from '@/lib/types/game'
 import { AnimatePresence, motion } from 'framer-motion'
 import { choiceAnimation, sceneTransition } from '../constants/animations'
 import { ChoiceList } from './ChoiceList'
+import { getExtractHint } from '@/lib/game/extractHints'
+import { hasReturnSigil } from '@/lib/game/extraction'
+import type { ExtractBlockReason } from '@/lib/game/extraction'
 import { t } from '@/lib/i18n'
 
 interface SceneChoicesProps {
@@ -17,6 +20,9 @@ interface SceneChoicesProps {
   showChoices: boolean
   isLoading: boolean
   extractAvailable?: boolean
+  extractBlockReason?: ExtractBlockReason
+  atExtractionSite?: boolean
+  raidDepth?: number
   onExtract?: () => void
   onChoice: (choiceIndex: number) => void
   onRiskChoice?: (choiceIndex: number) => void
@@ -31,11 +37,27 @@ export function SceneChoices({
   showChoices,
   isLoading,
   extractAvailable = false,
+  extractBlockReason = 'need_exit_site',
+  atExtractionSite = false,
+  raidDepth = 0,
   onExtract,
   onChoice,
   onRiskChoice,
 }: SceneChoicesProps) {
   const { ui: raidText } = t.raid
+  const { ui: hubText } = t.hub
+  const blockedAtExit =
+    atExtractionSite && !extractAvailable && extractBlockReason !== 'available'
+  const blockedHint = blockedAtExit
+    ? getExtractHint(extractBlockReason, {
+        hasSigil: hasReturnSigil(character.flags),
+        raidDepth,
+        minExtractDepth: 2,
+        sanity: character.sanity,
+        corruption: character.corruption,
+        sceneId: scene.id,
+      })
+    : null
 
   return (
     <div className="relative">
@@ -47,6 +69,23 @@ export function SceneChoices({
             transition={sceneTransition}
             className="space-y-3"
           >
+            {blockedAtExit && blockedHint && (
+              <div
+                className="border border-[#4a3a1a]/70 bg-[#120e08]/70 px-4 py-3"
+                data-testid="extract-blocked-scene"
+              >
+                <div className="font-cinzel text-[13px] uppercase tracking-[0.08em] text-[#c9a060]">
+                  {hubText.extractBlockedInScene}
+                </div>
+                <p className="mt-1.5 text-[12px] leading-relaxed text-[#a89070]">
+                  {blockedHint.summary}
+                </p>
+                <p className="mt-1 text-[11px] text-[#75685f]">
+                  {raidText.extractBlockedInSceneHint}
+                </p>
+              </div>
+            )}
+
             {extractAvailable && onExtract && (
               <button
                 type="button"

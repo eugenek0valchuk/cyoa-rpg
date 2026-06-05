@@ -4,7 +4,7 @@
 
 ## Сделано (main)
 
-- [x] Scene director без AI, русская локализация
+- [x] Scene director, русская локализация
 - [x] Hub + raid loop, gated extraction (точки выхода / печать)
 - [x] Hub UI: hotspots, модалки, нижняя панель
 - [x] Post-raid summary (`/raid-summary`)
@@ -22,7 +22,8 @@
 | Prepare raid | Модалка «Порог»: briefing, правила извлечения, модификатор спуска |
 | Raid modifiers | 1 случайный или выбираемый эффект на run (глухие колокола, кровавый туман…) |
 | Zone map | Surface → Depth → Fracture → Collapse; director знает зону |
-| Emergency extract | 1 раз за рейд: потерять часть добычи, выжить без точки выхода |
+| Emergency extract | ~~1 раз за рейд: потерять часть добычи, выжить без точки выхода~~ ✓ |
+| Mini-map | ~~Схема спуска, шаг назад по посещённым узлам~~ ✓ |
 | Extract in-scene | На exit sites выбор «Отступить» в тексте сцены, не только кнопка |
 
 **Файлы:** `lib/game/raid.ts`, `RaidState`, `sceneDirector.ts`, `locales/ru/scenes/`

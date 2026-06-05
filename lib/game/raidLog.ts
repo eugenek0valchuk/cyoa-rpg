@@ -26,6 +26,8 @@ export function raidOutcomeLabel(outcome: RaidOutcome): string {
   switch (outcome) {
     case 'extracted':
       return 'Извлечение'
+    case 'emergency_extracted':
+      return 'Аварийный выход'
     case 'abandoned':
       return 'Отступление'
     case 'failed':

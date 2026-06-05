@@ -29,7 +29,7 @@ function makeChoice(requirements: Choice['requirements']): Choice {
 
 describe('riskCheck', () => {
   it('computes DC from requirement', () => {
-    expect(computeRiskDc(6)).toBe(15)
+    expect(computeRiskDc(6)).toBe(14)
   })
 
   it('offers risk when only intelligence blocks', () => {
@@ -42,7 +42,7 @@ describe('riskCheck', () => {
       stat: 'intelligence',
       need: 6,
       have: 4,
-      dc: 15,
+      dc: 14,
     })
   })
 

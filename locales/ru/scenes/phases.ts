@@ -166,7 +166,7 @@ export const phaseScenes: Record<string, Scene> = {
       {
         id: 'jump_pit',
         text: 'Опустить руку в канал',
-        effects: { corruption: 8, sanity: -8 },
+        effects: { corruption: 7, sanity: -7 },
       },
       {
         id: 'blood_path',
@@ -196,7 +196,7 @@ export const phaseScenes: Record<string, Scene> = {
       {
         id: 'sarcophagus_tunnel',
         text: 'Сесть на одно сердцебиение',
-        effects: { corruption: 10, sanity: -10 },
+        effects: { corruption: 8, sanity: -8 },
       },
       {
         id: 'ash_path',
@@ -231,7 +231,7 @@ export const phaseScenes: Record<string, Scene> = {
       {
         id: 'jump_pit',
         text: 'Шагнуть в слитый исход',
-        effects: { corruption: 12, sanity: -12 },
+        effects: { corruption: 10, sanity: -9 },
       },
       {
         id: 'read_writings',
@@ -263,7 +263,7 @@ export const phaseScenes: Record<string, Scene> = {
       {
         id: 'descent',
         text: 'Приблизиться к отсутствию',
-        effects: { corruption: 15, sanity: -15 },
+        effects: { corruption: 12, sanity: -10 },
       },
       {
         id: 'exit_monastery',

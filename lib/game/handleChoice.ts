@@ -20,7 +20,6 @@ import type {
   Scene,
   SceneHistoryEntry,
 } from '../types/game'
-import { logChoice, logEnding, logArtifact, logSceneTransition } from '../debug'
 
 interface HandleChoiceParams {
   currentScene: Scene
@@ -74,12 +73,6 @@ export async function handleGameChoice({
 
   setCharacter(characterAfterTick)
 
-  logChoice({
-    scene: currentScene,
-    choice,
-    character: characterAfterTick,
-  })
-
   const directorState = buildDirectorState(characterAfterTick, sceneHistory)
 
   const ending = getEnding(characterAfterTick, {
@@ -98,14 +91,10 @@ export async function handleGameChoice({
       }),
     )
 
-    logEnding(ending.title)
-
     return
   }
 
   if (revealedArtifact) {
-    logArtifact(revealedArtifact.name)
-
     await revealArtifact(revealedArtifact)
   }
 
@@ -118,12 +107,6 @@ export async function handleGameChoice({
   ) {
     setQueuedScene?.(null)
     setCurrentScene(queuedScene)
-
-    logSceneTransition({
-      previousScene: currentScene,
-      nextScene: queuedScene,
-      history: sceneHistory,
-    })
 
     commitSceneTransition({
       currentScene,
@@ -160,12 +143,6 @@ export async function handleGameChoice({
   } else {
     setQueuedScene?.(null)
   }
-
-  logSceneTransition({
-    previousScene: currentScene,
-    nextScene: wrapped.scene,
-    history: sceneHistory,
-  })
 
   commitSceneTransition({
     currentScene,

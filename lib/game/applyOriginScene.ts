@@ -54,7 +54,11 @@ export function applyOriginToScene(
   }
 
   if (variant.addOptions?.length) {
-    options = [...options, ...variant.addOptions.map((option) => ({ ...option }))]
+    const existingIds = new Set(options.map((option) => option.id))
+    const added = variant.addOptions
+      .filter((option) => !existingIds.has(option.id))
+      .map((option) => ({ ...option }))
+    options = [...options, ...added]
   }
 
   return {

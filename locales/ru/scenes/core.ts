@@ -223,8 +223,13 @@ export const coreScenes: Record<string, Scene> = {
         effects: {
           corruption: 6,
 
-          sanity: -10,
+          sanity: -7,
         },
+      },
+      {
+        id: 'start',
+        text: 'Вернуться к дороге паломника',
+        effects: { sanity: 1 },
       },
     ],
   },
@@ -524,13 +529,13 @@ export const coreScenes: Record<string, Scene> = {
           sanity: -3,
         },
       },
-
       {
         id: 'merchant',
 
-        text: 'Вернуться к телеге с трупами',
+        text: 'Пройти к телеге — путь отступления открыт',
 
         effects: {
+          sanity: 1,
           corruption: 1,
         },
       },

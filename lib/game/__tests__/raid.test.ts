@@ -66,7 +66,7 @@ describe('raid system', () => {
     expect(failed.hub.roomMarks).toContain('failure_stain')
     expect(failed.character.sanity).toBe(50)
     expect(failed.character.corruption).toBe(75)
-    expect(next.character.sanity).toBe(44)
+    expect(next.character.sanity).toBe(46)
   })
 
   it('blocks extraction without exit site or return sigil', () => {
@@ -92,18 +92,29 @@ describe('raid system', () => {
     ).toBe('need_depth')
   })
 
-  it('allows extraction at dedicated exit sites', () => {
-    expect(canExtractRaid(activeRaid, [], 'ash_path')).toBe(true)
-    expect(canExtractRaid(activeRaid, [], 'exit_monastery')).toBe(true)
-    expect(canExtractRaid(activeRaid, [], 'drain_water')).toBe(true)
+  it('allows extraction at dedicated exit sites when conditions met', () => {
+    const character = { ...baseCharacter, sanity: 40 }
+    const deepRaid = { ...activeRaid, depth: 4 }
+
+    expect(canExtractRaid(deepRaid, [], 'ash_path', character)).toBe(true)
+    expect(
+      canExtractRaid(activeRaid, [], 'exit_monastery', character),
+    ).toBe(true)
+    expect(
+      canExtractRaid(deepRaid, [], 'drain_water', character),
+    ).toBe(true)
   })
 
   it('allows extraction at surface sites with return sigil', () => {
     const flags = [RETURN_SIGIL_FLAG]
+    const character = { ...baseCharacter, sanity: 40, flags: ['met_breathless'] }
 
-    expect(canExtractRaid(activeRaid, flags, 'mouth')).toBe(true)
-    expect(canExtractRaid(activeRaid, flags, 'leave_cart')).toBe(true)
-    expect(canExtractRaid(activeRaid, [], 'mouth')).toBe(false)
+    expect(canExtractRaid(activeRaid, flags, 'mouth', character)).toBe(true)
+    expect(canExtractRaid(activeRaid, flags, 'leave_cart', character)).toBe(true)
+    expect(
+      canExtractRaid(activeRaid, flags, 'merchant', character),
+    ).toBe(true)
+    expect(canExtractRaid(activeRaid, [], 'mouth', character)).toBe(false)
     expect(getExtractBlockReason(activeRaid, flags, 'descent')).toBe(
       'need_sigil_site',
     )

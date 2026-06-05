@@ -81,4 +81,22 @@ describe('applyRepeatToScene', () => {
     expect(scene?.title).toBe('Слух за Память')
     expect(scene?.options.length).toBeGreaterThan(0)
   })
+
+  it('does not duplicate repeat options when applied twice', () => {
+    const base = getSceneById('start', { character: makeCharacter() })!
+    const context = {
+      character: makeCharacter(),
+      journalEntries: ['diary_awakening'],
+      visitedSceneIds: new Set<string>(),
+    }
+
+    const once = applyRepeatToScene(base, context)
+    const twice = applyRepeatToScene(once, context)
+
+    const reunionChoices = twice.options.filter(
+      (option) => option.id === 'beat_return_road',
+    )
+
+    expect(reunionChoices).toHaveLength(1)
+  })
 })

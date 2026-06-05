@@ -84,15 +84,22 @@ export async function restoreActiveSlot(slotId: number): Promise<{
   }
 
   if (slot.currentScene) {
-    const { personalizeScene } = await import('@/lib/game/personalizeScene')
-    const { cloneScene } = await import('@/lib/game/sceneRegistry')
+    const { cloneScene, getSceneById } = await import(
+      '@/lib/game/sceneRegistry'
+    )
+
+    const restoreContext = {
+      character: slot.character,
+      journalEntries: slot.hub?.journalEntries ?? [],
+      visitedSceneIds: new Set(slot.sceneHistory.map((entry) => entry.id)),
+    }
+
+    const freshScene =
+      getSceneById(slot.currentScene.id, restoreContext) ??
+      cloneScene(slot.currentScene)
 
     useGameStore.setState({
-      currentScene: personalizeScene(cloneScene(slot.currentScene), {
-        character: slot.character,
-        journalEntries: slot.hub?.journalEntries ?? [],
-        visitedSceneIds: new Set(slot.sceneHistory.map((entry) => entry.id)),
-      }),
+      currentScene: freshScene,
       history: slot.history,
       sceneHistory: slot.sceneHistory,
     })

@@ -24,11 +24,11 @@ export type RiskRollResult = {
   criticalFailure: boolean
 }
 
-export const RISK_FAILURE_SANITY = -5
-export const RISK_FAILURE_CORRUPTION = 2
+export const RISK_FAILURE_SANITY = -4
+export const RISK_FAILURE_CORRUPTION = 1
 
 export function computeRiskDc(requirement: number): number {
-  return requirement * 2 + 3
+  return requirement * 2 + 2
 }
 
 export function computeRiskChance(bonus: number, dc: number): number {

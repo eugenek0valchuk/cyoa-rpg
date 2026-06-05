@@ -26,7 +26,7 @@ export const ROOM_MARK_EFFECTS: Record<string, RoomMarkEffect> = {
     echoBonus: 1,
   },
   failure_stain: {
-    sanityStart: -6,
+    sanityStart: -4,
     modifierHarsh: true,
   },
   deep_wound: {

@@ -49,6 +49,8 @@ export interface RaidState {
   contractId?: string | null
   /** Пролог спуска уже показан — не повторять при выходе в меню */
   prologueSeen?: boolean
+  /** Аварийное извлечение уже использовано в этом спуске */
+  emergencyExtractUsed?: boolean
 }
 
 export const MIN_EXTRACT_DEPTH = 2
