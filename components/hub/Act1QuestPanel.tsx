@@ -1,9 +1,11 @@
 'use client'
 
 import { Check, Circle, Lock } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { renderNarrativeEmphasis } from '@/components/game/shared/NarrativeText'
+import { getVisibleKeeperLines } from '@/lib/game/acts/act1Keeper'
+import { formatQuestReward } from '@/lib/game/acts/formatQuestReward'
 import { getAct1StepViews } from '@/lib/game/acts/questEngine'
 import { t } from '@/lib/i18n'
 import type { Character } from '@/lib/types/game'
@@ -18,12 +20,14 @@ function StepRow({
   title,
   hint,
   doneText,
+  rewardText,
   revealed,
   completed,
 }: {
   title: string
   hint: string
   doneText?: string
+  rewardText?: string | null
   revealed: boolean
   completed: boolean
 }) {
@@ -54,9 +58,16 @@ function StepRow({
             {revealed ? title : copy.hidden}
           </div>
           {revealed && !completed && (
-            <p className="mt-1 text-[12px] leading-relaxed text-[#9d8d82]">
-              {renderNarrativeEmphasis(hint)}
-            </p>
+            <>
+              <p className="mt-1 text-[12px] leading-relaxed text-[#9d8d82]">
+                {renderNarrativeEmphasis(hint)}
+              </p>
+              {rewardText && (
+                <p className="mt-2 text-[10px] uppercase tracking-[0.1em] text-[#6f8570]">
+                  {copy.rewardLabel}: {rewardText}
+                </p>
+              )}
+            </>
           )}
           {completed && (
             <p className="mt-1 text-[12px] leading-relaxed text-[#9d8d82]">
@@ -71,7 +82,13 @@ function StepRow({
 
 export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
   const copy = t.acts.act1
+  const [keeperLineId, setKeeperLineId] = useState<string | null>(null)
   const steps = useMemo(() => getAct1StepViews(hub, character), [hub, character])
+  const keeperLines = useMemo(
+    () => getVisibleKeeperLines(hub, character),
+    [hub, character],
+  )
+  const activeKeeperLine = keeperLines.find((line) => line.id === keeperLineId)
 
   const mainSteps = steps.filter((step) => step.type === 'main')
   const optionalSteps = steps.filter((step) => step.type === 'optional')
@@ -120,11 +137,47 @@ export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
               title={step.titleRevealed}
               hint={step.hint}
               doneText={step.completeMessage}
+              rewardText={formatQuestReward(step.reward)}
               revealed={step.revealed}
               completed={step.completed}
             />
           ))}
         </ul>
+      </section>
+
+      <section className="border border-[#2b2320] bg-[#0a0808]/60 px-4 py-4">
+        <h4 className="font-cinzel text-sm uppercase tracking-[0.08em] text-[#c4b5aa]">
+          {copy.keeperTitle}
+        </h4>
+        <p className="mt-2 text-[12px] leading-relaxed text-[#85776a]">
+          {copy.keeperHint}
+        </p>
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {keeperLines.map((line) => (
+            <li key={line.id}>
+              <button
+                type="button"
+                onClick={() =>
+                  setKeeperLineId((current) =>
+                    current === line.id ? null : line.id,
+                  )
+                }
+                className={`border px-3 py-1.5 text-[11px] uppercase tracking-[0.08em] transition ${
+                  keeperLineId === line.id
+                    ? 'border-[#5c1f1f] bg-[#160909] text-[#d46060]'
+                    : 'border-[#3b2f28] bg-[#14100e] text-[#9d8d82] hover:border-[#4a2323]'
+                }`}
+              >
+                {line.prompt}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {activeKeeperLine && (
+          <p className="mt-3 border-l-2 border-[#4a5c4a]/60 pl-3 text-[13px] leading-relaxed text-[#b8a99e]">
+            {renderNarrativeEmphasis(activeKeeperLine.response)}
+          </p>
+        )}
       </section>
 
       {optionalSteps.length > 0 && (
@@ -139,6 +192,7 @@ export function Act1QuestPanel({ hub, character }: Act1QuestPanelProps) {
                 title={step.titleRevealed}
                 hint={step.hint}
                 doneText={step.completeMessage}
+                rewardText={formatQuestReward(step.reward)}
                 revealed={step.revealed}
                 completed={step.completed}
               />

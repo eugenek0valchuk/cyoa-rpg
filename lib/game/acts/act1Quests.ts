@@ -16,11 +16,14 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Вернуться живым',
     hint: 'Камера отпускает только тех, кто помнит выход.',
-    revealMessage: 'Сначала камера должна принять твой возврат — иначе учёт не начнётся.',
+    revealMessage:
+      'Сначала камера должна принять твой возврат — иначе учёт не начнётся.',
     completeMessage:
-      'Ты вышел живым — камера приняла первый взгляд. Машина теперь знает: ты не одноразовый сосуд.',
-    completeWhen: { kind: 'extractions', min: 1 },
+      'Ты вышел живым. Дорога на обочине Шествия узнала твой шаг — Машина записала первый взгляд.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_reminder' },
     boostSceneId: 'act1_witness_reminder',
+    scenePrerequisites: [{ kind: 'extractions', min: 1 }],
+    reward: { echo: 1 },
   },
   {
     id: 'w_main_2',
@@ -33,9 +36,10 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     revealMessage: 'Бездыханный ведёт счёт даже свидетелям — найди телегу.',
     completeMessage:
       'Бездыханный запомнил тебя. Он торгует у края Синода — слухами дороже зубов.',
-    completeWhen: { kind: 'flag', flag: 'met_breathless' },
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_merchant_oath' },
     boostSceneId: 'act1_witness_merchant_oath',
     revealAfterStepId: 'w_main_1',
+    reward: { materials: { wax_seal: 1 } },
   },
   {
     id: 'w_main_3',
@@ -48,9 +52,10 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     revealMessage: 'В ту ночь Шествия колокол бил в последний раз — услышь частоту.',
     completeMessage:
       'Колокол принял твой пульс. Свидетель слышит то, что паломники унесли в трещину.',
-    completeWhen: { kind: 'flag', flag: 'heard_the_bell' },
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_bell_covenant' },
     boostSceneId: 'act1_witness_bell_covenant',
     revealAfterStepId: 'w_main_2',
+    reward: { materials: { choir_splinter: 1 }, echo: 1 },
   },
   {
     id: 'w_main_4',
@@ -63,9 +68,17 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     revealMessage: 'Синод ведёт учёт на третьем ярусе — туда должен дойти свидетель.',
     completeMessage:
       'Камера запомнила глубину 3. Металл внизу хранит имена — ты близок к долгу.',
-    completeWhen: { kind: 'best_depth', min: 3 },
+    completeWhen: {
+      kind: 'all',
+      conditions: [
+        { kind: 'scene', sceneId: 'act1_witness_synod_depth' },
+        { kind: 'best_depth', min: 3 },
+      ],
+    },
     boostSceneId: 'act1_witness_synod_depth',
+    scenePrerequisites: [{ kind: 'best_depth', min: 3 }],
     revealAfterStepId: 'w_main_3',
+    reward: { materials: { iron_shard: 2 }, echo: 2 },
   },
   {
     id: 'w_main_5',
@@ -81,6 +94,7 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     completeWhen: { kind: 'finale', sceneId: ACT1_FINALE_SCENES.witness },
     boostSceneId: ACT1_FINALE_SCENES.witness,
     revealAfterStepId: 'w_main_4',
+    reward: { echo: 5, journalEntries: ['act1_witness'] },
   },
   {
     id: 'w_opt_depth',
@@ -89,9 +103,15 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 10,
     titleHidden: 'Глубже',
     titleRevealed: 'Четвёртый ярус',
-    hint: 'Дойти до глубины 4 в одном спуске.',
-    completeWhen: { kind: 'best_depth', min: 4 },
+    hint: 'Дойти до глубины 4 и найти писца Синода.',
+    revealMessage: 'На четвёртом ярусе Синод ведёт учёт тем, кто ещё дышит.',
+    completeMessage:
+      'Писец записал твой шаг на четвёртом ярусе. Синод теперь знает: свидетель не остановился на третьем счёте.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_opt_depth' },
+    boostSceneId: 'act1_witness_opt_depth',
+    scenePrerequisites: [{ kind: 'best_depth', min: 4 }],
     revealAfterStepId: 'w_main_3',
+    reward: { echo: 3, journalEntries: ['act1_opt_depth'] },
   },
   {
     id: 'w_opt_synod',
@@ -100,9 +120,14 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 11,
     titleHidden: 'Синод',
     titleRevealed: 'Запись Синода',
-    hint: 'Встретить аколита и занести в журнал.',
-    completeWhen: { kind: 'journal', entryId: 'npc_synod' },
+    hint: 'Встретить писца и занести метку в журнал.',
+    revealMessage: 'Адепт ждёт у стены — не для казни, для учёта.',
+    completeMessage:
+      'Метка Синода на запястье — не кандалы. Это подпись под тем, что ты уже видел.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_opt_synod' },
+    boostSceneId: 'act1_witness_opt_synod',
     revealAfterStepId: 'w_main_3',
+    reward: { materials: { wax_seal: 2 }, flags: ['synod_mark'] },
   },
   {
     id: 'w_opt_twice',
@@ -111,9 +136,15 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 12,
     titleHidden: 'Дважды',
     titleRevealed: 'Дважды живым',
-    hint: 'Выйти из спуска живым два раза.',
-    completeWhen: { kind: 'extractions', min: 2 },
+    hint: 'Выйти из спуска живым два раза и услышать хрониста.',
+    revealMessage: 'Камера помнит двойной возврат — это редкость даже для сосудов.',
+    completeMessage:
+      'Два живых круга. Хронист камеры вырезал на стене твой силуэт — второй раз чётче первого.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_witness_opt_twice' },
+    boostSceneId: 'act1_witness_opt_twice',
+    scenePrerequisites: [{ kind: 'extractions', min: 2 }],
     revealAfterStepId: 'w_main_1',
+    reward: { echo: 4 },
   },
 
   // ——— Еретик ———
@@ -125,8 +156,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Первый ответ',
     hint: 'Машина задаёт вопрос только тем, кто вернулся.',
-    completeWhen: { kind: 'extractions', min: 1 },
+    revealMessage: 'Камера ещё хранит тепло возврата — Машина ждёт первый ответ без Синода.',
+    completeMessage:
+      'Вопрос задан. Голос под дорогой услышал — еретик больше не молчит в учёте.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_machine_echo' },
     boostSceneId: 'act1_heretic_machine_echo',
+    scenePrerequisites: [{ kind: 'extractions', min: 1 }],
+    reward: { echo: 1 },
   },
   {
     id: 'h_main_2',
@@ -136,9 +172,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Торговец без дыхания',
     hint: 'Бездыханный знает цену вопроса.',
-    completeWhen: { kind: 'flag', flag: 'met_breathless' },
+    revealMessage: 'Телега без коня — счёт, который еретик должен оплатить формулой.',
+    completeMessage:
+      'Бездыханный записал цену. Синод будет спорить с его почерком — тебе это на руку.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_merchant_price' },
     boostSceneId: 'act1_heretic_merchant_price',
     revealAfterStepId: 'h_main_1',
+    reward: { materials: { wax_seal: 1 } },
   },
   {
     id: 'h_main_3',
@@ -148,9 +188,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Надписи на стене',
     hint: 'Прочитать то, что Синод стирает.',
-    completeWhen: { kind: 'flag', flag: 'read_the_writings' },
+    revealMessage: 'Стена в катакомбах обновляется каждую ночь — прочитай до стирания.',
+    completeMessage:
+      'Формулы дыхания записаны в память. Синод назовёт это язвой — ты назовёшь учебником.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_writing_wall' },
     boostSceneId: 'act1_heretic_writing_wall',
     revealAfterStepId: 'h_main_2',
+    reward: { materials: { folio_page: 1 }, echo: 1 },
   },
   {
     id: 'h_main_4',
@@ -160,9 +204,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Шестерня и клятва',
     hint: 'Ответить тому, кто крутится вне закона.',
-    completeWhen: { kind: 'flag', flag: 'heretic_answered' },
+    revealMessage: 'Шестерня без оси ждёт точности — не молитвы.',
+    completeMessage:
+      'Пакт с шестерней заключён. Машина приняла пульс напрямую — Синод отстаёт на один вдох.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_cog_pact' },
     boostSceneId: 'act1_heretic_cog_pact',
     revealAfterStepId: 'h_main_3',
+    reward: { materials: { iron_shard: 2 }, flags: ['heretic_answered'] },
   },
   {
     id: 'h_main_5',
@@ -172,9 +220,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Вопрос без Синода',
     hint: 'Финал у рта — не исповедь, а формула.',
+    revealMessage: 'У Уст воздух густой от невысказанных исповедей — произнеси формулу.',
+    completeMessage:
+      'Формула принята. Первый акт еретика закрыт — Синод ответит силой, не словом.',
     completeWhen: { kind: 'finale', sceneId: ACT1_FINALE_SCENES.heretic },
     boostSceneId: ACT1_FINALE_SCENES.heretic,
     revealAfterStepId: 'h_main_4',
+    reward: { echo: 5, journalEntries: ['act1_heretic'] },
   },
   {
     id: 'h_opt_cog',
@@ -184,8 +236,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: 'Шестерня',
     titleRevealed: 'Встреча с шестерней',
     hint: 'Найти еретическую шестерню в глубине.',
-    completeWhen: { kind: 'flag', flag: 'met_heretic_cog' },
+    revealMessage: 'Железо без оси крутится в воздухе — вопрос без ответа Синода.',
+    completeMessage:
+      'Шестерня запомнила твой голос. У Порога Распада откроется иной путь.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_opt_cog' },
+    boostSceneId: 'act1_heretic_opt_cog',
     revealAfterStepId: 'h_main_2',
+    reward: { flags: ['met_heretic_cog'], journalEntries: ['npc_heretic'] },
   },
   {
     id: 'h_opt_depth',
@@ -194,9 +251,15 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 11,
     titleHidden: 'Глубина',
     titleRevealed: 'Третий ярус',
-    hint: 'Дойти до глубины 3.',
-    completeWhen: { kind: 'best_depth', min: 3 },
+    hint: 'Дойти до глубины 3 и услышать эхо формулы.',
+    revealMessage: 'На третьем ярусе формулы звучат громче молитв.',
+    completeMessage:
+      'Глубина 3 принята. Стены помнят твой вопрос — не твоё имя.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_opt_depth' },
+    boostSceneId: 'act1_heretic_opt_depth',
+    scenePrerequisites: [{ kind: 'best_depth', min: 3 }],
     revealAfterStepId: 'h_main_3',
+    reward: { echo: 3, materials: { iron_shard: 1 } },
   },
   {
     id: 'h_opt_twice',
@@ -205,12 +268,18 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 12,
     titleHidden: 'Дважды',
     titleRevealed: 'Дважды живым',
-    hint: 'Два успешных извлечения.',
-    completeWhen: { kind: 'extractions', min: 2 },
+    hint: 'Два успешных извлечения — хронист запишет.',
+    revealMessage: 'Двойной возврат — редкая валюта у Машины.',
+    completeMessage:
+      'Два живых круга. Машина вычла из петли два вдоха — тебе оставила эхо.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_heretic_opt_twice' },
+    boostSceneId: 'act1_heretic_opt_twice',
+    scenePrerequisites: [{ kind: 'extractions', min: 2 }],
     revealAfterStepId: 'h_main_1',
+    reward: { echo: 4 },
   },
 
-  // ——— Полый ———
+  // ——— Пустой ———
   {
     id: 'o_main_1',
     origin: 'hollow',
@@ -219,8 +288,14 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Пустая форма',
     hint: 'Вернуться, чтобы камера узнала силуэт.',
-    completeWhen: { kind: 'extractions', min: 1 },
+    revealMessage:
+      'Камера отпустила тебя — теперь она должна узнать форму, которой нет имени.',
+    completeMessage:
+      'Часовня без лиц приняла твой силуэт. Пустота здесь — не проклятие, а признание.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_empty_chapel' },
     boostSceneId: 'act1_hollow_empty_chapel',
+    scenePrerequisites: [{ kind: 'extractions', min: 1 }],
+    reward: { echo: 1 },
   },
   {
     id: 'o_main_2',
@@ -230,9 +305,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Долг без имени',
     hint: 'Бездыханный ведёт счёт даже пустым.',
-    completeWhen: { kind: 'flag', flag: 'met_breathless' },
+    revealMessage: 'У пустых тоже есть долг — минус одно имя, плюс одна маска.',
+    completeMessage:
+      'Бездыханный записал пустоту в счёт. Синод любит, когда отсутствие хоть чем-то звенит.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_merchant_debt' },
     boostSceneId: 'act1_hollow_merchant_debt',
     revealAfterStepId: 'o_main_1',
+    reward: { materials: { wax_seal: 1 } },
   },
   {
     id: 'o_main_3',
@@ -242,9 +321,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Маска в руке',
     hint: 'Взять то, что скрывает отсутствие лица.',
-    completeWhen: { kind: 'flag', flag: 'claimed_mask' },
+    revealMessage: 'Маска тяжелее пустой керамики — обряд без лица ждёт.',
+    completeMessage:
+      'Маска на поясе. Тело и отсутствие наконец совпали — голод под доспехами стих.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_mask_rite' },
     boostSceneId: 'act1_hollow_mask_rite',
     revealAfterStepId: 'o_main_2',
+    reward: { materials: { choir_splinter: 1 }, flags: ['claimed_mask'] },
   },
   {
     id: 'o_main_4',
@@ -254,9 +337,15 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Принять обвал',
     hint: 'Упасть и вернуться — не сбой, а урок.',
-    completeWhen: { kind: 'flag', flag: 'experienced_failure' },
+    revealMessage:
+      'Камера помнит падение. Пустота не спасает от гравитации долга — прими урок.',
+    completeMessage:
+      'Обвал принят. Машина вытянула сосуд и оставила пятно — теперь это карта, не клеймо.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_collapse_lesson' },
     boostSceneId: 'act1_hollow_collapse_lesson',
+    scenePrerequisites: [{ kind: 'flag', flag: 'experienced_failure' }],
     revealAfterStepId: 'o_main_3',
+    reward: { echo: 3 },
   },
   {
     id: 'o_main_5',
@@ -266,9 +355,13 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     titleHidden: '???',
     titleRevealed: 'Имя, которого нет',
     hint: 'Финал: камера спрашивает то, чего у тебя нет.',
+    revealMessage: 'У Рта спрашивают имя — у тебя есть только честная пустота.',
+    completeMessage:
+      'Записано: отсутствие. Первый акт пустого закрыт — камера знает форму без имени.',
     completeWhen: { kind: 'finale', sceneId: ACT1_FINALE_SCENES.hollow },
     boostSceneId: ACT1_FINALE_SCENES.hollow,
     revealAfterStepId: 'o_main_4',
+    reward: { echo: 5, journalEntries: ['act1_hollow'] },
   },
   {
     id: 'o_opt_bell',
@@ -277,9 +370,14 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 10,
     titleHidden: 'Колокол',
     titleRevealed: 'Звон без эха',
-    hint: 'Услышать колокол.',
-    completeWhen: { kind: 'flag', flag: 'heard_the_bell' },
+    hint: 'Услышать колокол у старца пустоты.',
+    revealMessage: 'Колокол бьёт — но эха нет. Только пустой ветер отвечает.',
+    completeMessage:
+      'Звон прошёл сквозь тебя, не зацепившись. Старец пустоты кивнул: «Так и должно быть.»',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_opt_bell' },
+    boostSceneId: 'act1_hollow_opt_bell',
     revealAfterStepId: 'o_main_2',
+    reward: { flags: ['heard_the_bell'], journalEntries: ['act1_opt_bell'] },
   },
   {
     id: 'o_opt_wax',
@@ -288,9 +386,14 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 11,
     titleHidden: 'Воск',
     titleRevealed: 'Восковой паломник',
-    hint: 'Встретить воскового и записать в журнал.',
-    completeWhen: { kind: 'journal', entryId: 'npc_wax' },
+    hint: 'Встретить воскового — пустота считается иначе.',
+    revealMessage: 'Паломник досчитывает пульс. У пустого его нет — только ритм камеры.',
+    completeMessage:
+      'Восковой записал пустоту как «ноль». Журнал принял — лица без пульса тоже существуют.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_opt_wax' },
+    boostSceneId: 'act1_hollow_opt_wax',
     revealAfterStepId: 'o_main_2',
+    reward: { materials: { wax_seal: 2 }, journalEntries: ['npc_wax'] },
   },
   {
     id: 'o_opt_twice',
@@ -299,9 +402,15 @@ export const ACT1_QUEST_STEPS: ActQuestStepDef[] = [
     order: 12,
     titleHidden: 'Дважды',
     titleRevealed: 'Дважды живым',
-    hint: 'Два извлечения.',
-    completeWhen: { kind: 'extractions', min: 2 },
+    hint: 'Два извлечения — хронист вырежет второй силуэт.',
+    revealMessage: 'Два возврата без имени — редкость. Камера вырежет силуэт глубже.',
+    completeMessage:
+      'Второй силуэт на стене чётче первого. Пустота дважды доказала, что форма держится.',
+    completeWhen: { kind: 'scene', sceneId: 'act1_hollow_opt_twice' },
+    boostSceneId: 'act1_hollow_opt_twice',
+    scenePrerequisites: [{ kind: 'extractions', min: 2 }],
     revealAfterStepId: 'o_main_1',
+    reward: { echo: 4 },
   },
 ]
 

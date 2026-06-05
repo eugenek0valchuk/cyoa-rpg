@@ -11,7 +11,7 @@ export function applyPostChoiceHubUpdates(
   character: Character,
   choice: Choice,
   sceneIds: string[],
-): { hub: HubState; toasts: HubToastItem[] } {
+): { hub: HubState; character: Character; toasts: HubToastItem[] } {
   let nextHub = hub
   const toasts: HubToastItem[] = []
 
@@ -66,6 +66,7 @@ export function applyPostChoiceHubUpdates(
 
   return {
     hub: evaluation.hub,
+    character: evaluation.character,
     toasts: [...toasts, ...act1EventsToToasts(evaluation.events)],
   }
 }

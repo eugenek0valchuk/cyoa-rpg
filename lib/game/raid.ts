@@ -325,8 +325,9 @@ export function failRaid(
 export function getRaidStartScene(
   character?: Character,
   journalEntries: string[] = [],
+  hub?: HubState,
 ) {
-  return getInitialScene(character, journalEntries)
+  return getInitialScene(character, journalEntries, hub)
 }
 
 function diffNewMarks(before: string[], after: string[]): string[] {

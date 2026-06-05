@@ -1,3 +1,4 @@
+import { applyActQuestReward } from '@/lib/game/acts/act1Rewards'
 import {
   ACT1_FINALE_SCENES,
   ACT1_QUEST_STEPS,
@@ -25,7 +26,7 @@ export function createInitialAct1Progress(): Act1Progress {
   }
 }
 
-function conditionMet(
+export function conditionMet(
   condition: QuestCondition,
   ctx: ActQuestEvaluationContext,
 ): boolean {
@@ -47,6 +48,8 @@ function conditionMet(
         visitedSceneIds.has(condition.sceneId) ||
         (hub.act1?.finaleSeen ?? false)
       )
+    case 'all':
+      return condition.conditions.every((entry) => conditionMet(entry, ctx))
     default:
       return false
   }
@@ -63,6 +66,17 @@ function shouldRevealStep(
   return completed.has(step.revealAfterStepId)
 }
 
+function scenePrerequisitesMet(
+  step: (typeof ACT1_QUEST_STEPS)[number],
+  ctx: ActQuestEvaluationContext,
+): boolean {
+  if (!step.scenePrerequisites?.length) {
+    return true
+  }
+
+  return step.scenePrerequisites.every((entry) => conditionMet(entry, ctx))
+}
+
 export function evaluateAct1ProgressWithEvents(
   hub: HubState,
   character: Character,
@@ -72,24 +86,27 @@ export function evaluateAct1ProgressWithEvents(
   const origin = character.origin
 
   if (!origin) {
-    return { hub, events }
+    return { hub, character, events }
   }
 
   const steps = stepsForOrigin(origin)
   if (steps.length === 0) {
-    return { hub, events }
+    return { hub, character, events }
   }
 
   const visited = new Set(visitedSceneIds)
+  let nextHub = hub
+  let nextCharacter = character
+
   const ctx: ActQuestEvaluationContext = {
-    hub,
-    characterFlags: character.flags ?? [],
+    hub: nextHub,
+    characterFlags: nextCharacter.flags ?? [],
     visitedSceneIds: visited,
   }
 
   const act1: Act1Progress = {
     ...createInitialAct1Progress(),
-    ...hub.act1,
+    ...nextHub.act1,
   }
 
   const prevCompleted = new Set(act1.completedStepIds)
@@ -108,6 +125,12 @@ export function evaluateAct1ProgressWithEvents(
     if (conditionMet(step.completeWhen, ctx) && !completed.has(step.id)) {
       completed.add(step.id)
       events.push({ kind: 'step_completed', stepId: step.id })
+
+      const rewarded = applyActQuestReward(nextHub, nextCharacter, step.reward)
+      nextHub = rewarded.hub
+      nextCharacter = rewarded.character
+      ctx.hub = nextHub
+      ctx.characterFlags = nextCharacter.flags ?? []
     }
   }
 
@@ -125,7 +148,7 @@ export function evaluateAct1ProgressWithEvents(
     events.push({ kind: 'act_complete' })
   }
 
-  const journalEntries = [...(hub.journalEntries ?? [])]
+  const journalEntries = [...(nextHub.journalEntries ?? [])]
   const journalId = `act1_${origin}`
   if (actComplete && !journalEntries.includes(journalId)) {
     journalEntries.push(journalId)
@@ -133,7 +156,7 @@ export function evaluateAct1ProgressWithEvents(
 
   return {
     hub: {
-      ...hub,
+      ...nextHub,
       journalEntries,
       act1: {
         completedStepIds: [...completed],
@@ -142,6 +165,7 @@ export function evaluateAct1ProgressWithEvents(
         actComplete,
       },
     },
+    character: nextCharacter,
     events,
   }
 }
@@ -174,6 +198,44 @@ export function getAct1StepViews(
   }))
 }
 
+export function getPendingAct1Scene(
+  hub: HubState | undefined,
+  character: Character,
+  visitedSceneIds: Set<string>,
+): string | null {
+  if (!hub || !character.origin) {
+    return null
+  }
+
+  const visited = visitedSceneIds
+  const ctx: ActQuestEvaluationContext = {
+    hub,
+    characterFlags: character.flags ?? [],
+    visitedSceneIds: visited,
+  }
+
+  const views = getAct1StepViews(hub, character)
+  const ordered = [...views].sort((a, b) => a.order - b.order)
+
+  for (const step of ordered) {
+    if (step.completed || !step.revealed || !step.boostSceneId) {
+      continue
+    }
+
+    if (visited.has(step.boostSceneId)) {
+      continue
+    }
+
+    if (!scenePrerequisitesMet(step, ctx)) {
+      continue
+    }
+
+    return step.boostSceneId
+  }
+
+  return null
+}
+
 export function boostPoolForActQuest(
   pool: string[],
   hub: HubState | undefined,
@@ -184,11 +246,21 @@ export function boostPoolForActQuest(
     return []
   }
 
+  const ctx: ActQuestEvaluationContext = {
+    hub,
+    characterFlags: character.flags ?? [],
+    visitedSceneIds,
+  }
+
   const views = getAct1StepViews(hub, character)
   const boosted: string[] = []
 
   for (const step of views) {
     if (step.completed || !step.revealed || !step.boostSceneId) {
+      continue
+    }
+
+    if (!scenePrerequisitesMet(step, ctx)) {
       continue
     }
 
@@ -200,6 +272,16 @@ export function boostPoolForActQuest(
     ) {
       boosted.push(sceneId)
     }
+  }
+
+  const hasActProgress = (hub.act1?.completedStepIds?.length ?? 0) > 0
+  if (
+    hasActProgress &&
+    pool.includes('encounter_chamber_keeper') &&
+    !visitedSceneIds.has('encounter_chamber_keeper') &&
+    !boosted.includes('encounter_chamber_keeper')
+  ) {
+    boosted.push('encounter_chamber_keeper')
   }
 
   return boosted

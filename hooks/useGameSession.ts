@@ -173,7 +173,7 @@ export function useGameSession() {
 
     if (!currentScene) {
       setCurrentScene(
-        getRaidStartScene(character, hub.journalEntries ?? []),
+        getRaidStartScene(character, hub.journalEntries ?? [], hub),
       )
     }
   }, [character, hub, raid, currentScene, router, setCurrentScene])
@@ -218,14 +218,14 @@ export function useGameSession() {
         pushPendingToasts(returnToasts)
       }
 
-      setCharacter(nextCharacter)
+      setCharacter(evaluation.character)
       setHub(evaluation.hub)
       setRaid(nextRaid)
       setPendingSummary(summary)
       resetGame()
 
       await saveCurrentGameState(getActiveSlotId(), {
-        character: nextCharacter,
+        character: evaluation.character,
         currentScene: null,
         history: [],
         sceneHistory: [],
@@ -493,17 +493,19 @@ export function useGameSession() {
           const sceneIds = useGameStore
             .getState()
             .sceneHistory.map((entry) => entry.id)
-          const { hub: updatedHub, toasts } = applyPostChoiceHubUpdates(
-            activeHub,
-            afterCharacter,
-            choice,
-            sceneIds,
-          )
+          const { hub: updatedHub, character: updatedCharacter, toasts } =
+            applyPostChoiceHubUpdates(
+              activeHub,
+              afterCharacter,
+              choice,
+              sceneIds,
+            )
 
           if (toasts.length > 0) {
             setLiveToasts((current) => [...current, ...toasts])
           }
 
+          setCharacter(updatedCharacter)
           setHub(updatedHub)
         }
 

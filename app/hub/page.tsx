@@ -331,6 +331,7 @@ export default function HubPage() {
     const startScene = getRaidStartScene(
       started.character,
       started.hub.journalEntries ?? [],
+      started.hub,
     )
     setCurrentScene(startScene)
 

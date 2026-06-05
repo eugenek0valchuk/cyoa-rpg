@@ -9,6 +9,7 @@ function withAct1Scenes(pool: string[], loot: string[] = []): string[] {
 export const choicePools: Record<string, string[]> = {
   mouth: withAct1Scenes([
     'encounter_wax_pilgrim',
+    'encounter_chamber_keeper',
     'mouth',
     'descent_echoes',
     'descent_reliquary',
@@ -16,6 +17,8 @@ export const choicePools: Record<string, string[]> = {
   monastery: withAct1Scenes(
     [
       'encounter_bell_wretch',
+      'encounter_void_elder',
+      'encounter_chamber_keeper',
       'monastery',
       'whispers_parlor',
       'whispers_mirror',
