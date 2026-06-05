@@ -15,6 +15,11 @@ import {
   computeSanityAfterChoice,
   isDangerousSanityChoice,
 } from '@/lib/game/sanityPacing'
+import {
+  getRiskOffer,
+  RISK_FAILURE_CORRUPTION,
+  RISK_FAILURE_SANITY,
+} from '@/lib/game/riskCheck'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
 import {
   getEffectTooltip,
@@ -34,6 +39,7 @@ interface ChoiceListProps {
   raidModifierId?: RaidModifierId | null
   roomMarks?: string[]
   onSelect: (optionIndex: number) => void
+  onRiskSelect?: (optionIndex: number) => void
   isLoading?: boolean
 }
 
@@ -399,6 +405,7 @@ export function ChoiceList({
   raidModifierId,
   roomMarks = [],
   onSelect,
+  onRiskSelect,
   isLoading,
 }: ChoiceListProps) {
   const visibleOptions = options.filter((option) =>
@@ -427,10 +434,11 @@ export function ChoiceList({
             character,
             journalEntries,
           )
+          const riskOffer = getRiskOffer(option, character, journalEntries)
 
           return (
+            <div key={`${option.id}-${index}`} className="space-y-1.5">
             <motion.button
-              key={`${option.id}-${index}`}
               type="button"
               disabled={!available || isLoading}
               onClick={() => onSelect(index)}
@@ -484,6 +492,41 @@ export function ChoiceList({
                 </div>
               </div>
             </motion.button>
+
+            {riskOffer && onRiskSelect && (
+              <motion.button
+                type="button"
+                disabled={isLoading}
+                onClick={() => onRiskSelect(index)}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: index * 0.05 + 0.08 }}
+                className="group relative w-full border border-[#6a2020]/80 bg-[#1a0808]/90 text-left transition hover:border-[#8e1f1f] hover:bg-[#220d0d] disabled:opacity-40"
+              >
+                <div className="relative px-4 py-2.5 sm:px-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex border border-[#6a2020]/80 bg-[#160909] px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] text-[#e07070]">
+                      {t.ui.game.choiceIntent.risk}
+                    </span>
+                    <span className="font-cinzel text-[13px] uppercase tracking-[0.08em] text-[#d8a0a0]">
+                      {t.ui.game.riskAttemptLabel}
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-[11px] uppercase tracking-[0.1em] text-[#9d8d82]">
+                    {t.ui.game.riskAttemptHint
+                      .replace('{bonus}', String(riskOffer.bonus))
+                      .replace('{dc}', String(riskOffer.dc))
+                      .replace('{chance}', String(riskOffer.chancePercent))}
+                  </p>
+                  <p className="mt-1 text-[10px] text-[#75685f]">
+                    {t.ui.game.riskFailureNote
+                      .replace('{sanity}', String(RISK_FAILURE_SANITY))
+                      .replace('{corruption}', String(RISK_FAILURE_CORRUPTION))}
+                  </p>
+                </div>
+              </motion.button>
+            )}
+            </div>
           )
         })}
       </div>

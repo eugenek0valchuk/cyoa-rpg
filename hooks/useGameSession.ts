@@ -10,6 +10,14 @@ import { applyJournalDiscovery } from '@/lib/game/applyJournalDiscovery'
 import { artifacts } from '@/lib/game/artifacts'
 import { handleGameChoice } from '@/lib/game/handleChoice'
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
+import {
+  applyRiskFailure,
+  getRiskOffer,
+  rollRiskCheck,
+  type RiskOffer,
+  type RiskRollResult,
+} from '@/lib/game/riskCheck'
+import { applyRaidModifierTick } from '@/lib/game/raidModifiers'
 import { hasReturnSigil } from '@/lib/game/extraction'
 import { isRaidEndingScene } from '@/lib/game/isRaidEndingScene'
 import { getRaidModifier } from '@/lib/game/raidModifiers'
@@ -65,6 +73,11 @@ export function useGameSession() {
   const [statFlash, setStatFlash] = useState<{
     sanity?: number
     corruption?: number
+  } | null>(null)
+  const [diceRoll, setDiceRoll] = useState<{
+    result: RiskRollResult
+    offer: RiskOffer
+    choiceIndex: number
   } | null>(null)
 
   const syncJournal = useCallback(
@@ -252,9 +265,9 @@ export function useGameSession() {
     )
   }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
 
-  const handleChoice = useCallback(
+  const executeChoice = useCallback(
     async (choiceIndex: number) => {
-      if (!currentScene || !character || !raid?.active || isLoading) {
+      if (!currentScene || !character || !raid?.active) {
         return
       }
 
@@ -323,9 +336,7 @@ export function useGameSession() {
       character,
       hub,
       raid,
-      isLoading,
       sceneHistory,
-      hub?.journalEntries,
       setCharacter,
       setCurrentScene,
       pushSceneHistory,
@@ -334,6 +345,86 @@ export function useGameSession() {
       syncJournal,
     ],
   )
+
+  const handleChoice = useCallback(
+    async (choiceIndex: number) => {
+      if (isLoading || diceRoll) {
+        return
+      }
+
+      await executeChoice(choiceIndex)
+    },
+    [diceRoll, executeChoice, isLoading],
+  )
+
+  const handleRiskChoice = useCallback(
+    (choiceIndex: number) => {
+      if (!currentScene || !character || !raid?.active || isLoading || diceRoll) {
+        return
+      }
+
+      const choice = currentScene.options[choiceIndex]
+      const offer = choice
+        ? getRiskOffer(choice, character, hub?.journalEntries ?? [])
+        : null
+
+      if (!offer) {
+        return
+      }
+
+      const result = rollRiskCheck(offer.bonus, offer.dc)
+      setShowChoices(false)
+      setDiceRoll({ result, offer, choiceIndex })
+    },
+    [character, currentScene, diceRoll, hub?.journalEntries, isLoading, raid?.active],
+  )
+
+  const handleDiceComplete = useCallback(async () => {
+    const activeRoll = diceRoll
+
+    if (!activeRoll) {
+      return
+    }
+
+    setDiceRoll(null)
+
+    if (activeRoll.result.success) {
+      await executeChoice(activeRoll.choiceIndex)
+      return
+    }
+
+    if (!character) {
+      setShowChoices(true)
+      return
+    }
+
+    const sanityBefore = character.sanity
+    const corruptionBefore = character.corruption
+    let nextCharacter = applyRiskFailure(character)
+
+    if (raid?.modifierId) {
+      nextCharacter = applyRaidModifierTick(
+        nextCharacter,
+        raid.modifierId,
+        hub?.roomMarks ?? [],
+      )
+    }
+
+    setCharacter(nextCharacter)
+    setStatFlash({
+      sanity: nextCharacter.sanity - sanityBefore,
+      corruption: nextCharacter.corruption - corruptionBefore,
+    })
+    window.setTimeout(() => setStatFlash(null), 2800)
+    setShowChoices(true)
+  }, [
+    character,
+    diceRoll,
+    executeChoice,
+    hub?.roomMarks,
+    raid?.modifierId,
+    setCharacter,
+  ])
 
   const handleAbandonRaid = useCallback(async () => {
     if (!character || !hub || !raid) {
@@ -409,6 +500,9 @@ export function useGameSession() {
     handleOpenChronicle,
     handleCloseChronicle,
     handleChoice,
+    handleRiskChoice,
+    diceRoll,
+    handleDiceComplete,
     handleExtract,
     handleReturnToHub,
     handleAbandonRaid,

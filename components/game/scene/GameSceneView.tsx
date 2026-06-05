@@ -21,6 +21,7 @@ interface Props {
   extractAvailable?: boolean
   onExtract?: () => void
   onChoice: (choiceIndex: number) => void
+  onRiskChoice?: (choiceIndex: number) => void
   onReturnToChamber?: () => void
 }
 
@@ -35,6 +36,7 @@ export function GameSceneView({
   extractAvailable,
   onExtract,
   onChoice,
+  onRiskChoice,
   onReturnToChamber,
 }: Props) {
   const [isTyping, setIsTyping] = useState(true)
@@ -88,6 +90,7 @@ export function GameSceneView({
           extractAvailable={extractAvailable}
           onExtract={onExtract}
           onChoice={onChoice}
+          onRiskChoice={onRiskChoice}
         />
       )}
     </div>

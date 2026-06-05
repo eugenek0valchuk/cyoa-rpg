@@ -17,6 +17,7 @@ import {
   RaidTipBanner,
   StatChangeFlash,
 } from '@/components/game'
+import { DiceRollOverlay } from '@/components/game/scene/DiceRollOverlay'
 import { GothicModal } from '@/components/ui/GothicModal'
 import { useGameSession } from '@/hooks/useGameSession'
 import { t } from '@/lib/i18n'
@@ -47,6 +48,9 @@ export default function GamePage() {
     handleOpenChronicle,
     handleCloseChronicle,
     handleChoice,
+    handleRiskChoice,
+    diceRoll,
+    handleDiceComplete,
     handleExtract,
     handleAbandonRaid,
     handleExitToMenu,
@@ -146,9 +150,20 @@ export default function GamePage() {
           extractAvailable={extractAvailable && !isEndingScene}
           onExtract={handleExtract}
           onChoice={handleChoice}
+          onRiskChoice={handleRiskChoice}
           onReturnToChamber={handleExitToMenu}
         />
       </GameViewport>
+
+      {diceRoll && (
+        <DiceRollOverlay
+          open
+          result={diceRoll.result}
+          stat={diceRoll.offer.stat}
+          bonus={diceRoll.offer.bonus}
+          onComplete={handleDiceComplete}
+        />
+      )}
 
       <ArtifactReveal
         artifact={artifact}

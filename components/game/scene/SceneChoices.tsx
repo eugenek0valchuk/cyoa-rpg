@@ -19,6 +19,7 @@ interface SceneChoicesProps {
   extractAvailable?: boolean
   onExtract?: () => void
   onChoice: (choiceIndex: number) => void
+  onRiskChoice?: (choiceIndex: number) => void
 }
 
 export function SceneChoices({
@@ -32,6 +33,7 @@ export function SceneChoices({
   extractAvailable = false,
   onExtract,
   onChoice,
+  onRiskChoice,
 }: SceneChoicesProps) {
   const { ui: raidText } = t.raid
 
@@ -73,6 +75,7 @@ export function SceneChoices({
               raidModifierId={raidModifierId}
               roomMarks={roomMarks}
               onSelect={onChoice}
+              onRiskSelect={onRiskChoice}
               isLoading={isLoading}
             />
           </motion.div>

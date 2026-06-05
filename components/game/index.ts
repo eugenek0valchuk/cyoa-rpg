@@ -17,6 +17,7 @@ export * from './scene/SceneChoices'
 export * from './scene/ChoiceList'
 export * from './scene/RaidTipBanner'
 export * from './scene/StatChangeFlash'
+export * from './scene/DiceRollOverlay'
 
 export * from './shared/ChronicleCard'
 
