@@ -1,7 +1,7 @@
 'use client'
 
 import { ChevronLeft, ChevronRight, Lock } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { GameIcon } from '@/components/game/ui/GameIcon'
 import { journalCatalog, journalUi } from '@/locales/ru/journal'
@@ -11,13 +11,14 @@ import { hubChronicleUi } from '@/locales/ru/hubChronicle'
 import { t } from '@/lib/i18n'
 import type { HubState } from '@/lib/types/hub'
 
-type TabId = 'chamber' | 'magazine' | 'marks'
+type TabId = 'chamber' | 'magazine' | 'marks' | 'lore'
 
 interface HubChronicleMagazineProps {
   hub: HubState
   vesselName: string
   evolvedText: string
   roomTitle: string
+  initialTab?: TabId
 }
 
 function renderEmphasis(text: string) {
@@ -39,14 +40,21 @@ export function HubChronicleMagazine({
   vesselName,
   evolvedText,
   roomTitle,
+  initialTab,
 }: HubChronicleMagazineProps) {
   const { ui: hubText, roomMarks: roomMarkLabels, roomMarkEffects } = t.hub
   const worldLore = t.lore
   const copy = hubChronicleUi
 
-  const [tab, setTab] = useState<TabId>('magazine')
+  const [tab, setTab] = useState<TabId>(initialTab ?? 'magazine')
   const [pageIndex, setPageIndex] = useState(0)
   const [loreCardId, setLoreCardId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (initialTab) {
+      setTab(initialTab)
+    }
+  }, [initialTab])
 
   const unlockedSet = useMemo(
     () => new Set(hub.journalEntries ?? []),
@@ -63,6 +71,7 @@ export function HubChronicleMagazine({
 
   const tabs: { id: TabId; label: string; badge?: string }[] = [
     { id: 'magazine', label: copy.tabMagazine, badge: `${unlockedCount}/${totalPages}` },
+    { id: 'lore', label: copy.tabLore },
     { id: 'chamber', label: copy.tabChamber },
     {
       id: 'marks',
@@ -273,39 +282,49 @@ export function HubChronicleMagazine({
             <p className="mt-2 text-[13px] text-[#9d8d82]">
               {hubText.loadoutHint.replace('{count}', String(hub.loadoutSlots))}
               {hub.roomLevel >= 3 && (
-                <span className="block mt-1 text-[#85776a]">
+                <span className="mt-1 block text-[#85776a]">
                   Ур. 3+: один бесплатный переброс проклятия на Пороге.
                 </span>
               )}
             </p>
+            <p className="mt-3 text-[12px] text-[#75685f]">
+              {hubText.worldLoreHint}
+            </p>
           </div>
+        </div>
+      )}
 
-          <div className="border-t border-[#241919] pt-5">
+      {tab === 'lore' && (
+        <div className="mt-5 space-y-4">
+          <div>
             <div className="text-[13px] uppercase tracking-[0.12em] text-[#75685f]">
               {hubText.worldLore}
             </div>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#6f6259]">
+            <p className="mt-2 text-[13px] leading-relaxed text-[#9d8d82]">
               {worldLore.intro}
             </p>
-            <ul className="mt-4 space-y-2">
-              {worldLore.factions.map((faction) => (
-                <li key={faction.id}>
-                  <button
-                    type="button"
-                    onClick={() => setLoreCardId(faction.id)}
-                    className="w-full border border-[#2b2320] bg-black/20 px-4 py-3 text-left transition hover:border-[#6a5020]/60 hover:bg-[#1a1408]/40"
-                  >
-                    <span className="font-cinzel text-[14px] uppercase tracking-[0.06em] text-[#c4b5aa]">
-                      {faction.name}
-                    </span>
-                    <span className="mt-1 block text-[13px] text-[#85776a]">
-                      {faction.blurb}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
           </div>
+          <ul className="space-y-2">
+            {worldLore.factions.map((faction) => (
+              <li key={faction.id}>
+                <button
+                  type="button"
+                  onClick={() => setLoreCardId(faction.id)}
+                  className="w-full border border-[#2b2320] bg-black/20 px-4 py-3 text-left transition hover:border-[#6a5020]/60 hover:bg-[#1a1408]/40"
+                >
+                  <span className="font-cinzel text-[14px] uppercase tracking-[0.06em] text-[#c4b5aa]">
+                    {faction.name}
+                  </span>
+                  <span className="mt-1 block text-[13px] text-[#85776a]">
+                    {faction.blurb}
+                  </span>
+                  <span className="mt-2 block text-[10px] uppercase tracking-[0.12em] text-[#a08040]">
+                    {t.loreCards.ui.effectLabel} →
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

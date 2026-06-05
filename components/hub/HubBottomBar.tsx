@@ -68,8 +68,8 @@ export function HubBottomBar({
     ...(showScribe && labels.scribe
       ? [{ id: 'scribe' as const, key: 'scribe' as const, icon: 'intelligence' as const }]
       : []),
-    ...(showMerchant && labels.merchant
-      ? [{ id: 'merchant' as const, key: 'merchant' as const, icon: 'agility' as const }]
+      ...(showMerchant && labels.merchant
+      ? [{ id: 'merchant' as const, key: 'merchant' as const, icon: 'merchant' as const }]
       : []),
     { id: 'threshold' as const, key: 'descend' as const, icon: 'corruption' as const },
   ]

@@ -1,6 +1,6 @@
 'use client'
 
-import { GameIcon } from '@/components/game/ui/GameIcon'
+import { GameIcon, type GameIconProps } from '@/components/game/ui/GameIcon'
 import {
   getHubMerchantOffers,
   purchaseHubMerchantOffer,
@@ -13,6 +13,7 @@ interface HubMerchantPanelProps {
   hub: HubState
   onHubChange: (hub: HubState) => void
   onToast?: (message: string) => void
+  variant?: 'default' | 'shop'
 }
 
 function statusLabel(offer: MerchantOfferView): string {
@@ -30,10 +31,24 @@ function statusLabel(offer: MerchantOfferView): string {
   }
 }
 
+function offerIconType(offer: MerchantOfferView): GameIconProps['type'] {
+  switch (offer.kind) {
+    case 'stash_artifact':
+      return 'artifact'
+    case 'journal_entry':
+      return 'flag'
+    case 'remove_mark':
+      return 'corruption'
+    case 'sanity_bonus':
+      return 'sanity'
+  }
+}
+
 export function HubMerchantPanel({
   hub,
   onHubChange,
   onToast,
+  variant = 'default',
 }: HubMerchantPanelProps) {
   const offers = getHubMerchantOffers(hub)
 
@@ -49,25 +64,43 @@ export function HubMerchantPanel({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between border border-[#2b2320] bg-black/30 px-4 py-3">
-        <span className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">
-          {merchantUi.echoLabel}
-        </span>
-        <span className="font-cinzel text-2xl text-[#d8c9be]">{hub.echo ?? 0}</span>
-      </div>
+    <div className={variant === 'shop' ? 'space-y-3' : 'space-y-4'}>
+      {variant !== 'shop' && (
+        <div className="flex items-center justify-between border border-[#2b2320] bg-black/30 px-4 py-3">
+          <span className="text-[11px] uppercase tracking-[0.12em] text-[#75685f]">
+            {merchantUi.echoLabel}
+          </span>
+          <span className="font-cinzel text-2xl text-[#d8c9be]">{hub.echo ?? 0}</span>
+        </div>
+      )}
 
-      <ul className="space-y-3">
+      {variant === 'shop' && (
+        <div className="mb-1 flex items-center justify-between border border-[#3a3a4a]/50 bg-[#101018]/80 px-3 py-2">
+          <span className="text-[10px] uppercase tracking-[0.12em] text-[#85776a]">
+            {merchantUi.echoLabel}
+          </span>
+          <span className="font-cinzel text-xl tabular-nums text-[#a8a8c8]">
+            {hub.echo ?? 0}
+          </span>
+        </div>
+      )}
+
+      <ul className="space-y-2">
         {offers.map((offer) => {
           const canBuy = offer.status === 'available'
 
           return (
             <li
               key={offer.id}
-              className="border border-[#2b2320] bg-[#0a0808]/80 px-4 py-4"
+              className={`border border-[#2b2320] bg-[#0a0808]/80 ${
+                variant === 'shop' ? 'px-3 py-3' : 'px-4 py-4'
+              }`}
             >
               <div className="flex items-start gap-3">
-                <GameIcon type="artifact" size={40} />
+                <GameIcon
+                  type={offerIconType(offer)}
+                  size={variant === 'shop' ? 28 : 36}
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-cinzel text-[15px] uppercase tracking-[0.06em] text-[#e7ded7]">

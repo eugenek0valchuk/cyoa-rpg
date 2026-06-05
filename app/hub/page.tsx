@@ -7,7 +7,7 @@ import { HubChronicleMagazine } from '@/components/hub/HubChronicleMagazine'
 import { HubBottomBar } from '@/components/hub/HubBottomBar'
 import { HubOnboardingBanner } from '@/components/hub/HubOnboardingBanner'
 import { HubContractClaim } from '@/components/hub/HubContractClaim'
-import { HubMerchantPanel } from '@/components/hub/HubMerchantPanel'
+import { HubMerchantOverlay } from '@/components/hub/HubMerchantOverlay'
 import { HubScribePanel } from '@/components/hub/HubScribePanel'
 import { ThresholdContractPicker } from '@/components/hub/ThresholdContractPicker'
 import { journalCatalog } from '@/locales/ru/journal'
@@ -42,15 +42,28 @@ import {
 } from '@/lib/game/contracts'
 import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 import { isHubMerchantUnlocked } from '@/lib/game/merchant'
-import { merchantUi } from '@/locales/ru/merchant'
 import { roomHotspotLayouts, type HotspotId } from '@/lib/hub/roomHotspots'
-
-type HubModalId = HotspotId | 'merchant'
 import { t } from '@/lib/i18n'
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
 import { useHubStore } from '@/lib/store/hubStore'
 import type { Artifact } from '@/lib/types/game'
+
+type HubModalId = HotspotId | 'merchant'
+
+function renderHubEmphasis(text: string) {
+  const parts = text.split(/\*\*(.*?)\*\*/g)
+
+  return parts.map((part, index) =>
+    index % 2 === 1 ? (
+      <strong key={index} className="font-medium text-[#e7ded7]">
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  )
+}
 
 export default function HubPage() {
   const router = useRouter()
@@ -73,6 +86,9 @@ export default function HubPage() {
 
   const [activeModal, setActiveModal] = useState<HubModalId | null>(null)
   const [merchantToast, setMerchantToast] = useState<string | null>(null)
+  const [chronicleTab, setChronicleTab] = useState<
+    'chamber' | 'magazine' | 'marks' | 'lore' | undefined
+  >(undefined)
   const [selectedLoadout, setSelectedLoadout] = useState<string[]>([])
   const [pendingModifier, setPendingModifier] = useState<RaidModifierId>(() =>
     pickRaidModifier(),
@@ -91,6 +107,7 @@ export default function HubPage() {
 
   const scribeUnlocked = hub ? isScribeUnlocked(hub) : false
   const merchantUnlocked = hub ? isHubMerchantUnlocked(hub) : false
+
   const offeredContracts = useMemo(
     () => (hub ? pickOfferedContracts(hub) : []),
     [hub],
@@ -332,7 +349,15 @@ export default function HubPage() {
           : undefined,
   }
 
-  const closeModal = () => setActiveModal(null)
+  const closeModal = () => {
+    setActiveModal(null)
+    setChronicleTab(undefined)
+  }
+
+  const openChronicle = (tab?: 'chamber' | 'magazine' | 'marks' | 'lore') => {
+    setChronicleTab(tab)
+    setActiveModal('chronicle')
+  }
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black text-[#e7e2dc]">
@@ -351,15 +376,50 @@ export default function HubPage() {
         badges={hotspotBadges}
         origin={character.origin}
         activeId={activeModal === 'merchant' ? null : activeModal}
-        onSelect={(id) =>
+        onSelect={(id) => {
+          if (id === 'chronicle') {
+            openChronicle()
+            return
+          }
+
           setActiveModal((current) => (current === id ? null : id))
-        }
+        }}
       />
 
       <header className="absolute inset-x-0 top-0 z-30 bg-gradient-to-b from-black/85 to-transparent px-5 pb-8 pt-6 sm:px-8">
         <HubOnboardingBanner
           suppressed={activeModal !== null || (hub?.totalRaids ?? 0) > 0}
         />
+        {hub.roomMarks.includes('failure_stain') && activeModal === null && (
+          <div className="mb-4 border border-[#4a2323] bg-[#160909]/70 px-4 py-3 text-[13px] leading-relaxed text-[#c09090]">
+            {renderHubEmphasis(hubText.failureStainBanner)}
+            <button
+              type="button"
+              onClick={() => openChronicle('marks')}
+              className="mt-2 block text-[11px] uppercase tracking-[0.12em] text-[#d46060] hover:underline"
+            >
+              {hubText.marksHint}
+            </button>
+          </div>
+        )}
+        {hub.roomMarks.length > 0 && !hub.roomMarks.includes('failure_stain') && (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-[#75685f]">
+              {hubText.marks}:
+            </span>
+            {hub.roomMarks.map((mark) => (
+              <button
+                key={mark}
+                type="button"
+                onClick={() => openChronicle('marks')}
+                className="border border-[#4a2323]/70 bg-[#160909]/50 px-2.5 py-1 text-[11px] text-[#c09090] transition hover:border-[#8e1f1f]"
+                title={roomMarkEffects[mark]}
+              >
+                {t.hub.roomMarks[mark] ?? mark}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="text-[12px] uppercase tracking-[0.15em] text-[#85776a]">
@@ -413,43 +473,30 @@ export default function HubPage() {
           archives: hubText.bottomArchives,
         }}
         activeId={activeModal}
-        onSelect={(id) => setActiveModal(id)}
+        onSelect={(id) => {
+          if (id === 'chronicle') {
+            openChronicle()
+            return
+          }
+
+          setActiveModal(id)
+        }}
         modalOpen={activeModal !== null}
         onArchives={() => router.push('/archives')}
       />
 
-      <GothicModal
+      <HubMerchantOverlay
         open={activeModal === 'merchant'}
+        unlocked={merchantUnlocked}
+        hub={hub}
         onClose={closeModal}
-        icon="agility"
-        title={merchantUnlocked ? merchantUi.title : merchantUi.lockedTitle}
-        subtitle={
-          merchantUnlocked ? merchantUi.subtitle : merchantUi.lockedBody
-        }
-        maxWidth="lg"
-      >
-        {merchantUnlocked ? (
-          <>
-            {merchantToast && (
-              <p className="mb-4 border border-[#2a3d2a] bg-[#0a120a]/60 px-4 py-3 text-[13px] text-[#8fbc8f]">
-                {merchantToast}
-              </p>
-            )}
-            <HubMerchantPanel
-              hub={hub}
-              onHubChange={setHub}
-              onToast={(message) => {
-                setMerchantToast(message)
-                window.setTimeout(() => setMerchantToast(null), 3500)
-              }}
-            />
-          </>
-        ) : (
-          <p className="text-[14px] leading-relaxed text-[#85776a]">
-            {merchantUi.lockedBody}
-          </p>
-        )}
-      </GothicModal>
+        onHubChange={setHub}
+        toast={merchantToast}
+        onToast={(message) => {
+          setMerchantToast(message)
+          window.setTimeout(() => setMerchantToast(null), 3500)
+        }}
+      />
 
       <GothicModal
         open={activeModal === 'vessel'}
@@ -469,7 +516,7 @@ export default function HubPage() {
           </p>
         }
       >
-        <VesselStats character={character} />
+        <VesselStats character={character} roomMarks={hub.roomMarks} />
       </GothicModal>
 
       <GothicModal
@@ -519,6 +566,7 @@ export default function HubPage() {
           vesselName={character.name}
           evolvedText={evolvedText}
           roomTitle={room.title}
+          initialTab={chronicleTab}
         />
       </GothicModal>
 

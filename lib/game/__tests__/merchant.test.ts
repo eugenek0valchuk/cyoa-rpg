@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { createInitialHubState } from '@/lib/types/hub'
 
 import {
+  getBreathlessHubLine,
   getHubMerchantOffers,
   isHubMerchantUnlocked,
   purchaseHubMerchantOffer,
 } from '../merchant'
+import { merchantUi } from '@/locales/ru/merchant'
 
 describe('hub merchant', () => {
   it('unlocks after breathless journal or extraction', () => {
@@ -64,5 +66,23 @@ describe('hub merchant', () => {
 
     expect(result?.hub.nextRaidSanityBonus).toBe(5)
     expect(result?.hub.merchantPurchases).toContain('offer_sanity_balm')
+  })
+
+  it('picks breathless dialogue by hub state', () => {
+    expect(getBreathlessHubLine(createInitialHubState())).toBe(
+      merchantUi.lineDefault,
+    )
+    expect(
+      getBreathlessHubLine({
+        ...createInitialHubState(),
+        journalEntries: ['npc_breathless'],
+      }),
+    ).toBe(merchantUi.lineReturn)
+    expect(
+      getBreathlessHubLine({
+        ...createInitialHubState(),
+        roomMarks: ['failure_stain'],
+      }),
+    ).toBe(merchantUi.lineStain)
   })
 })

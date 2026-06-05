@@ -6,12 +6,17 @@ import type { Character } from '@/lib/types/game'
 
 interface VesselStatsProps {
   character: Character
+  roomMarks?: string[]
   compact?: boolean
 }
 
-export function VesselStats({ character, compact = false }: VesselStatsProps) {
+export function VesselStats({
+  character,
+  roomMarks = [],
+  compact = false,
+}: VesselStatsProps) {
   const { game } = t.ui
-  const { ui: hubText } = t.hub
+  const { ui: hubText, roomMarks: roomMarkLabels, roomMarkEffects } = t.hub
 
   const statBlocks = [
     {
@@ -120,6 +125,26 @@ export function VesselStats({ character, compact = false }: VesselStatsProps) {
           </div>
         ))}
       </div>
+
+      {roomMarks.length > 0 && (
+        <div className="border border-[#4a2323]/60 bg-[#160909]/30 px-4 py-3">
+          <div className="text-[11px] uppercase tracking-[0.12em] text-[#d46060]">
+            {hubText.marks}
+          </div>
+          <ul className="mt-2 space-y-2">
+            {roomMarks.map((mark) => (
+              <li key={mark} className="text-[13px] text-[#9d8d82]">
+                <span className="text-[#d8c9be]">
+                  {roomMarkLabels[mark] ?? mark}
+                </span>
+                {roomMarkEffects[mark] && (
+                  <span className="text-[#85776a]"> — {roomMarkEffects[mark]}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { mergeJournalEntries } from '@/lib/game/journal'
 import { spendEcho } from '@/lib/game/hubMeta'
 import {
   hubMerchantOffers,
+  merchantUi,
   type HubMerchantOfferDef,
 } from '@/locales/ru/merchant'
 import type { HubState } from '@/lib/types/hub'
@@ -23,6 +24,26 @@ export function isHubMerchantUnlocked(hub: HubState): boolean {
     hub.totalExtractions >= 1 ||
     (hub.journalEntries ?? []).includes('npc_breathless')
   )
+}
+
+export function getBreathlessHubLine(hub: HubState): string {
+  if (hub.roomMarks.includes('failure_stain')) {
+    return merchantUi.lineStain
+  }
+
+  if ((hub.merchantPurchases ?? []).length > 0) {
+    return merchantUi.lineRepeat
+  }
+
+  if ((hub.echo ?? 0) >= 5) {
+    return merchantUi.lineRich
+  }
+
+  if ((hub.journalEntries ?? []).includes('npc_breathless')) {
+    return merchantUi.lineReturn
+  }
+
+  return merchantUi.lineDefault
 }
 
 function hasArtifactInStash(hub: HubState, artifactId: string): boolean {

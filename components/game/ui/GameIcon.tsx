@@ -12,6 +12,7 @@ export interface GameIconProps {
     | 'hollow'
     | 'heretic'
     | 'witness'
+    | 'merchant'
   size?: number
   className?: string
   /** Disable screen blend — use on tinted/colored backgrounds. */
@@ -19,7 +20,7 @@ export interface GameIconProps {
 }
 
 /** Bump when replacing PNG assets so browsers pick up new files. */
-const ICON_VERSION = '6'
+const ICON_VERSION = '10'
 
 /** Extra scale for 2K+ readability (applies to all GameIcon sizes). */
 const DISPLAY_SCALE = 1.45
@@ -48,6 +49,7 @@ const ICON_MAP: Record<string, string> = {
   hollow: '/ui/gothic-ashen-mask.png',
   heretic: '/ui/gothic-corruption-cross.png',
   witness: '/ui/gothic-sanity-eye.png',
+  merchant: '/ui/gothic-merchant-cart.png',
 }
 
 const GLOW_MAP: Record<string, string> = {
@@ -61,6 +63,7 @@ const GLOW_MAP: Record<string, string> = {
   hollow: 'drop-shadow(0 0 8px rgba(150,130,120,0.5))',
   heretic: 'drop-shadow(0 0 10px rgba(212,96,96,0.6))',
   witness: 'drop-shadow(0 0 10px rgba(216,208,200,0.5))',
+  merchant: 'drop-shadow(0 0 12px rgba(212,160,80,0.75))',
 }
 
 export function GameIcon({ type, size = 20, className, noBlend = false }: GameIconProps) {
