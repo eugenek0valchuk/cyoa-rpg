@@ -1,6 +1,7 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
+import { createPortal } from 'react-dom'
 
 import {
   computeCorruptionAfterChoice,
@@ -35,7 +36,7 @@ export function KeyChoiceConfirm({
 }: KeyChoiceConfirmProps) {
   const { game } = t.ui
 
-  if (!choice || !meta || !character) {
+  if (!choice || !meta || !character || typeof document === 'undefined') {
     return null
   }
 
@@ -68,11 +69,11 @@ export function KeyChoiceConfirm({
           .replace('{after}', String(corruptionAfter))
       : null
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[75] flex items-end justify-center bg-black/80 px-4 pb-6 sm:items-center sm:pb-0"
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 px-4 pb-6 sm:items-center sm:pb-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -81,7 +82,8 @@ export function KeyChoiceConfirm({
           <motion.div
             role="dialog"
             aria-labelledby="key-choice-title"
-            className="w-full max-w-md border border-[#6a5020]/80 bg-[#120e08] shadow-[0_0_40px_rgba(106,80,32,0.15)]"
+            aria-modal="true"
+            className="w-full max-w-md border border-[#6a5020]/80 bg-[#120e08] shadow-[0_0_40px_rgba(106,80,32,0.25)]"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
@@ -132,6 +134,7 @@ export function KeyChoiceConfirm({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

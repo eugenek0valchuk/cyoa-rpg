@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import type { RiskRollResult, RiskStat } from '@/lib/game/riskCheck'
 import { t } from '@/lib/i18n'
@@ -49,11 +50,15 @@ export function DiceRollOverlay({
 
   const statName = game.diceStat[stat]
 
-  return (
+  if (typeof document === 'undefined') {
+    return null
+  }
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 px-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 px-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -123,6 +128,7 @@ export function DiceRollOverlay({
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }
