@@ -1,11 +1,7 @@
 import { getInitialScene } from './getInitialScene'
 import { getContractEncounterBoostFlag, resolveRaidContract, type ContractResult } from './contracts'
-import {
-  applyRaidStartSanity,
-  calcEchoFromExtraction,
-  restVesselAfterFailedRaid,
-  syncHubProgression,
-} from './hubMeta'
+import { appendRaidLog } from './raidLog'
+import { calcEchoFromExtraction, applyRaidStartSanity, restVesselAfterFailedRaid, syncHubProgression } from './hubMeta'
 import type { RaidModifierId } from './raidModifiers'
 import type { Artifact, Character } from '@/lib/types/game'
 import type { HubState, RaidState } from '@/lib/types/hub'
@@ -121,20 +117,26 @@ export function completeRaidExtraction(
   const stash = mergeIntoStash(hub.stash, character.inventory)
   const echoGain = calcEchoFromExtraction(depth, gained.length, roomMarks)
 
+  const hubAfter = syncHubProgression({
+    ...hub,
+    stash,
+    bestDepth,
+    totalExtractions,
+    roomLevel,
+    roomMarks,
+    echo: (hub.echo ?? 0) + echoGain,
+  })
+
   return {
     character: {
       ...character,
       inventory: [],
       sanity: Math.min(100, character.sanity + 15),
     },
-    hub: syncHubProgression({
-      ...hub,
-      stash,
-      bestDepth,
-      totalExtractions,
-      roomLevel,
-      roomMarks,
-      echo: (hub.echo ?? 0) + echoGain,
+    hub: appendRaidLog(hubAfter, {
+      outcome: 'extracted',
+      depth,
+      echoGain,
     }),
     raid: null,
   }
@@ -145,6 +147,7 @@ export function failRaid(
   hub: HubState,
   raid: RaidState,
   depth: number,
+  outcome: 'failed' | 'abandoned' = 'failed',
 ): { character: Character; hub: HubState; raid: null } {
   const keptLoadout = hub.stash.filter((item) =>
     raid.inventoryAtStart.includes(item.id),
@@ -162,6 +165,12 @@ export function failRaid(
 
   const rested = restVesselAfterFailedRaid(character)
 
+  const hubAfter = {
+    ...hub,
+    bestDepth: Math.max(hub.bestDepth, depth),
+    roomMarks,
+  }
+
   return {
     character: {
       ...character,
@@ -169,11 +178,7 @@ export function failRaid(
       sanity: rested.sanity,
       corruption: rested.corruption,
     },
-    hub: {
-      ...hub,
-      bestDepth: Math.max(hub.bestDepth, depth),
-      roomMarks,
-    },
+    hub: appendRaidLog(hubAfter, { outcome, depth }),
     raid: null,
   }
 }

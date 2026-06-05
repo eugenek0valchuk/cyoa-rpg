@@ -1,5 +1,13 @@
 import type { Artifact } from './game'
 import type { RaidModifierId } from '@/lib/game/raidModifiers'
+import type { RaidOutcome } from './raidSummary'
+
+export type HubRaidLogEntry = {
+  raidNumber: number
+  outcome: RaidOutcome
+  depth: number
+  echoGain?: number
+}
 
 export type PendingContractClaim = {
   contractId: string
@@ -28,6 +36,8 @@ export interface HubState {
   totalExtractions: number
   bestDepth: number
   loadoutSlots: number
+  /** Последние исходы спусков — для хроники камеры */
+  raidLog?: HubRaidLogEntry[]
 }
 
 export interface RaidState {

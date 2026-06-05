@@ -145,6 +145,15 @@ export default function HubPage() {
   }, [hub?.pendingContractClaim])
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+
+    if (params.get('chronicle') === 'chamber') {
+      setChronicleTab('chamber')
+      setActiveModal('chronicle')
+    }
+  }, [])
+
+  useEffect(() => {
     if (activeModal === 'threshold' && hub) {
       setPendingModifier(
         pickRaidModifier(Date.now(), {

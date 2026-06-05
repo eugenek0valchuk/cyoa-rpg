@@ -484,7 +484,7 @@ export function useGameSession() {
     }
 
     const depth = sceneHistory.length
-    const result = failRaid(character, hub, raid, depth)
+    const result = failRaid(character, hub, raid, depth, 'abandoned')
     const contractResolved = applyContractToRaidEnd(result.hub, raid, {
       outcome: 'abandoned',
       depth,

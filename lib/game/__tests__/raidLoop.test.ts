@@ -50,6 +50,10 @@ describe('raid loop on one vessel', () => {
     expect(hub.roomLevel).toBeGreaterThanOrEqual(1)
     expect(hub.echo).toBeGreaterThan(0)
     expect(hub.loadoutSlots).toBeGreaterThanOrEqual(2)
+    expect(hub.raidLog).toHaveLength(4)
+    expect(hub.raidLog?.every((entry) => entry.outcome === 'extracted')).toBe(
+      true,
+    )
   })
 
   it('unlocks hub merchant after first extraction', () => {

@@ -20,4 +20,7 @@ export const hubChronicleUi = {
   roomPerksTitle: 'Привилегии камеры',
   emptyMarks: 'Стены пока чисты. Провалы и извлечения оставят след.',
   jumpToPage: 'Оглавление',
+  raidLogTitle: 'Исходы спусков',
+  raidLogEmpty: 'Пока нет завершённых спусков — начни с Порога.',
+  raidLogEntry: 'Спуск {n} · глубина {depth}',
 } as const
