@@ -34,6 +34,14 @@ export function SceneChronicle({
       return
     }
 
+    // E2E: мгновенный текст — клики по выборам, без ожидания typewriter (см. playwright.config.ts).
+    if (process.env.NEXT_PUBLIC_E2E === '1') {
+      setDisplayedText(text)
+      setIsTyping(false)
+      onTypingComplete?.()
+      return
+    }
+
     indexRef.current = 0
     setDisplayedText('')
     setIsTyping(true)
@@ -81,6 +89,7 @@ export function SceneChronicle({
       scrollBody={false}
       className="border-[#2b2320]/90 shadow-[0_0_40px_rgba(0,0,0,0.45)]"
       titleClassName="text-2xl sm:text-[1.65rem]"
+      data-testid={`scene-${scene.id}`}
     >
       {!hideBody && (
       <div className="relative w-full max-w-[720px] space-y-4 whitespace-pre-wrap text-[16px] leading-[1.75] text-[#cfc2b8] sm:text-[17px] sm:leading-8">

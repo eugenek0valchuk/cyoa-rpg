@@ -91,6 +91,7 @@ export function HubChronicleMagazine({
           <button
             key={item.id}
             type="button"
+            data-testid={`chronicle-tab-${item.id}`}
             onClick={() => setTab(item.id)}
             className={`inline-flex items-center gap-2 border px-3 py-2 text-[10px] uppercase tracking-[0.14em] transition ${
               tab === item.id
@@ -268,6 +269,7 @@ export function HubChronicleMagazine({
             ].map((stat) => (
               <div
                 key={stat.label}
+                data-testid={`chronicle-stat-${stat.label === hubText.raids ? 'raids' : stat.label === hubText.extractions ? 'extractions' : stat.label === hubText.bestDepth ? 'depth' : 'echo'}`}
                 className="border border-[#2b2320] bg-black/40 px-3 py-4 text-center"
               >
                 <div className="text-[11px] text-[#75685f]">{stat.label}</div>

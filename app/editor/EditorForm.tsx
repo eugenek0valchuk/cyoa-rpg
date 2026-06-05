@@ -202,6 +202,7 @@ export function EditorForm() {
                 {e.vesselName}
               </div>
               <input
+                data-testid="editor-vessel-name"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder={e.namePlaceholder}
@@ -212,6 +213,7 @@ export function EditorForm() {
 
             <button
               type="submit"
+              data-testid="editor-submit"
               disabled={!name.trim()}
               className="font-cinzel shrink-0 border-2 border-[#5c1f1f] bg-[#160909] px-8 py-3 text-sm uppercase tracking-[0.15em] text-[#d46060] transition hover:bg-[#220d0d] disabled:opacity-40"
             >

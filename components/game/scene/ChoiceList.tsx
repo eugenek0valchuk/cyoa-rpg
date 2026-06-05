@@ -540,6 +540,7 @@ export function ChoiceList({
           <motion.button
             key={`${option.id}-${index}`}
             type="button"
+            data-testid={`choice-${option.id}`}
             disabled={!available || isLoading}
             onClick={() => onSelect(index)}
             initial={{ opacity: 0, y: 10 }}

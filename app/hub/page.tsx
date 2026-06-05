@@ -642,6 +642,7 @@ export default function HubPage() {
             </p>
             <button
               type="button"
+              data-testid="hub-begin-raid"
               onClick={handleBeginRaid}
               className="font-cinzel shrink-0 border-2 border-[#5c1f1f] bg-[#160909] px-8 py-3 text-sm uppercase tracking-[0.15em] text-[#d46060] transition hover:bg-[#220d0d]"
             >

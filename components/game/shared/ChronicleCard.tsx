@@ -12,6 +12,7 @@ interface ChronicleCardProps {
   maxHeight?: string
   /** When false, body grows with content — parent supplies the only scroll */
   scrollBody?: boolean
+  'data-testid'?: string
 }
 
 export function ChronicleCard({
@@ -24,9 +25,11 @@ export function ChronicleCard({
   icon,
   maxHeight = 'max-h-[40vh]',
   scrollBody = true,
+  'data-testid': dataTestId,
 }: ChronicleCardProps) {
   return (
     <section
+      data-testid={dataTestId}
       className={clsx(
         'relative overflow-hidden border-2 border-[#2b2320] bg-[#0d0909]/95 shadow-[0_0_60px_rgba(0,0,0,0.5)]',
         className,

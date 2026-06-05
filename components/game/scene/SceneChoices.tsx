@@ -50,7 +50,9 @@ export function SceneChoices({
             {extractAvailable && onExtract && (
               <button
                 type="button"
+                data-testid="extract-scene"
                 onClick={onExtract}
+                disabled={isLoading}
                 className="group relative w-full border-2 border-[#4a2323] bg-[#160909]/95 text-left transition hover:border-[#8e1f1f] hover:bg-[#220d0d] hover:shadow-[0_0_24px_rgba(92,31,31,0.18)]"
               >
                 <div className="relative flex items-start gap-3 px-4 py-3.5 sm:px-5 sm:py-4">

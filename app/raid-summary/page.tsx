@@ -186,6 +186,7 @@ export default function RaidSummaryPage() {
 
         <button
           type="button"
+          data-testid="raid-summary-return"
           onClick={handleReturn}
           className="font-cinzel mt-10 w-full border-2 border-[#5c1f1f] bg-[#160909] px-6 py-4 text-lg uppercase tracking-[0.15em] text-[#d46060] transition hover:bg-[#220d0d]"
         >

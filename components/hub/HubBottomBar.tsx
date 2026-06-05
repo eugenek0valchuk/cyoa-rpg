@@ -88,6 +88,7 @@ export function HubBottomBar({
             <button
               key={id}
               type="button"
+              data-testid={`hub-${id}`}
               onClick={() => handleSelect(id)}
               className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 border px-2 py-2.5 transition sm:gap-2 sm:px-3 sm:py-3 ${
                 isActive
