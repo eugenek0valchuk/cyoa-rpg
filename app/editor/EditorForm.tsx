@@ -177,6 +177,7 @@ export function EditorForm() {
                 <button
                   key={origin.value}
                   type="button"
+                  data-testid={`editor-origin-${origin.value}`}
                   onClick={() => setIndex(i)}
                   className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 border px-2 py-2.5 transition sm:gap-2 sm:px-3 sm:py-3 ${
                     active

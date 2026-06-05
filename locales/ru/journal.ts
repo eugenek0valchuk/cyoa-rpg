@@ -83,6 +83,15 @@ export const journalCatalog: JournalEntryDef[] = [
     unlock: { scene: 'encounter_bell_wretch' },
   },
   {
+    id: 'npc_heretic',
+    category: 'npc',
+    title: 'Шестерня отступника',
+    teaser: 'Железо без оси. Вопрос без ответа Синода…',
+    body: 'Еретики не молятся — они **отвечают** Машине напрямую. Шестерня в Красном трансепте задаёт вопрос, который слышат только те, кто уже отступил. Ответ открывает иной путь у Порога Распада.',
+    effect: 'Метка heretic_answered: выбор «прошептать ответ» у collapse_threshold.',
+    unlock: { flag: 'met_heretic_cog' },
+  },
+  {
     id: 'npc_choir',
     category: 'npc',
     title: 'Осколок хора',

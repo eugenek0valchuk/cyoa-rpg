@@ -94,4 +94,43 @@ describe('resolveDirectedScene', () => {
 
     expect(scene.id).not.toBe('sarcophagus_tunnel')
   })
+
+  it('skips encounters already seen this raid when pooling', () => {
+    const history: SceneHistoryEntry[] = [
+      {
+        id: 'mouth',
+        title: scenes.mouth.title,
+        description: scenes.mouth.description,
+      },
+    ]
+
+    const scene = resolveDirectedScene(
+      scenes.start,
+      scenes.start.options[0]!,
+      baseCharacter,
+      history,
+      [],
+      ['encounter_wax_pilgrim'],
+    )
+
+    expect(scene.id).not.toBe('encounter_wax_pilgrim')
+  })
+
+  it('routes beat_return_road to remembered_path', () => {
+    const rememberedChoice = {
+      id: 'beat_return_road',
+      text: 'Вспомнить',
+      targetSceneId: 'remembered_path',
+      effects: { sanity: -2 },
+    }
+
+    const scene = resolveDirectedScene(
+      scenes.start,
+      rememberedChoice,
+      baseCharacter,
+      [],
+    )
+
+    expect(scene.id).toBe('remembered_path')
+  })
 })

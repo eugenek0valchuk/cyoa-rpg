@@ -132,6 +132,7 @@ export function NpcEncounterModal({
 
   return createPortal(
     <div
+      data-testid="npc-encounter-modal"
       className={`fixed inset-0 ${zLayers.npcEncounter} flex items-center justify-center p-2 sm:p-5`}
       role="dialog"
       aria-modal="true"
@@ -217,6 +218,7 @@ export function NpcEncounterModal({
             <div className="flex shrink-0 border-t border-[#241919]">
               <button
                 type="button"
+                data-testid="npc-encounter-skip"
                 onClick={skipToChoices}
                 className="flex-1 border-r border-[#241919] px-3 py-3 text-[10px] uppercase tracking-[0.12em] text-[#75685f] transition hover:bg-[#0a0808]"
               >

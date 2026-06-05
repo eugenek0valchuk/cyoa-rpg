@@ -21,6 +21,7 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'descent',
         text: 'Позволить считать до конца',
         requirements: { agility: 6 },
+        riskFailSceneId: 'encounter_wax_fail',
         effects: { corruption: 3, addFlag: 'wax_offered' },
       },
       {
@@ -47,6 +48,7 @@ export const encounterScenes: Record<string, Scene> = {
         id: 'bell',
         text: 'Подойти к колоколам и заглушить эхо',
         requirements: { strength: 7 },
+        riskFailSceneId: 'encounter_bell_fail',
         effects: { sanity: -4, corruption: 3 },
       },
       {
@@ -121,6 +123,89 @@ export const encounterScenes: Record<string, Scene> = {
         text: 'Уйти, не дав ему закончить фразу',
         requirements: { agility: 6 },
         effects: { sanity: -1 },
+      },
+    ],
+  },
+
+  encounter_heretic_cog: {
+    id: 'encounter_heretic_cog',
+    title: 'Шестерня Отступника',
+    description: `
+В трансепте крови висит железная шестерня без оси — крутится от дыхания, как будто Машина наверху всё ещё крутит её через тебя.
+
+На зубьях выгравирован вопрос, который нельзя прочесть глазами — только **услышать**, если ты уже отступил от Синода.
+
+«Что осталось, когда перестали верить в ответ?»
+    `.trim(),
+    options: [
+      {
+        id: 'heretic_whisper_pit',
+        text: 'Ответить шёпотом — Машина запишет',
+        requirements: { requiredOrigin: 'heretic' },
+        effects: {
+          addFlag: 'heretic_answered',
+          corruption: 5,
+          sanity: -6,
+        },
+      },
+      {
+        id: 'jump_pit',
+        text: 'Сорвать шестерню и бросить в чашу',
+        requirements: { strength: 7 },
+        effects: { corruption: 6, sanity: -7 },
+      },
+      {
+        id: 'monastery',
+        text: 'Отступить — вопрос не для тебя',
+        effects: { sanity: -2 },
+      },
+    ],
+  },
+
+  encounter_wax_fail: {
+    id: 'encounter_wax_fail',
+    title: 'Счёт Сорвался',
+    description: `
+Ты дёргаешь руку — поздно. Паломник **уже** досчитал.
+
+Воск на маске течёт по твоим пальцам. На секунду ты не помнишь, зачем спускался. Потом память возвращается — но ритм шага уже **чужой**.
+
+Маска шепчет: «Усты знают твой новый пульс. Иди.»
+    `.trim(),
+    options: [
+      {
+        id: 'mouth',
+        text: 'Бежать к Устам — пока ноги ещё слушаются',
+        effects: { sanity: -8, corruption: 4 },
+      },
+      {
+        id: 'catacombs',
+        text: 'Врезаться в боковой проход — оторваться от ритма',
+        effects: { sanity: -6, corruption: 3 },
+      },
+    ],
+  },
+
+  encounter_bell_fail: {
+    id: 'encounter_bell_fail',
+    title: 'Звон Внутри',
+    description: `
+Ты не удерживаешь медь. Урод **звенит** — длинно, до крови из ушей.
+
+Монастырь слышит. Синод слышит. Ты слышишь **только** звон — даже когда урод замолкает.
+
+На миг мир беззвучен. Потом звон возвращается — уже изнутри черепа.
+    `.trim(),
+    options: [
+      {
+        id: 'monastery',
+        text: 'Ползти в пустой неф — искать тишину',
+        effects: { sanity: -10, corruption: 2 },
+      },
+      {
+        id: 'whispers_parlor',
+        text: 'Закрыть уши и идти туда, где шепчут без колоколов',
+        effects: { sanity: -7, corruption: 4 },
       },
     ],
   },

@@ -8,12 +8,18 @@ interface VesselStatsProps {
   character: Character
   roomMarks?: string[]
   compact?: boolean
+  canChamberRest?: boolean
+  chamberRestUsed?: boolean
+  onChamberRest?: () => void
 }
 
 export function VesselStats({
   character,
   roomMarks = [],
   compact = false,
+  canChamberRest = false,
+  chamberRestUsed = false,
+  onChamberRest,
 }: VesselStatsProps) {
   const { game } = t.ui
   const { ui: hubText, roomMarks: roomMarkLabels, roomMarkEffects } = t.hub
@@ -125,6 +131,29 @@ export function VesselStats({
           </div>
         ))}
       </div>
+
+      {(canChamberRest || chamberRestUsed) && onChamberRest && (
+        <div className="border border-[#2b3528]/70 bg-[#0d120d]/50 px-4 py-3">
+          {canChamberRest ? (
+            <>
+              <p className="text-[13px] leading-relaxed text-[#9aab92]">
+                {hubText.chamberRestHint}
+              </p>
+              <button
+                type="button"
+                onClick={onChamberRest}
+                className="mt-3 w-full border border-[#4a5c4a]/70 bg-[#0d120d]/90 px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-[#b4c27d] transition hover:border-[#6a8f6a] hover:bg-[#121812]"
+              >
+                {hubText.chamberRestAction}
+              </button>
+            </>
+          ) : (
+            <p className="text-[13px] leading-relaxed text-[#75685f]">
+              {hubText.chamberRestDone}
+            </p>
+          )}
+        </div>
+      )}
 
       {roomMarks.length > 0 && (
         <div className="border border-[#4a2323]/60 bg-[#160909]/30 px-4 py-3">

@@ -38,6 +38,8 @@ export interface HubState {
   loadoutSlots: number
   /** Последние исходы спусков — для хроники камеры */
   raidLog?: HubRaidLogEntry[]
+  /** Отдых в камере уже использован до следующего возвращения из спуска */
+  chamberRestUsed?: boolean
 }
 
 export interface RaidState {
@@ -51,6 +53,8 @@ export interface RaidState {
   prologueSeen?: boolean
   /** Аварийное извлечение уже использовано в этом спуске */
   emergencyExtractUsed?: boolean
+  /** Встречи NPC в этом спуске — не повторять из пула */
+  encountersSeen?: string[]
 }
 
 export const MIN_EXTRACT_DEPTH = 2

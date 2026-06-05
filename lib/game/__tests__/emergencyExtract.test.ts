@@ -163,7 +163,9 @@ describe('emergency extract', () => {
       false,
     )
     expect(emergency.character.sanity).toBeLessThan(character.sanity)
-    expect(emergency.character.corruption).toBeGreaterThan(character.corruption)
+    expect(emergency.character.corruption).toBeGreaterThan(
+      normal.character.corruption,
+    )
     expect((emergency.hub.echo ?? 0) < (normal.hub.echo ?? 0)).toBe(true)
 
     const summary = buildEmergencyExtractSummary(

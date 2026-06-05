@@ -124,7 +124,10 @@ export function GameHeader({
                   </span>
                 )}
                 {journalCount > 0 && (
-                  <span className="ml-0.5 inline-flex min-w-[1.1rem] items-center justify-center border border-[#3a3a4a]/60 bg-[#101018] px-1 text-[9px] text-[#a8a8c8]">
+                  <span
+                    data-testid="game-journal-count"
+                    className="ml-0.5 inline-flex min-w-[1.1rem] items-center justify-center border border-[#3a3a4a]/60 bg-[#101018] px-1 text-[9px] text-[#a8a8c8]"
+                  >
                     {journalCount}
                   </span>
                 )}

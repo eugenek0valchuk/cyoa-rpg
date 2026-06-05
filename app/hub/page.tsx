@@ -27,12 +27,15 @@ import {
   type RaidModifierId,
 } from '@/lib/game/raidModifiers'
 import {
+  applyChamberRest,
   applyRaidStartSanity,
   canAffordEchoReroll,
+  canChamberRest,
   ECHO_REROLL_COST,
   getRaidStartSanityDelta,
   hasFreeModifierReroll,
   hasHarshModifierPool,
+  markChamberRestUsed,
   spendEcho,
 } from '@/lib/game/hubMeta'
 import {
@@ -328,6 +331,16 @@ export default function HubPage() {
           String(raidStartSanity),
         )
       : null
+  const chamberRestAvailable = canChamberRest(hub, character)
+
+  const handleChamberRest = () => {
+    if (!chamberRestAvailable) {
+      return
+    }
+
+    setCharacter(applyChamberRest(character))
+    setHub(markChamberRestUsed(hub))
+  }
   const canRerollFree = hasFreeModifierReroll(hub) && !freeRerollUsed
   const canRerollEcho = canAffordEchoReroll(hub)
   const rerollLabel = canRerollFree
@@ -399,6 +412,18 @@ export default function HubPage() {
         <HubOnboardingBanner
           suppressed={activeModal !== null || (hub?.totalRaids ?? 0) > 0}
         />
+        {chamberRestAvailable && activeModal === null && (
+          <div className="mb-4 border border-[#3a4a3a]/80 bg-[#0d120d]/70 px-4 py-3 text-[13px] leading-relaxed text-[#9aab92]">
+            {renderHubEmphasis(hubText.chamberRestBanner)}
+            <button
+              type="button"
+              onClick={() => setActiveModal('vessel')}
+              className="mt-2 block text-[11px] uppercase tracking-[0.12em] text-[#b4c27d] hover:underline"
+            >
+              {hubText.chamberRestAction}
+            </button>
+          </div>
+        )}
         {hub.roomMarks.includes('failure_stain') && activeModal === null && (
           <div className="mb-4 border border-[#4a2323] bg-[#160909]/70 px-4 py-3 text-[13px] leading-relaxed text-[#c09090]">
             {renderHubEmphasis(hubText.failureStainBanner)}
@@ -525,7 +550,13 @@ export default function HubPage() {
           </p>
         }
       >
-        <VesselStats character={character} roomMarks={hub.roomMarks} />
+        <VesselStats
+          character={character}
+          roomMarks={hub.roomMarks}
+          canChamberRest={chamberRestAvailable}
+          chamberRestUsed={Boolean(hub.chamberRestUsed)}
+          onChamberRest={handleChamberRest}
+        />
       </GothicModal>
 
       <GothicModal

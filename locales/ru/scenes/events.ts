@@ -206,6 +206,20 @@ export const eventScenes: Record<string, Scene> = {
         requirements: { agility: 5 },
         effects: { sanity: -3 },
       },
+      {
+        id: 'communion_vein_corrupt',
+        text: 'Протиснуться туда, где стена пульсирует в такт коже',
+        targetSceneId: 'communion_vein',
+        requirements: { minCorruption: 50 },
+        effects: { corruption: 3, sanity: -6 },
+      },
+      {
+        id: 'communion_vein_writings',
+        text: 'Следовать за лицами — они смотрят на вскрытую жилу',
+        targetSceneId: 'communion_vein',
+        requirements: { requiredFlag: 'read_the_writings' },
+        effects: { sanity: -4, corruption: 2 },
+      },
     ],
   },
 
@@ -268,6 +282,12 @@ export const eventScenes: Record<string, Scene> = {
 Воздух пахнет железом и исповедью.
     `.trim(),
     options: [
+      {
+        id: 'encounter_heretic_cog',
+        text: 'Подойти к шестерне без оси — она крутится от дыхания',
+        targetSceneId: 'encounter_heretic_cog',
+        effects: { sanity: -3, corruption: 2, addFlag: 'met_heretic_cog' },
+      },
       {
         id: 'jump_pit',
         text: 'Подойти к чаше',

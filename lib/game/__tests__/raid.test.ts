@@ -65,7 +65,7 @@ describe('raid system', () => {
 
     expect(failed.hub.roomMarks).toContain('failure_stain')
     expect(failed.character.sanity).toBe(50)
-    expect(failed.character.corruption).toBe(75)
+    expect(failed.character.corruption).toBe(71)
     expect(next.character.sanity).toBe(46)
   })
 

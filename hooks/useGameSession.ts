@@ -8,7 +8,7 @@ import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 
 import { applyJournalDiscovery } from '@/lib/game/applyJournalDiscovery'
 import { artifacts } from '@/lib/game/artifacts'
-import { handleGameChoice } from '@/lib/game/handleChoice'
+import { handleGameChoice, navigateRiskFailScene } from '@/lib/game/handleChoice'
 import {
   isChoiceAvailable,
   isChoiceAvailableAfterRiskSuccess,
@@ -410,6 +410,20 @@ export function useGameSession() {
           sceneHistory,
           artifacts,
           raidModifierId: raid?.modifierId,
+          contractId: raid?.contractId,
+          encountersSeen: raid?.encountersSeen ?? [],
+          onEncounterSeen: (sceneId) => {
+            const activeRaid = useHubStore.getState().raid
+
+            if (!activeRaid?.active || activeRaid.encountersSeen?.includes(sceneId)) {
+              return
+            }
+
+            useHubStore.getState().setRaid({
+              ...activeRaid,
+              encountersSeen: [...(activeRaid.encountersSeen ?? []), sceneId],
+            })
+          },
           setCharacter,
           setCurrentScene,
           getQueuedScene: () => useGameStore.getState().queuedScene,
@@ -549,11 +563,12 @@ export function useGameSession() {
       return
     }
 
-    if (!character) {
+    if (!character || !currentScene) {
       setShowChoices(true)
       return
     }
 
+    const choice = currentScene.options[activeRoll.choiceIndex]
     const sanityBefore = character.sanity
     const corruptionBefore = character.corruption
     let nextCharacter = applyRiskFailure(character)
@@ -572,14 +587,53 @@ export function useGameSession() {
       corruption: nextCharacter.corruption - corruptionBefore,
     })
     window.setTimeout(() => setStatFlash(null), 2800)
+
+    if (
+      choice &&
+      navigateRiskFailScene({
+        currentScene,
+        choice,
+        character: nextCharacter,
+        sceneHistory,
+        journalEntries: hub?.journalEntries ?? [],
+        encountersSeen: raid?.encountersSeen ?? [],
+        setCurrentScene,
+        pushSceneHistory,
+        pushHistory,
+        onEncounterSeen: (sceneId) => {
+          const activeRaid = useHubStore.getState().raid
+
+          if (!activeRaid?.active || activeRaid.encountersSeen?.includes(sceneId)) {
+            return
+          }
+
+          useHubStore.getState().setRaid({
+            ...activeRaid,
+            encountersSeen: [...(activeRaid.encountersSeen ?? []), sceneId],
+          })
+        },
+      })
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 350))
+      setShowChoices(true)
+      return
+    }
+
     setShowChoices(true)
   }, [
     character,
+    currentScene,
     diceRoll,
     executeChoice,
+    hub?.journalEntries,
     hub?.roomMarks,
+    pushHistory,
+    pushSceneHistory,
+    raid?.encountersSeen,
     raid?.modifierId,
+    sceneHistory,
     setCharacter,
+    setCurrentScene,
   ])
 
   const handleAbandonRaid = useCallback(async () => {

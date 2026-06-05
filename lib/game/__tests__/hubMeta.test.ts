@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest'
 
 import {
+  applyChamberRest,
   applyRaidStartSanity,
   calcEchoFromExtraction,
+  canChamberRest,
   getLoadoutSlotsForRoomLevel,
   getRaidStartSanityDelta,
+  markChamberRestUsed,
   restVesselAfterFailedRaid,
+  restVesselAfterSuccessfulRaid,
   spendEcho,
   syncHubProgression,
 } from '../hubMeta'
@@ -69,7 +73,27 @@ describe('hubMeta', () => {
     const rested = restVesselAfterFailedRaid({ sanity: 0, corruption: 90 })
 
     expect(rested.sanity).toBe(32)
-    expect(rested.corruption).toBe(80)
+    expect(rested.corruption).toBe(76)
+  })
+
+  it('cleans vessel after successful extraction', () => {
+    const rested = restVesselAfterSuccessfulRaid({ sanity: 20, corruption: 82 })
+
+    expect(rested.sanity).toBe(38)
+    expect(rested.corruption).toBe(70)
+  })
+
+  it('allows one chamber rest when vessel is strained', () => {
+    const hub = createInitialHubState()
+    const strained = { ...baseCharacter, sanity: 32, corruption: 82 }
+
+    expect(canChamberRest(hub, strained)).toBe(true)
+
+    const rested = applyChamberRest(strained)
+
+    expect(rested.sanity).toBe(57)
+    expect(rested.corruption).toBe(62)
+    expect(canChamberRest(markChamberRestUsed(hub), strained)).toBe(false)
   })
 
   it('clamps raid start sanity to playable floor', () => {

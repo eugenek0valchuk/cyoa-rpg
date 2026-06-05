@@ -37,17 +37,27 @@ export function shouldInsertZoneBridge(
   return Boolean(zoneTransitionCopy[`${from}_${to}` as keyof typeof zoneTransitionCopy])
 }
 
-export function createZoneBridgeScene(from: RaidZone, to: RaidZone): Scene | null {
+export function createZoneBridgeScene(
+  from: RaidZone,
+  to: RaidZone,
+  contractVow?: string | null,
+): Scene | null {
   const copy = zoneTransitionCopy[`${from}_${to}` as keyof typeof zoneTransitionCopy]
 
   if (!copy) {
     return null
   }
 
+  const contractNote = contractVow
+    ? `
+
+**Обет спуска:** ${contractVow} — камера наверху шепчет его сквозь камень.`
+    : ''
+
   return {
     id: getZoneBridgeId(from, to),
     title: copy.title,
-    description: copy.description,
+    description: `${copy.description}${contractNote}`,
     options: [
       {
         id: ZONE_BRIDGE_CONTINUE_ID,
@@ -64,6 +74,7 @@ export function wrapSceneWithZoneBridge(
   corruption: number,
   visitedSceneIds: Set<string>,
   getZone: (depth: number, corruption: number) => RaidZone,
+  contractVow?: string | null,
 ): { scene: Scene; queuedScene: Scene | null } {
   const from = getZone(depthBefore, corruption)
   const to = getZone(depthAfter, corruption)
@@ -72,7 +83,7 @@ export function wrapSceneWithZoneBridge(
     return { scene: nextScene, queuedScene: null }
   }
 
-  const bridge = createZoneBridgeScene(from, to)
+  const bridge = createZoneBridgeScene(from, to, contractVow)
 
   if (!bridge) {
     return { scene: nextScene, queuedScene: null }

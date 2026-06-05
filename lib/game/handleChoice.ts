@@ -1,3 +1,6 @@
+import { contractById } from '@/locales/ru/contracts'
+
+import { getSceneById } from './sceneRegistry'
 import { applyChoiceEffects } from './applyChoiceEffects'
 import { buildDirectorState } from './director'
 import { getEnding } from './endings'
@@ -37,6 +40,29 @@ interface HandleChoiceParams {
   revealArtifact: (artifact: Artifact) => Promise<void>
   journalEntries?: string[]
   roomMarks?: string[]
+  contractId?: string | null
+  encountersSeen?: string[]
+  onEncounterSeen?: (sceneId: string) => void
+}
+
+export function isEncounterSceneId(sceneId: string): boolean {
+  return sceneId.startsWith('encounter_')
+}
+
+function trackEncounterVisit(
+  sceneId: string,
+  encountersSeen: string[] | undefined,
+  onEncounterSeen: ((sceneId: string) => void) | undefined,
+) {
+  if (!isEncounterSceneId(sceneId)) {
+    return
+  }
+
+  if (encountersSeen?.includes(sceneId)) {
+    return
+  }
+
+  onEncounterSeen?.(sceneId)
 }
 
 export async function handleGameChoice({
@@ -55,6 +81,9 @@ export async function handleGameChoice({
   revealArtifact,
   journalEntries = [],
   roomMarks = [],
+  contractId = null,
+  encountersSeen = [],
+  onEncounterSeen,
 }: HandleChoiceParams) {
   const { updatedCharacter, revealedArtifact } = applyChoiceEffects({
     character,
@@ -107,6 +136,7 @@ export async function handleGameChoice({
   ) {
     setQueuedScene?.(null)
     setCurrentScene(queuedScene)
+    trackEncounterVisit(queuedScene.id, encountersSeen, onEncounterSeen)
 
     commitSceneTransition({
       currentScene,
@@ -124,9 +154,11 @@ export async function handleGameChoice({
     character: characterAfterTick,
     sceneHistory,
     journalEntries,
+    encountersSeen,
   })
 
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
+  const contractVow = contractId ? contractById[contractId]?.vow : null
   const wrapped = wrapSceneWithZoneBridge(
     resolvedScene,
     sceneHistory.length,
@@ -134,9 +166,11 @@ export async function handleGameChoice({
     characterAfterTick.corruption,
     visitedSceneIds,
     getRaidZone,
+    contractVow,
   )
 
   setCurrentScene(wrapped.scene)
+  trackEncounterVisit(wrapped.scene.id, encountersSeen, onEncounterSeen)
 
   if (wrapped.queuedScene) {
     setQueuedScene?.(wrapped.queuedScene)
@@ -150,4 +184,59 @@ export async function handleGameChoice({
     pushSceneHistory,
     pushHistory,
   })
+}
+
+interface NavigateRiskFailParams {
+  currentScene: Scene
+  choice: Choice
+  character: Character
+  sceneHistory: SceneHistoryEntry[]
+  journalEntries?: string[]
+  encountersSeen?: string[]
+  setCurrentScene: (scene: Scene) => void
+  pushSceneHistory: (scene: SceneHistoryEntry) => void
+  pushHistory: (sceneId: string) => void
+  onEncounterSeen?: (sceneId: string) => void
+}
+
+export function navigateRiskFailScene({
+  currentScene,
+  choice,
+  character,
+  sceneHistory,
+  journalEntries = [],
+  encountersSeen = [],
+  setCurrentScene,
+  pushSceneHistory,
+  pushHistory,
+  onEncounterSeen,
+}: NavigateRiskFailParams): boolean {
+  const failSceneId = choice.riskFailSceneId
+
+  if (!failSceneId) {
+    return false
+  }
+
+  const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
+  const failScene = getSceneById(failSceneId, {
+    character,
+    journalEntries,
+    visitedSceneIds,
+  })
+
+  if (!failScene) {
+    return false
+  }
+
+  setCurrentScene(failScene)
+  trackEncounterVisit(failScene.id, encountersSeen, onEncounterSeen)
+
+  commitSceneTransition({
+    currentScene,
+    nextScene: failScene,
+    pushSceneHistory,
+    pushHistory,
+  })
+
+  return true
 }

@@ -1,7 +1,15 @@
 import { getInitialScene } from './getInitialScene'
 import { getContractEncounterBoostFlag, resolveRaidContract, type ContractResult } from './contracts'
 import { appendRaidLog } from './raidLog'
-import { calcEchoFromExtraction, applyRaidStartSanity, restVesselAfterFailedRaid, syncHubProgression } from './hubMeta'
+import {
+  applyRaidStartSanity,
+  calcEchoFromExtraction,
+  enableChamberRest,
+  restVesselAfterEmergencyRaid,
+  restVesselAfterFailedRaid,
+  restVesselAfterSuccessfulRaid,
+  syncHubProgression,
+} from './hubMeta'
 import type { RaidModifierId } from './raidModifiers'
 import type { Artifact, Character } from '@/lib/types/game'
 import type { HubState, RaidState } from '@/lib/types/hub'
@@ -157,28 +165,36 @@ export function completeEmergencyExtraction(
     Math.floor(rawEcho * EMERGENCY_EXTRACT_ECHO_FACTOR),
   )
 
-  const hubAfter = syncHubProgression({
-    ...hub,
-    stash,
-    bestDepth,
-    totalExtractions,
-    roomLevel,
-    roomMarks,
-    echo: (hub.echo ?? 0) + echoGain,
-  })
+  const hubAfter = enableChamberRest(
+    syncHubProgression({
+      ...hub,
+      stash,
+      bestDepth,
+      totalExtractions,
+      roomLevel,
+      roomMarks,
+      echo: (hub.echo ?? 0) + echoGain,
+    }),
+  )
+
+  const afterPenalties = {
+    sanity: Math.max(
+      0,
+      Math.min(100, character.sanity - EMERGENCY_EXTRACT_SANITY_COST),
+    ),
+    corruption: Math.min(
+      100,
+      character.corruption + EMERGENCY_EXTRACT_CORRUPTION,
+    ),
+  }
+  const rested = restVesselAfterEmergencyRaid(afterPenalties)
 
   return {
     character: {
       ...character,
       inventory: [],
-      sanity: Math.max(
-        0,
-        Math.min(100, character.sanity - EMERGENCY_EXTRACT_SANITY_COST),
-      ),
-      corruption: Math.min(
-        100,
-        character.corruption + EMERGENCY_EXTRACT_CORRUPTION,
-      ),
+      sanity: rested.sanity,
+      corruption: rested.corruption,
     },
     hub: appendRaidLog(hubAfter, {
       outcome: 'emergency_extracted',
@@ -216,21 +232,26 @@ export function completeRaidExtraction(
   const stash = mergeIntoStash(hub.stash, character.inventory)
   const echoGain = calcEchoFromExtraction(depth, gained.length, roomMarks)
 
-  const hubAfter = syncHubProgression({
-    ...hub,
-    stash,
-    bestDepth,
-    totalExtractions,
-    roomLevel,
-    roomMarks,
-    echo: (hub.echo ?? 0) + echoGain,
-  })
+  const hubAfter = enableChamberRest(
+    syncHubProgression({
+      ...hub,
+      stash,
+      bestDepth,
+      totalExtractions,
+      roomLevel,
+      roomMarks,
+      echo: (hub.echo ?? 0) + echoGain,
+    }),
+  )
+
+  const rested = restVesselAfterSuccessfulRaid(character)
 
   return {
     character: {
       ...character,
       inventory: [],
-      sanity: Math.min(100, character.sanity + 15),
+      sanity: rested.sanity,
+      corruption: rested.corruption,
     },
     hub: appendRaidLog(hubAfter, {
       outcome: 'extracted',
@@ -264,11 +285,11 @@ export function failRaid(
 
   const rested = restVesselAfterFailedRaid(character)
 
-  const hubAfter = {
+  const hubAfter = enableChamberRest({
     ...hub,
     bestDepth: Math.max(hub.bestDepth, depth),
     roomMarks,
-  }
+  })
 
   return {
     character: {

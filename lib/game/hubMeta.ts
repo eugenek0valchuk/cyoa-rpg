@@ -1,3 +1,4 @@
+import type { Character } from '@/lib/types/game'
 import type { HubState } from '@/lib/types/hub'
 
 export const ECHO_REROLL_COST = 1
@@ -7,7 +8,16 @@ export const FREE_MODIFIER_REROLLS_ROOM_LEVEL = 3
 export const HUB_SANITY_REST_MIN = 32
 
 /** На сколько скверна спадает, когда сосуд возвращается в камеру после провала */
-export const HUB_CORRUPTION_DECAY_ON_FAIL = 10
+export const HUB_CORRUPTION_DECAY_ON_FAIL = 14
+
+/** Восстановление после успешного извлечения */
+export const HUB_EXTRACT_SANITY_GAIN = 18
+export const HUB_EXTRACT_CORRUPTION_DECAY = 12
+
+/** Доп. отдых в камере между спусками (один раз до следующего спуска) */
+export const CHAMBER_REST_SANITY_GAIN = 25
+export const CHAMBER_REST_CORRUPTION_DECAY = 20
+export const CHAMBER_REST_SANITY_CAP = 85
 
 /** Не начинать спуск ниже этого порога — иначе мгновенный обвал */
 export const MIN_RAID_START_SANITY = 12
@@ -142,4 +152,70 @@ export function restVesselAfterFailedRaid(character: {
       character.corruption - HUB_CORRUPTION_DECAY_ON_FAIL,
     ),
   }
+}
+
+export function restVesselAfterSuccessfulRaid(character: {
+  sanity: number
+  corruption: number
+}): { sanity: number; corruption: number } {
+  return {
+    sanity: Math.min(
+      100,
+      Math.max(HUB_SANITY_REST_MIN, character.sanity + HUB_EXTRACT_SANITY_GAIN),
+    ),
+    corruption: Math.max(
+      0,
+      character.corruption - HUB_EXTRACT_CORRUPTION_DECAY,
+    ),
+  }
+}
+
+export function restVesselAfterEmergencyRaid(character: {
+  sanity: number
+  corruption: number
+}): { sanity: number; corruption: number } {
+  return {
+    sanity: Math.max(
+      HUB_SANITY_REST_MIN,
+      Math.min(100, character.sanity + 10),
+    ),
+    corruption: Math.max(0, character.corruption - 8),
+  }
+}
+
+export function needsChamberRest(character: {
+  sanity: number
+  corruption: number
+}): boolean {
+  return character.sanity < 55 || character.corruption > 42
+}
+
+export function canChamberRest(hub: HubState, character: Character): boolean {
+  if (hub.chamberRestUsed) {
+    return false
+  }
+
+  return needsChamberRest(character)
+}
+
+export function applyChamberRest(character: Character): Character {
+  return {
+    ...character,
+    sanity: Math.min(
+      CHAMBER_REST_SANITY_CAP,
+      Math.max(HUB_SANITY_REST_MIN, character.sanity + CHAMBER_REST_SANITY_GAIN),
+    ),
+    corruption: Math.max(
+      0,
+      character.corruption - CHAMBER_REST_CORRUPTION_DECAY,
+    ),
+  }
+}
+
+export function enableChamberRest(hub: HubState): HubState {
+  return { ...hub, chamberRestUsed: false }
+}
+
+export function markChamberRestUsed(hub: HubState): HubState {
+  return { ...hub, chamberRestUsed: true }
 }

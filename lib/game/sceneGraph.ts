@@ -19,6 +19,7 @@ const SPINE_LAYOUT: Record<
   { x: number; y: number; zone: SceneMapZone; label?: string }
 > = {
   start: { x: 1, y: 0, zone: 'surface', label: 'Дорога' },
+  remembered_path: { x: 1, y: 1, zone: 'surface', label: 'Память' },
   merchant: { x: 0, y: 1, zone: 'surface', label: 'Телега' },
   leave_cart: { x: 0, y: 2, zone: 'surface' },
   monastery: { x: 2, y: 1, zone: 'surface', label: 'Монастырь' },
@@ -46,6 +47,9 @@ const SPINE_LAYOUT: Record<
   encounter_bell_wretch: { x: 3, y: 2, zone: 'event', label: 'Урод' },
   encounter_choir_remnant: { x: 3, y: 6, zone: 'event', label: 'Осколок' },
   encounter_synod_acolyte: { x: 0, y: 0, zone: 'event', label: 'Синод' },
+  encounter_heretic_cog: { x: 3, y: 5, zone: 'event', label: 'Шестерня' },
+  sarcophagus_tunnel: { x: 0, y: 6, zone: 'fracture' },
+  blood_path: { x: 2, y: 5, zone: 'depth' },
 }
 
 function resolveTargetSceneId(

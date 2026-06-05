@@ -21,6 +21,7 @@ export const repeatSceneVariants: Partial<Record<string, RepeatSceneConfig>> = {
         {
           id: 'beat_return_road',
           text: 'Остановиться и вспомнить, куда ушёл в прошлый раз',
+          targetSceneId: 'remembered_path',
           effects: { sanity: -2 },
         },
       ],
@@ -238,6 +239,60 @@ export const repeatSceneVariants: Partial<Record<string, RepeatSceneConfig>> = {
 
 /** Уникальные сцены-продолжения — только через repeat-выборы */
 export const repeatFollowUpScenes: Record<string, import('@/lib/types/game').Scene> = {
+  remembered_path: {
+    id: 'remembered_path',
+    title: 'Память Дороги',
+    description: `
+Пепел на секунду **расступается** — не физически, а в голове.
+
+Ты видишь не карту, а **узел**: телегу, маску, медь, вуаль, Уста. Камера наверху записала след — дорога предлагает вернуться туда, где ты уже оставил долг.
+
+Выбери, кого или что вспомнить сильнее всего. Или иди туда, куда ведёт пепел без имени.
+    `.trim(),
+    options: [
+      {
+        id: 'encounter_wax_pilgrim',
+        text: 'Следовать за пульсом — восковая маска на горизонте',
+        targetSceneId: 'encounter_wax_pilgrim',
+        requirements: { requiredJournal: 'npc_wax' },
+        effects: { sanity: -3 },
+      },
+      {
+        id: 'encounter_bell_wretch',
+        text: 'Следовать за звоном в зубах',
+        targetSceneId: 'encounter_bell_wretch',
+        requirements: { requiredJournal: 'npc_bell_wretch' },
+        effects: { sanity: -4 },
+      },
+      {
+        id: 'encounter_choir_remnant',
+        text: 'Следовать за третьим голосом в груди',
+        targetSceneId: 'encounter_choir_remnant',
+        requirements: { requiredJournal: 'npc_choir' },
+        effects: { sanity: -3, corruption: 2 },
+      },
+      {
+        id: 'encounter_synod_acolyte',
+        text: 'Следовать за серой вуалью у телеги',
+        targetSceneId: 'encounter_synod_acolyte',
+        requirements: { requiredJournal: 'npc_synod' },
+        effects: { sanity: -2, corruption: 1 },
+      },
+      {
+        id: 'merchant',
+        text: 'Вернуться к Бездыханному — он уже ждёт',
+        targetSceneId: 'merchant',
+        requirements: { requiredJournal: 'npc_breathless' },
+        effects: { sanity: -2 },
+      },
+      {
+        id: 'mouth',
+        text: 'Не выбирать — идти туда, где пепел тяжелее всего',
+        effects: { sanity: -3 },
+      },
+    ],
+  },
+
   merchant_reunion: {
     id: 'merchant_reunion',
     title: 'Слух за Память',

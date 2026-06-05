@@ -116,8 +116,8 @@ export const phaseScenes: Record<string, Scene> = {
       },
       {
         id: 'mouth',
-        text: 'Бежать назад к твёрдой земле',
-        effects: { sanity: -3 },
+        text: 'Откупиться памятью — бежать назад к твёрдой земле',
+        effects: { sanity: -12, corruption: 4 },
       },
     ],
   },
@@ -261,14 +261,15 @@ export const phaseScenes: Record<string, Scene> = {
     `.trim(),
     options: [
       {
-        id: 'descent',
-        text: 'Приблизиться к отсутствию',
+        id: 'collapse_threshold',
+        text: 'Шагнуть на порог — не вверх, а глубже в слияние',
+        targetSceneId: 'collapse_threshold',
         effects: { corruption: 12, sanity: -10 },
       },
       {
         id: 'exit_monastery',
-        text: 'Вцепиться в последний цельный камень',
-        effects: { sanity: -8 },
+        text: 'Вцепиться в последний цельный камень и платить за отступление',
+        effects: { sanity: -14, corruption: 6 },
       },
     ],
   },

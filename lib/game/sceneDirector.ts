@@ -75,6 +75,37 @@ function boostPoolForJournal(
   return boosted
 }
 
+function filterSeenEncounters(
+  pool: string[],
+  encountersSeen: Set<string>,
+): string[] {
+  const withoutSeen = pool.filter(
+    (sceneId) =>
+      !sceneId.startsWith('encounter_') || !encountersSeen.has(sceneId),
+  )
+
+  return withoutSeen.length > 0 ? withoutSeen : pool
+}
+
+function boostPoolForOrigin(
+  pool: string[],
+  character: Character,
+  visitedSceneIds: Set<string>,
+): string[] {
+  const boosted: string[] = []
+
+  if (
+    character.origin === 'heretic' &&
+    pool.includes('encounter_heretic_cog') &&
+    !visitedSceneIds.has('encounter_heretic_cog') &&
+    !boosted.includes('encounter_heretic_cog')
+  ) {
+    boosted.push('encounter_heretic_cog')
+  }
+
+  return boosted
+}
+
 function boostPoolForContractFlags(
   pool: string[],
   character: Character,
@@ -101,6 +132,10 @@ function boostPoolForContractFlags(
   return boosted
 }
 
+interface PickSceneParamsWithEncounters extends PickSceneParams {
+  encountersSeen?: Set<string>
+}
+
 function pickFromPool({
   pool,
   visitedSceneIds,
@@ -108,23 +143,38 @@ function pickFromPool({
   seed,
   character,
   journalEntries,
-}: PickSceneParams): Scene | null {
-  const flagBoosted = boostPoolForFlags(pool, character, visitedSceneIds)
+  encountersSeen = new Set<string>(),
+}: PickSceneParamsWithEncounters): Scene | null {
+  const eligiblePool = filterSeenEncounters(pool, encountersSeen)
+  const flagBoosted = boostPoolForFlags(eligiblePool, character, visitedSceneIds)
+  const originBoosted = boostPoolForOrigin(
+    eligiblePool,
+    character,
+    visitedSceneIds,
+  )
   const journalBoosted = boostPoolForJournal(
-    pool,
+    eligiblePool,
     journalEntries,
     visitedSceneIds,
   )
   const contractBoosted = boostPoolForContractFlags(
-    pool,
+    eligiblePool,
     character,
     visitedSceneIds,
   )
   const boosted = [
     ...flagBoosted,
-    ...journalBoosted.filter((id) => !flagBoosted.includes(id)),
+    ...originBoosted.filter(
+      (id) => !flagBoosted.includes(id),
+    ),
+    ...journalBoosted.filter(
+      (id) => !flagBoosted.includes(id) && !originBoosted.includes(id),
+    ),
     ...contractBoosted.filter(
-      (id) => !flagBoosted.includes(id) && !journalBoosted.includes(id),
+      (id) =>
+        !flagBoosted.includes(id) &&
+        !originBoosted.includes(id) &&
+        !journalBoosted.includes(id),
     ),
   ]
 
@@ -138,7 +188,7 @@ function pickFromPool({
     )
   }
 
-  const available = pool.filter((sceneId) => {
+  const available = eligiblePool.filter((sceneId) => {
     const scene = sceneRegistry[sceneId]
 
     if (!scene) {
@@ -156,7 +206,7 @@ function pickFromPool({
     return true
   })
 
-  const candidates = available.length > 0 ? available : pool
+  const candidates = available.length > 0 ? available : eligiblePool
   const index = Math.abs(seed) % candidates.length
   const sceneId = candidates[index]
 
@@ -194,8 +244,10 @@ export function resolveDirectedScene(
   character: Character,
   sceneHistory: SceneHistoryEntry[],
   journalEntries: string[] = [],
+  encountersSeen: string[] = [],
 ): Scene {
   const visitedSceneIds = new Set(sceneHistory.map((entry) => entry.id))
+  const encountersSeenSet = new Set(encountersSeen)
   const visitedTitles = new Set(
     sceneHistory.map((entry) => entry.title.toLowerCase()),
   )
@@ -232,6 +284,7 @@ export function resolveDirectedScene(
       ]),
       character,
       journalEntries,
+      encountersSeen: encountersSeenSet,
     })
 
     if (pooled) {
@@ -254,6 +307,7 @@ export function resolveDirectedScene(
     ]),
     character,
     journalEntries,
+    encountersSeen: encountersSeenSet,
   })
 
   if (phaseScene) {

@@ -97,8 +97,9 @@ export default function GamePage() {
 
     return buildPrologueSlides({
       modifierId: raid.modifierId ?? null,
+      contractId: raid.contractId ?? null,
     })
-  }, [raid?.active, raid?.modifierId])
+  }, [raid?.active, raid?.contractId, raid?.modifierId])
 
   const showPrologue =
     prologueSlides.length > 0 &&

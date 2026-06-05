@@ -63,6 +63,8 @@ export interface Choice {
   text: string
   /** Куда ведёт выбор, если id не совпадает с id сцены (например, два пути в catacombs). */
   targetSceneId?: string
+  /** Сцена после провала риск-проверки (d20) по требованию стата */
+  riskFailSceneId?: string
   effects?: {
     sanity?: number
     corruption?: number
