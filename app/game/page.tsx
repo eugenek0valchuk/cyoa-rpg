@@ -27,7 +27,7 @@ export default function GamePage() {
     minExtractDepth,
     handleChoice,
     handleExtract,
-    handleReset,
+    handleExitToMenu,
     closeArtifactReveal,
   } = useGameSession()
 
@@ -52,7 +52,7 @@ export default function GamePage() {
         minExtractDepth={minExtractDepth}
         isEndingScene={isEndingScene}
         onExtract={handleExtract}
-        onReset={handleReset}
+        onReset={handleExitToMenu}
       />
 
       <CharacterPanel character={character} />

@@ -45,7 +45,7 @@ export default function HomePage() {
 
           <div className="mt-14 space-y-4">
             <Link
-              href="/editor?slot=0"
+              href="/archives"
               className="group block border border-[#4b2a2a] bg-[#120909]/70 px-6 py-5 no-underline visited:text-inherit hover:border-[#8e1f1f] hover:bg-[#1a0d0d]"
             >
               <div className="text-center">

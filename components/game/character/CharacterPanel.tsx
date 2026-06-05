@@ -66,21 +66,21 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 value: character.stats.strength,
                 max: 20,
                 color: '#d46060',
-                icon: <GameIcon type="strength" size={56} />,
+                icon: <GameIcon type="strength" size={72} />,
               },
               {
                 label: game.agility,
                 value: character.stats.agility,
                 max: 20,
                 color: '#b4c27d',
-                icon: <GameIcon type="agility" size={56} />,
+                icon: <GameIcon type="agility" size={72} />,
               },
               {
                 label: game.intelligence,
                 value: character.stats.intelligence,
                 max: 20,
                 color: '#92a6dd',
-                icon: <GameIcon type="intelligence" size={56} />,
+                icon: <GameIcon type="intelligence" size={72} />,
               },
             ].map((stat, i) => (
               <motion.div
@@ -88,15 +88,16 @@ export function CharacterPanel({ character }: CharacterPanelProps) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i }}
-                className="min-w-[110px] border-2 border-[#2f2622] bg-[#0c0808]/85 px-4 py-4 text-center"
+                className="min-w-[110px] border-2 border-[#2f2622] bg-[#0c0808]/85 px-3 py-4 text-center"
               >
-                <div className="flex items-center justify-center gap-2 text-[12px] uppercase tracking-[0.25em] text-[#7a6d63]">
-                  <span style={{ color: stat.color }}>{stat.icon}</span>
+                <div className="flex justify-center">{stat.icon}</div>
+
+                <div className="mt-2 text-[11px] uppercase tracking-[0.15em] text-[#7a6d63]">
                   {stat.label}
                 </div>
 
                 <div
-                  className="mt-2 font-cinzel text-3xl"
+                  className="mt-1 font-cinzel text-3xl"
                   style={{ color: stat.color }}
                 >
                   {stat.value}

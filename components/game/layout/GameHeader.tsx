@@ -110,6 +110,7 @@ export function GameHeader({
           type="button"
           onClick={onReset}
           disabled={isLoading}
+          title={isEndingScene ? undefined : game.returnHint}
           className="group inline-flex items-center gap-2 border border-[#241919] bg-[#0f0a0a]/80 px-4 py-2 text-[9px] uppercase tracking-[0.32em] text-[#6f6259] transition hover:border-[#4a2323] hover:text-[#d7c8bc] disabled:opacity-40"
         >
           <RotateCcw className="h-3.5 w-3.5 transition-transform duration-500 group-hover:-rotate-180" />

@@ -1,17 +1,19 @@
 'use client'
 
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { restoreActiveSlot } from '@/hooks/useAutoSave'
 import { t } from '@/lib/i18n'
 import {
   deleteSaveSlot,
+  getActiveSlotId,
   listSaveSlots,
   setActiveSlotId,
   type SaveSlot,
 } from '@/lib/persistence/saveStorage'
+import { useCharacterStore } from '@/lib/store/characterStore'
+import { useHubStore } from '@/lib/store/hubStore'
 
 function formatSavedAt(timestamp: number): string {
   if (!timestamp) {
@@ -21,11 +23,18 @@ function formatSavedAt(timestamp: number): string {
   return new Date(timestamp).toLocaleString('ru-RU')
 }
 
+function slotHasProgress(slot: SaveSlot): boolean {
+  return Boolean(slot.character && (slot.hub || slot.currentScene || slot.raid?.active))
+}
+
 export default function ArchivesPage() {
   const { archives: a } = t.ui
   const router = useRouter()
   const [slots, setSlots] = useState<SaveSlot[]>([])
   const [loading, setLoading] = useState(true)
+
+  const character = useCharacterStore((state) => state.character)
+  const hub = useHubStore((state) => state.hub)
 
   useEffect(() => {
     listSaveSlots()
@@ -54,6 +63,27 @@ export default function ArchivesPage() {
     setActiveSlotId(slotId)
     router.push(`/editor?slot=${slotId}`)
   }
+
+  const handleBack = useCallback(async () => {
+    if (character && hub) {
+      router.push('/hub')
+      return
+    }
+
+    const slotId = getActiveSlotId()
+    const slot = slots[slotId]
+
+    if (slot && slotHasProgress(slot)) {
+      const result = await restoreActiveSlot(slotId)
+
+      if (result.restored) {
+        router.push(result.raidActive ? '/game' : '/hub')
+        return
+      }
+    }
+
+    router.push('/')
+  }, [character, hub, router, slots])
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black px-6 py-10 text-zinc-100">
@@ -85,7 +115,7 @@ export default function ArchivesPage() {
             </div>
           ) : (
             slots.map((slot) => {
-              const occupied = Boolean(slot.character && slot.currentScene)
+              const occupied = slotHasProgress(slot)
 
               return (
                 <article
@@ -102,7 +132,11 @@ export default function ArchivesPage() {
                       </h2>
                       <p className="mt-2 text-[13px] text-[#85776a]">
                         {occupied
-                          ? `${slot.currentScene!.title} · ${formatSavedAt(slot.savedAt)}`
+                          ? slot.raid?.active
+                            ? `${t.hub.ui.continueRaid} · ${formatSavedAt(slot.savedAt)}`
+                            : slot.currentScene
+                              ? `${slot.currentScene.title} · ${formatSavedAt(slot.savedAt)}`
+                              : `${t.hub.ui.roomLabel} · ${formatSavedAt(slot.savedAt)}`
                           : a.noDescent}
                       </p>
                     </div>
@@ -143,12 +177,13 @@ export default function ArchivesPage() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="text-[11px] uppercase tracking-[0.3em] text-[#75685f] no-underline hover:text-[#d46060]"
+          <button
+            type="button"
+            onClick={handleBack}
+            className="border-0 bg-transparent text-[11px] uppercase tracking-[0.3em] text-[#75685f] transition hover:text-[#d46060]"
           >
             {a.return}
-          </Link>
+          </button>
         </div>
       </section>
     </main>

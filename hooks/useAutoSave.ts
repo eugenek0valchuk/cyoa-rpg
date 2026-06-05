@@ -99,6 +99,36 @@ export async function restoreActiveSlot(slotId: number): Promise<{
   }
 }
 
+export async function flushCurrentSave(): Promise<boolean> {
+  const character = useCharacterStore.getState().character
+  const { currentScene, history, sceneHistory } = useGameStore.getState()
+  const { hub, raid } = useHubStore.getState()
+
+  if (!character || !hub) {
+    return false
+  }
+
+  await saveCurrentGameState(getActiveSlotId(), {
+    character,
+    currentScene,
+    history,
+    sceneHistory,
+    hub,
+    raid,
+  })
+
+  return true
+}
+
+/** Save progress, clear session memory, return to title screen. */
+export async function exitToMainMenu(): Promise<void> {
+  await flushCurrentSave()
+
+  useCharacterStore.getState().resetCharacter()
+  useHubStore.getState().resetHub()
+  useGameStore.getState().resetGame()
+}
+
 export async function clearActiveSlotSave(): Promise<void> {
   const { deleteSaveSlot, getActiveSlotId } = await import(
     '@/lib/persistence/saveStorage'

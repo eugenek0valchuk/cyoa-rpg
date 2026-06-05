@@ -199,7 +199,7 @@ export function EditorForm() {
                                   | 'agility'
                                   | 'intelligence'
                               }
-                              size={36}
+                              size={56}
                             />
                             <div>
                               <div className="text-[10px] uppercase tracking-[0.2em] text-[#75685f]">

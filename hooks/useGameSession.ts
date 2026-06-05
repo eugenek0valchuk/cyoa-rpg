@@ -4,13 +4,15 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 
 import { useArtifactReveal } from '@/hooks/useArtifactReveal'
-import { clearActiveSlotSave, useAutoSave } from '@/hooks/useAutoSave'
+import { exitToMainMenu, useAutoSave } from '@/hooks/useAutoSave'
 
 import { artifacts } from '@/lib/game/artifacts'
 import { handleGameChoice } from '@/lib/game/handleChoice'
 import { isChoiceAvailable } from '@/lib/game/choiceUtils'
 import { hasReturnSigil } from '@/lib/game/extraction'
 import {
+  buildExtractSummary,
+  buildFailSummary,
   completeRaidExtraction,
   failRaid,
   getExtractBlockReason,
@@ -18,6 +20,7 @@ import {
 } from '@/lib/game/raid'
 import { getActiveSlotId, saveCurrentGameState } from '@/lib/persistence/saveStorage'
 import { MIN_EXTRACT_DEPTH } from '@/lib/types/hub'
+import type { RaidSummary } from '@/lib/types/raidSummary'
 
 import { useCharacterStore } from '@/lib/store/characterStore'
 import { useGameStore } from '@/lib/store/gameStore'
@@ -33,7 +36,7 @@ export function useGameSession() {
   const raid = useHubStore((state) => state.raid)
   const setHub = useHubStore((state) => state.setHub)
   const setRaid = useHubStore((state) => state.setRaid)
-  const resetHub = useHubStore((state) => state.resetHub)
+  const setPendingSummary = useHubStore((state) => state.setPendingSummary)
 
   const currentScene = useGameStore((state) => state.currentScene)
   const setCurrentScene = useGameStore((state) => state.setCurrentScene)
@@ -62,7 +65,7 @@ export function useGameSession() {
 
   useEffect(() => {
     if (!character || !hub) {
-      router.push('/editor')
+      router.push('/')
       return
     }
 
@@ -98,6 +101,7 @@ export function useGameSession() {
       nextCharacter: typeof character,
       nextHub: typeof hub,
       nextRaid: null,
+      summary: RaidSummary,
     ) => {
       if (!nextCharacter || !nextHub) {
         return
@@ -106,6 +110,7 @@ export function useGameSession() {
       setCharacter(nextCharacter)
       setHub(nextHub)
       setRaid(nextRaid)
+      setPendingSummary(summary)
       resetGame()
 
       await saveCurrentGameState(getActiveSlotId(), {
@@ -117,9 +122,9 @@ export function useGameSession() {
         raid: null,
       })
 
-      router.push('/hub')
+      router.push('/raid-summary')
     },
-    [resetGame, router, setCharacter, setHub, setRaid],
+    [resetGame, router, setCharacter, setHub, setPendingSummary, setRaid],
   )
 
   const handleExtract = useCallback(async () => {
@@ -127,23 +132,30 @@ export function useGameSession() {
       return
     }
 
-    const result = completeRaidExtraction(
-      character,
-      hub,
-      raid,
-      sceneHistory.length,
-    )
+    const depth = sceneHistory.length
+    const result = completeRaidExtraction(character, hub, raid, depth)
+    const summary = buildExtractSummary(character, hub, raid, result, depth)
 
-    await persistRaidReturn(result.character, result.hub, result.raid)
-  }, [character, extractAvailable, hub, persistRaidReturn, raid, sceneHistory.length])
+    await persistRaidReturn(result.character, result.hub, result.raid, summary)
+  }, [
+    character,
+    extractAvailable,
+    hub,
+    persistRaidReturn,
+    raid,
+    sceneHistory.length,
+  ])
 
   const handleReturnToHub = useCallback(async () => {
     if (!character || !hub || !raid) {
       return
     }
 
-    const result = failRaid(character, hub, raid, sceneHistory.length)
-    await persistRaidReturn(result.character, result.hub, result.raid)
+    const depth = sceneHistory.length
+    const result = failRaid(character, hub, raid, depth)
+    const summary = buildFailSummary(character, hub, raid, result, depth)
+
+    await persistRaidReturn(result.character, result.hub, result.raid, summary)
   }, [character, hub, persistRaidReturn, raid, sceneHistory.length])
 
   const handleChoice = useCallback(
@@ -200,17 +212,15 @@ export function useGameSession() {
     ],
   )
 
-  const handleReset = useCallback(async () => {
+  const handleExitToMenu = useCallback(async () => {
     if (isEndingScene) {
       await handleReturnToHub()
       return
     }
 
-    await clearActiveSlotSave()
-    resetHub()
-    resetGame()
-    router.push('/archives')
-  }, [handleReturnToHub, isEndingScene, resetGame, resetHub, router])
+    await exitToMainMenu()
+    router.push('/')
+  }, [handleReturnToHub, isEndingScene, router])
 
   return {
     character,
@@ -228,7 +238,7 @@ export function useGameSession() {
     handleChoice,
     handleExtract,
     handleReturnToHub,
-    handleReset,
+    handleExitToMenu,
     closeArtifactReveal,
   }
 }
